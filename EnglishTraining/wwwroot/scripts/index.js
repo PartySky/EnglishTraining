@@ -79,10 +79,10 @@ module.exports = angular;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var angular = __webpack_require__(0);
-var trackListComponentsModule = __webpack_require__(3);
+var TrackList = __webpack_require__(3);
 angular
-    .module('EnglishTraining.fullstack', [
-    trackListComponentsModule.name,
+    .module('EnglishTraining', [
+    TrackList.name,
 ]);
 
 
@@ -33988,14 +33988,14 @@ $provide.value("$locale", {
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var angular = __webpack_require__(0);
-var tracklist_html_1 = __webpack_require__(4);
-var tracklist_component_1 = __webpack_require__(5);
-exports.name = "wave.chart.fullstack.components";
+var track_list_html_1 = __webpack_require__(4);
+var track_list_component_1 = __webpack_require__(5);
+exports.name = "EnglishTraining.TrackList.components";
 angular
     .module(exports.name, [])
     .component("etTrackList", {
-    template: tracklist_html_1.default,
-    controller: tracklist_component_1.TrackListComponent
+    template: track_list_html_1.default,
+    controller: track_list_component_1.TrackListComponent
 });
 
 
@@ -34005,7 +34005,7 @@ angular
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony default export */ __webpack_exports__["default"] = ("<h1>Track List</h1>\n\n\n<audio id=\"audio_uk\" preload=\"auto\"> <source src=\"http://wooordhunt.ru/data/sound/word/uk/mp3/fidget.mp3\" type=\"audio/mpeg\"> <source src=\"/data/sound/word/uk/ogg/fidget.ogg\" type=\"audio/ogg; codecs=vorbis\"> Тег audio не поддерживается вашим браузером. </audio>\n<div onclick=\"document.getElementById('audio_uk').play();\">play()</div>");
+/* harmony default export */ __webpack_exports__["default"] = ("<h1>Track List</h1>\n\n\n<audio id=\"audio_uk\" preload=\"auto\"> <source src=\"http://wooordhunt.ru/data/sound/word/uk/mp3/fidget.mp3\" type=\"audio/mpeg\"> <source src=\"/data/sound/word/uk/ogg/fidget.ogg\" type=\"audio/ogg; codecs=vorbis\"> Тег audio не поддерживается вашим браузером. </audio>\n<div onclick=\"document.getElementById('audio_uk').play();\">play()</div>\n<div ng-click=\"$ctrl.play()\">ng play()</div>\n<div ng-click=\"$ctrl.check()\">check()</div>\n\n<input type=\"text\" ng-keypress=\"$ctrl.keyPressed($event)\">");
 
 /***/ }),
 /* 5 */
@@ -34016,11 +34016,65 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 Object.defineProperty(exports, "__esModule", { value: true });
 var TrackListComponent = /** @class */ (function () {
     function TrackListComponent() {
-        this.tracks = [
-            "track 1",
-            "track 2"
-        ];
+        this._audioPath = "http://wooordhunt.ru/data/sound/word/uk/mp3/";
+        // audio: HTMLAudioElement;
+        this.keyNextWord = 32;
+        this.keyStop = 13;
+        // var audio = new Audio(this.filetoplay);        
+        // this.audio = new Audio(this.filetoplay);
+        this.getWords();
     }
+    TrackListComponent.prototype.getWords = function () {
+        this._words = [
+            "good",
+            "bad",
+            "suffuse",
+            "rile",
+            "bodily",
+            "dishonest"
+        ];
+    };
+    TrackListComponent.prototype.play = function () {
+        var audio = new Audio(this.fileToPlay);
+        audio.play();
+    };
+    // good
+    TrackListComponent.prototype.keyPressed = function (keyEvent) {
+        if (keyEvent.which === this.keyNextWord) {
+            var tempWord = this._words[0];
+            this._words.shift();
+            this._words.push(tempWord);
+            this.fileToPlay = this._audioPath + this._words[0] + ".mp3";
+            this.play();
+            this.logElements();
+        }
+        ;
+        if (keyEvent.which === this.keyStop) {
+            var tempWord = this._words[0];
+            var halfWordsLenght = Math.round(this._words.length / 2);
+            this._words.shift();
+            this._words.splice(this.getRandomNumber(1, halfWordsLenght), 0, tempWord);
+            this.fileToPlay = this._audioPath + "wrong" + ".mp3";
+            this.play();
+            this.logElements();
+        }
+        ;
+    };
+    TrackListComponent.prototype.logElements = function () {
+        console.log("");
+        var stringOfWords;
+        this._words.forEach(function (w) {
+            stringOfWords = stringOfWords + " " + w;
+        });
+        console.log(stringOfWords);
+    };
+    TrackListComponent.prototype.getRandomNumber = function (min, max) {
+        return Math.random() * (max - min) + min;
+    };
+    TrackListComponent.prototype.check = function () {
+        console.log();
+        console.log();
+    };
     return TrackListComponent;
 }());
 exports.TrackListComponent = TrackListComponent;

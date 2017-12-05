@@ -1,8 +1,8 @@
 import * as angular from "angular";
 
-import * as trackListComponentsModule from "./tracklist/tracklist.module";
+import * as TrackList from "./track-list/track-list.module";
 
 angular
-    .module('EnglishTraining.fullstack', [
-        trackListComponentsModule.name,
+    .module('EnglishTraining', [
+        TrackList.name,
     ]);
