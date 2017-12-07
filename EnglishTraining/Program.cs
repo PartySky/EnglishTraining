@@ -5,6 +5,9 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
+using System.Net.Http;
+using System.Threading;
+using System.Net;
 
 namespace WaveChart
 {
@@ -19,8 +22,10 @@ namespace WaveChart
                 .UseStartup<Startup>()
                 .UseApplicationInsights()
                 .Build();
-            
-            host.Run();
+
+            //host.Run();
+            Parser parser = new Parser();
+            parser.Download();
         }
     }
 }

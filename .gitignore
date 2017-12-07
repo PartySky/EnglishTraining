@@ -277,3 +277,4 @@ WaveChart/wwwroot/scripts/*.js
 WaveChart/wwwroot/scripts/*.map
 *.wav
 WaveChart/ChartGenerator.cs
+EnglishTraining/parserTests/*
