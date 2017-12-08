@@ -9,7 +9,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Net;
 
-namespace WaveChart
+namespace EnglishTraining
 {
     public class Program
     {

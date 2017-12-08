@@ -2,9 +2,9 @@
 using System.IO;
 using System.Net;
 using Newtonsoft.Json;
-using WaveChart.models;
+using EnglishTraining.models;
 
-namespace WaveChart
+namespace EnglishTraining
 {
     public class Parser
     {
