@@ -10,7 +10,8 @@ namespace EnglishTraining
     {
         public void Download()
         {
-            VmWord words = GetWords();
+            //VmWord words = GetWords();
+            VmWordCollection words = GetWordsCollection();
             var filepath = Path.Combine("./parserTests", "hello3.png");
 
             HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create("https://www.google.ru/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png");
@@ -32,12 +33,32 @@ namespace EnglishTraining
                 throw new ArgumentNullException(jsonPath);
             }
             // read file into a string and deserialize JSON to a type
-            VmWord movie1 = JsonConvert.DeserializeObject<VmWord>(File.ReadAllText(jsonPath));
+            VmWord word = JsonConvert.DeserializeObject<VmWord>(File.ReadAllText(jsonPath));
             // deserialize JSON directly from a file
             using(StreamReader file = File.OpenText(jsonPath))
             {
                 JsonSerializer serializer = new JsonSerializer();
                 words = (VmWord)serializer.Deserialize(file, typeof(VmWord));
+            }
+            return words;
+        }
+
+        static VmWordCollection GetWordsCollection()
+        {
+            VmWordCollection words;
+            string jsonPath = "./jsons/words_volume_01.json";
+            if (!File.Exists(jsonPath))
+            {
+                Console.WriteLine("File doesn't exist, path: {0}", jsonPath);
+                throw new ArgumentNullException(jsonPath);
+            }
+            // read file into a string and deserialize JSON to a type
+            VmWordCollection wordCollection = JsonConvert.DeserializeObject<VmWordCollection>(File.ReadAllText(jsonPath));
+            // deserialize JSON directly from a file
+            using (StreamReader file = File.OpenText(jsonPath))
+            {
+                JsonSerializer serializer = new JsonSerializer();
+                words = (VmWordCollection)serializer.Deserialize(file, typeof(VmWordCollection));
             }
             return words;
         }
