@@ -278,3 +278,5 @@ WaveChart/wwwroot/scripts/*.map
 *.wav
 WaveChart/ChartGenerator.cs
 EnglishTraining/parserTests/*
+EnglishTraining/Audio/*
+EnglishTraining/jsons/words_volume_01.json

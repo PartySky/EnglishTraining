@@ -8,39 +8,24 @@ namespace EnglishTraining
 {
     public class Parser
     {
+        public static string audioPath = "./Audio";
         public void Download()
         {
-            //VmWord words = GetWords();
             VmWordCollection words = GetWordsCollection();
-            var filepath = Path.Combine("./parserTests", "hello3.png");
 
-            HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create("https://www.google.ru/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png");
-            HttpWebResponse response = (HttpWebResponse)request.GetResponseAsync().Result;
-            var responseStream = response.GetResponseStream();
-            using (FileStream fileStream = new FileStream(filepath, FileMode.Create))
+            foreach(VmWord word in words.Word)
             {
-                responseStream.CopyTo(fileStream);
+                string wordName = word.Items[0].word;
+                string url = word.Items[0].pathmp3;
+
+                Console.WriteLine("");
+                Console.WriteLine("delay");
+                Console.WriteLine(wordName);
+                Console.WriteLine(url);
+
+                System.Threading.Thread.Sleep(1000);
+				GetAndSave(wordName, url);
             }
-        }
-        
-        static VmWord GetWords()
-        {
-            VmWord words;
-            string jsonPath = "./jsons/words.json";
-            if (!File.Exists(jsonPath))
-            {
-                Console.WriteLine("File doesn't exist, path: {0}", jsonPath);
-                throw new ArgumentNullException(jsonPath);
-            }
-            // read file into a string and deserialize JSON to a type
-            VmWord word = JsonConvert.DeserializeObject<VmWord>(File.ReadAllText(jsonPath));
-            // deserialize JSON directly from a file
-            using(StreamReader file = File.OpenText(jsonPath))
-            {
-                JsonSerializer serializer = new JsonSerializer();
-                words = (VmWord)serializer.Deserialize(file, typeof(VmWord));
-            }
-            return words;
         }
 
         static VmWordCollection GetWordsCollection()
@@ -59,6 +44,52 @@ namespace EnglishTraining
             {
                 JsonSerializer serializer = new JsonSerializer();
                 words = (VmWordCollection)serializer.Deserialize(file, typeof(VmWordCollection));
+            }
+            return words;
+        }
+
+        static void GetAndSave(string filename, string url)
+        {
+            var filepath = Path.Combine(audioPath, filename + ".mp3");
+
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+            HttpWebResponse response = (HttpWebResponse)request.GetResponseAsync().Result;
+            var responseStream = response.GetResponseStream();
+            using (FileStream fileStream = new FileStream(filepath, FileMode.Create))
+            {
+                responseStream.CopyTo(fileStream);
+            }
+        }
+
+        static void GetAndSavePng()
+        {
+            var filepath = Path.Combine(audioPath, "hello3.png");
+
+            HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create("https://www.google.ru/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png");
+            HttpWebResponse response = (HttpWebResponse)request.GetResponseAsync().Result;
+            var responseStream = response.GetResponseStream();
+            using (FileStream fileStream = new FileStream(filepath, FileMode.Create))
+            {
+                responseStream.CopyTo(fileStream);
+            }
+        }
+
+        static VmWord GetWords()
+        {
+            VmWord words;
+            string jsonPath = "./jsons/words.json";
+            if (!File.Exists(jsonPath))
+            {
+                Console.WriteLine("File doesn't exist, path: {0}", jsonPath);
+                throw new ArgumentNullException(jsonPath);
+            }
+            // read file into a string and deserialize JSON to a type
+            VmWord word = JsonConvert.DeserializeObject<VmWord>(File.ReadAllText(jsonPath));
+            // deserialize JSON directly from a file
+            using (StreamReader file = File.OpenText(jsonPath))
+            {
+                JsonSerializer serializer = new JsonSerializer();
+                words = (VmWord)serializer.Deserialize(file, typeof(VmWord));
             }
             return words;
         }

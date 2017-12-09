@@ -31,9 +31,9 @@ namespace EnglishTraining
 			}
 
             Parser parser = new Parser();
-            //parser.Download();
+            parser.Download();
 
-            TestRunner.RunTests();
+            //TestRunner.RunTests();
         }
     }
 }
