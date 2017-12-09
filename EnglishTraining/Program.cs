@@ -13,19 +13,27 @@ namespace EnglishTraining
 {
     public class Program
     {
-		public static void Main(string[] args)
-        {	
-            var host = new WebHostBuilder()
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
-                .UseStartup<Startup>()
-                .UseApplicationInsights()
-                .Build();
+        public static void Main(string[] args)
+        {
+            bool RunHost = false;
 
-            //host.Run();
+            if(RunHost)
+            {
+                var host = new WebHostBuilder()
+                    .UseKestrel()
+                    .UseContentRoot(Directory.GetCurrentDirectory())
+                    .UseIISIntegration()
+                    .UseStartup<Startup>()
+                    .UseApplicationInsights()
+                    .Build();
+
+                host.Run();
+			}
+
             Parser parser = new Parser();
-            parser.Download();
+            //parser.Download();
+
+            TestRunner.RunTests();
         }
     }
 }
