@@ -1,9 +1,20 @@
-<h1>Track List</h1>
-
+<style>
+    .keys-manual {
+        background-image: url(img/keys2.png);
+        background-repeat-x: no-repeat;
+        background-repeat-y: no-repeat;
+        background-position-x: center;
+        background-position-y: center;
+        min-height: 600px;
+    }
+</style>
+<div class="keys-manual"></div>
+<div ng-bind="$ctrl.wordToShow1"></div>
+<div ng-bind="ctrl.wordToShow1"></div>
+<div ng-bind="wordToShow1"></div>
 
 <audio id="audio_uk" preload="auto"> <source src="http://wooordhunt.ru/data/sound/word/uk/mp3/fidget.mp3" type="audio/mpeg"> <source src="/data/sound/word/uk/ogg/fidget.ogg" type="audio/ogg; codecs=vorbis"> Тег audio не поддерживается вашим браузером. </audio>
 <div onclick="document.getElementById('audio_uk').play();">play()</div>
 <div ng-click="$ctrl.play()">ng play()</div>
 <div ng-click="$ctrl.check()">check()</div>
-
-<input type="text" ng-keypress="$ctrl.keyPressed($event)">
+<div ng-click="$ctrl.check()" ng-bind="$ctrl.wordToShow1"></div>

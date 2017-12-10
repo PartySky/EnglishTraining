@@ -4,6 +4,6 @@ namespace EnglishTraining.models
 {
     public class VmWordCollection
     {
-        public IList<VmWord> Word { get; set; }
+        public IList<VmParserWord> Word { get; set; }
     }
 }

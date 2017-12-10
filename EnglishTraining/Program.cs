@@ -1,13 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.VisualBasic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.IO;
 using Microsoft.AspNetCore.Hosting;
-using System.Net.Http;
-using System.Threading;
-using System.Net;
 
 namespace EnglishTraining
 {
@@ -15,11 +7,12 @@ namespace EnglishTraining
     {
         public static void Main(string[] args)
         {
-            bool RunHost = false;
+            string runMode = "WordConverter"; 
 
-            if(RunHost)
+            switch (runMode)
             {
-                var host = new WebHostBuilder()
+                case "Host":
+                    var host = new WebHostBuilder()
                     .UseKestrel()
                     .UseContentRoot(Directory.GetCurrentDirectory())
                     .UseIISIntegration()
@@ -27,13 +20,25 @@ namespace EnglishTraining
                     .UseApplicationInsights()
                     .Build();
 
-                host.Run();
-			}
+                    host.Run();
+                    break;
 
-            Parser parser = new Parser();
-            parser.Download();
+                case "Parser":
+                    Parser parser = new Parser();
+                    parser.Download();
 
-            //TestRunner.RunTests();
+                    break;
+
+                case "WordConverter":
+                    
+                    break;
+                
+                case "Tests":
+                    TestRunner.RunTests();
+                    break;
+
+            }
+
         }
     }
 }
