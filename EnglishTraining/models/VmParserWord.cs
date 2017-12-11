@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace EnglishTraining.models
+﻿namespace EnglishTraining
 {
-    public class VmWord
+    public class VmParserWord
     {
         //public IList<string> items { get; set; }
         //public object items { get; set; }

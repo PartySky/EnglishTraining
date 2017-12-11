@@ -26,11 +26,11 @@ namespace EnglishTraining
                 case "Parser":
                     Parser parser = new Parser();
                     parser.Download();
-
                     break;
 
                 case "WordConverter":
-                    
+                    WordConverter wordConverter = new WordConverter();
+                    wordConverter.Convert();
                     break;
                 
                 case "Tests":

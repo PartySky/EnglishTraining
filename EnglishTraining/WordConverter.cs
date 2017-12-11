@@ -2,36 +2,58 @@
 using System.IO;
 using System.Net;
 using Newtonsoft.Json;
-using EnglishTraining.models;
+using System.Collections.Generic;
 
 namespace EnglishTraining
 {
-    public class Parser
+    public class WordConverter
     {
-        public static string audioPath = "./Audio";
-        public void Download()
+        public string jsonPath = "./jsons/words_volume_01.json";
+        public void Convert()
         {
-            VmWordCollection words = GetWordsCollection();
-
-            foreach(VmParserWord parserWords in words.Word)
+            List<VmWord> outWords = new List<VmWord>()
             {
-                string wordName = parserWords.Items[0].word;
-                string url = parserWords.Items[0].pathmp3;
+                new VmWord {
+                    Name_en = "Craig",
+                    Name_ru = "Playstead",
+                    FourDausLearnPhase = true,
+                    LearnDay = 1,
+                    RepeatIterationNum = 0,
+                    NextRepeatDate = "12.12.17",
+                    DailyReapeatCountForEng = 0,
+                    DailyReapeatCountForRus = 0,
+                    Dictors_en = null,
+                    Dictors_ru = null
+                },
+                new VmWord {
+                    Name_en = "Craig",
+                    Name_ru = "Playstead",
+                    FourDausLearnPhase = true,
+                    LearnDay = 1,
+                    RepeatIterationNum = 0,
+                    NextRepeatDate = "12.12.17",
+                    DailyReapeatCountForEng = 0,
+                    DailyReapeatCountForRus = 0,
+                    Dictors_en = null,
+                    Dictors_ru = null
+                }
+            };
 
-                Console.WriteLine("");
-                Console.WriteLine("delay");
-                Console.WriteLine(wordName);
-                Console.WriteLine(url);
+            VmWordCollection inWords = GetWordsCollection(jsonPath);
 
-                System.Threading.Thread.Sleep(1000);
-				GetAndSave(wordName, url);
-            }
+            int iForCycle = 0;
+            //iForCycle = inWords.Word.Length;
+
+            foreach (VmParserWord word in inWords.Word)
+            {
+                outWords[iForCycle].Name_ru = word.Items[0].word;
+                iForCycle++;
+            };
         }
 
-        static VmWordCollection GetWordsCollection()
+        static VmWordCollection GetWordsCollection(string jsonPath)
         {
             VmWordCollection words;
-            string jsonPath = "./jsons/words_volume_01.json";
             if (!File.Exists(jsonPath))
             {
                 Console.WriteLine("File doesn't exist, path: {0}", jsonPath);
@@ -44,52 +66,6 @@ namespace EnglishTraining
             {
                 JsonSerializer serializer = new JsonSerializer();
                 words = (VmWordCollection)serializer.Deserialize(file, typeof(VmWordCollection));
-            }
-            return words;
-        }
-
-        static void GetAndSave(string filename, string url)
-        {
-            var filepath = Path.Combine(audioPath, filename + ".mp3");
-
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
-            HttpWebResponse response = (HttpWebResponse)request.GetResponseAsync().Result;
-            var responseStream = response.GetResponseStream();
-            using (FileStream fileStream = new FileStream(filepath, FileMode.Create))
-            {
-                responseStream.CopyTo(fileStream);
-            }
-        }
-
-        static void GetAndSavePng()
-        {
-            var filepath = Path.Combine(audioPath, "hello3.png");
-
-            HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create("https://www.google.ru/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png");
-            HttpWebResponse response = (HttpWebResponse)request.GetResponseAsync().Result;
-            var responseStream = response.GetResponseStream();
-            using (FileStream fileStream = new FileStream(filepath, FileMode.Create))
-            {
-                responseStream.CopyTo(fileStream);
-            }
-        }
-
-        static VmParserWord GetWords()
-        {
-            VmParserWord words;
-            string jsonPath = "./jsons/words.json";
-            if (!File.Exists(jsonPath))
-            {
-                Console.WriteLine("File doesn't exist, path: {0}", jsonPath);
-                throw new ArgumentNullException(jsonPath);
-            }
-            // read file into a string and deserialize JSON to a type
-            VmParserWord word = JsonConvert.DeserializeObject<VmParserWord>(File.ReadAllText(jsonPath));
-            // deserialize JSON directly from a file
-            using (StreamReader file = File.OpenText(jsonPath))
-            {
-                JsonSerializer serializer = new JsonSerializer();
-                words = (VmParserWord)serializer.Deserialize(file, typeof(VmParserWord));
             }
             return words;
         }
