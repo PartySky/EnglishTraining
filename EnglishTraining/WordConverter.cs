@@ -11,44 +11,25 @@ namespace EnglishTraining
         public string jsonPath = "./jsons/words_volume_01.json";
         public void Convert()
         {
-            List<VmWord> outWords = new List<VmWord>()
-            {
-                new VmWord {
-                    Name_en = "Craig",
-                    Name_ru = "Playstead",
-                    FourDausLearnPhase = true,
-                    LearnDay = 1,
-                    RepeatIterationNum = 0,
-                    NextRepeatDate = "12.12.17",
-                    DailyReapeatCountForEng = 0,
-                    DailyReapeatCountForRus = 0,
-                    Dictors_en = null,
-                    Dictors_ru = null
-                },
-                new VmWord {
-                    Name_en = "Craig",
-                    Name_ru = "Playstead",
-                    FourDausLearnPhase = true,
-                    LearnDay = 1,
-                    RepeatIterationNum = 0,
-                    NextRepeatDate = "12.12.17",
-                    DailyReapeatCountForEng = 0,
-                    DailyReapeatCountForRus = 0,
-                    Dictors_en = null,
-                    Dictors_ru = null
-                }
-            };
-
             VmWordCollection inWords = GetWordsCollection(jsonPath);
+            VmWord[] outWords = new VmWord[inWords.Word.Length];
 
-            int iForCycle = 0;
-            //iForCycle = inWords.Word.Length;
-
-            foreach (VmParserWord word in inWords.Word)
+            for (int i = 0; i < outWords.Length; i++)
             {
-                outWords[iForCycle].Name_ru = word.Items[0].word;
-                iForCycle++;
-            };
+                outWords[i] = new VmWord
+                {
+                    Name_en = null,
+                    Name_ru = inWords.Word[i].Items[0].word,
+                    FourDausLearnPhase = false,
+                    LearnDay = 0,
+                    RepeatIterationNum = 0,
+                    NextRepeatDate = null,
+                    DailyReapeatCountForEng = 0,
+                    DailyReapeatCountForRus = 0,
+                    Dictors_en = null,
+                    Dictors_ru = null
+                };
+            }
         }
 
         static VmWordCollection GetWordsCollection(string jsonPath)
