@@ -7,7 +7,7 @@ namespace EnglishTraining
     {
         public static void Main(string[] args)
         {
-            string runMode = "WordConverter"; 
+            string runMode = "Host"; 
 
             switch (runMode)
             {
