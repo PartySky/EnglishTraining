@@ -1,48 +1,399 @@
-export var WordsTemp = [
+export var WordsTemp =
+    [
+        {
+            "Name_en": "hastily",
+            "Name_ru": "торопливо",
+            "FourDausLearnPhase": false,
+            "LearnDay": 0,
+            "RepeatIterationNum": 0,
+            "NextRepeatDate": "",
+            "DailyReapeatCountForEng": 0,
+            "DailyReapeatCountForRus": 0,
+            "Dictors_ru": [{}]
+        },
+        {
+            "Name_en": "wardrobe",
+            "Name_ru": "гардероб",
+            "FourDausLearnPhase": false,
+            "LearnDay": 0,
+            "RepeatIterationNum": 0,
+            "NextRepeatDate": "",
+            "DailyReapeatCountForEng": 0,
+            "DailyReapeatCountForRus": 0,
+            "Dictors_ru": [{}]
+        },
+        {
+            "Name_en": "immeasurable",
+            "Name_ru": "неизмеримо",
+            "FourDausLearnPhase": false,
+            "LearnDay": 0,
+            "RepeatIterationNum": 0,
+            "NextRepeatDate": "",
+            "DailyReapeatCountForEng": 0,
+            "DailyReapeatCountForRus": 0,
+            "Dictors_ru": [{}]
+        },
+        {
+            "Name_en": "drop",
+            "Name_ru": "капать",
+            "FourDausLearnPhase": false,
+            "LearnDay": 0,
+            "RepeatIterationNum": 0,
+            "NextRepeatDate": "",
+            "DailyReapeatCountForEng": 0,
+            "DailyReapeatCountForRus": 0,
+            "Dictors_ru": [{}]
+        },
+        {
+            "Name_en": "readiness",
+            "Name_ru": "готовность",
+            "FourDausLearnPhase": false,
+            "LearnDay": 0,
+            "RepeatIterationNum": 0,
+            "NextRepeatDate": "",
+            "DailyReapeatCountForEng": 0,
+            "DailyReapeatCountForRus": 0,
+            "Dictors_ru": [{}]
+        },
+        {
+            "Name_en": "candidly",
+            "Name_ru": "открыто",
+            "FourDausLearnPhase": false,
+            "LearnDay": 0,
+            "RepeatIterationNum": 0,
+            "NextRepeatDate": "",
+            "DailyReapeatCountForEng": 0,
+            "DailyReapeatCountForRus": 0,
+            "Dictors_ru": [{}]
+        },
+        {
+            "Name_en": "severity",
+            "Name_ru": "суровость",
+            "FourDausLearnPhase": false,
+            "LearnDay": 0,
+            "RepeatIterationNum": 0,
+            "NextRepeatDate": "",
+            "DailyReapeatCountForEng": 0,
+            "DailyReapeatCountForRus": 0,
+            "Dictors_ru": [{}]
+        },
+        {
+            "Name_en": "hereditary",
+            "Name_ru": "наследственный",
+            "FourDausLearnPhase": false,
+            "LearnDay": 0,
+            "RepeatIterationNum": 0,
+            "NextRepeatDate": "",
+            "DailyReapeatCountForEng": 0,
+            "DailyReapeatCountForRus": 0,
+            "Dictors_ru": [{}]
+        },
+        {
+            "Name_en": "forcible",
+            "Name_ru": "принудительный",
+            "FourDausLearnPhase": false,
+            "LearnDay": 0,
+            "RepeatIterationNum": 0,
+            "NextRepeatDate": "",
+            "DailyReapeatCountForEng": 0,
+            "DailyReapeatCountForRus": 0,
+            "Dictors_ru": [{}]
+        },
+        {
+            "Name_en": "narrative",
+            "Name_ru": "повествование",
+            "FourDausLearnPhase": false,
+            "LearnDay": 0,
+            "RepeatIterationNum": 0,
+            "NextRepeatDate": "",
+            "DailyReapeatCountForEng": 0,
+            "DailyReapeatCountForRus": 0,
+            "Dictors_ru": [{}]
+        },
+        {
+            "Name_en": null,
+            "Name_ru": "оживлённый",
+            "FourDausLearnPhase": false,
+            "LearnDay": 0,
+            "RepeatIterationNum": 0,
+            "NextRepeatDate": "",
+            "DailyReapeatCountForEng": 0,
+            "DailyReapeatCountForRus": 0,
+            "Dictors_ru": [{}]
+        },
+        {
+            "Name_en": "beige",
+            "Name_ru": "бежевый",
+            "FourDausLearnPhase": false,
+            "LearnDay": 0,
+            "RepeatIterationNum": 0,
+            "NextRepeatDate": "",
+            "DailyReapeatCountForEng": 0,
+            "DailyReapeatCountForRus": 0,
+            "Dictors_ru": [{}]
+        },
+        {
+            "Name_en": "dresser",
+            "Name_ru": "костюмер",
+            "FourDausLearnPhase": false,
+            "LearnDay": 0,
+            "RepeatIterationNum": 0,
+            "NextRepeatDate": "",
+            "DailyReapeatCountForEng": 0,
+            "DailyReapeatCountForRus": 0,
+            "Dictors_ru": [{}]
+        },
+        {
+            "Name_en": "boudoir",
+            "Name_ru": "будуар",
+            "FourDausLearnPhase": false,
+            "LearnDay": 0,
+            "RepeatIterationNum": 0,
+            "NextRepeatDate": "",
+            "DailyReapeatCountForEng": 0,
+            "DailyReapeatCountForRus": 0,
+            "Dictors_ru": [{}]
+        },
+        {
+            "Name_en": "unnecessary",
+            "Name_ru": "ненужный",
+            "FourDausLearnPhase": false,
+            "LearnDay": 0,
+            "RepeatIterationNum": 0,
+            "NextRepeatDate": "",
+            "DailyReapeatCountForEng": 0,
+            "DailyReapeatCountForRus": 0,
+            "Dictors_ru": [{}]
+        },
+        {
+            "Name_en": null,
+            "Name_ru": "бесплатный",
+            "FourDausLearnPhase": false,
+            "LearnDay": 0,
+            "RepeatIterationNum": 0,
+            "NextRepeatDate": "",
+            "DailyReapeatCountForEng": 0,
+            "DailyReapeatCountForRus": 0,
+            "Dictors_ru": [{}]
+        },
+        {
+            "Name_en": "alacrity",
+            "Name_ru": "живость",
+            "FourDausLearnPhase": false,
+            "LearnDay": 0,
+            "RepeatIterationNum": 0,
+            "NextRepeatDate": "",
+            "DailyReapeatCountForEng": 0,
+            "DailyReapeatCountForRus": 0,
+            "Dictors_ru": [{}]
+        },
         {
             "Name_en": "rile",
             "Name_ru": "раздражать",
-            "FourDausLearnPhase": true,
-            "LearnDay": 3,
-            "RepeatIterationNum": 1,
-            "NextRepeatDate": "12.25.17",
-            "DailyReapeatCountForEng": 5,
-            "DailyReapeatCountForRus": 3,
-            "Dictors_ru": [{
-                "username": "Shady_arc",
-                "sex": "m",
-                "country": "Russia",
-                "langname": "Russian"
-            },
-            {
-                "username": "Selene71",
-                "sex": "f",
-                "country": "Russia",
-                "langname": "Russian"
-            }
-            ]
+            "FourDausLearnPhase": false,
+            "LearnDay": 0,
+            "RepeatIterationNum": 0,
+            "NextRepeatDate": "",
+            "DailyReapeatCountForEng": 0,
+            "DailyReapeatCountForRus": 0,
+            "Dictors_ru": [{}]
         },
         {
-            "Name_en": "dog",
-            "Name_ru": "собака",
-            "FourDausLearnPhase": true,
-            "LearnDay": 3,
-            "RepeatIterationNum": 1,
-            "NextRepeatDate": "12.25.17",
-            "DailyReapeatCountForEng": 5,
-            "DailyReapeatCountForRus": 3,
-            "Dictors_ru": [{
-                "username": "Shady_arc",
-                "sex": "m",
-                "country": "Russia",
-                "langname": "Russian"
-            },
-            {
-                "username": "Selene71",
-                "sex": "f",
-                "country": "Russia",
-                "langname": "Russian"
-            }
-            ]
+            "Name_en": "bodily",
+            "Name_ru": "телесный",
+            "FourDausLearnPhase": false,
+            "LearnDay": 0,
+            "RepeatIterationNum": 0,
+            "NextRepeatDate": "",
+            "DailyReapeatCountForEng": 0,
+            "DailyReapeatCountForRus": 0,
+            "Dictors_ru": [{}]
+        },
+        {
+            "Name_en": "vaguely",
+            "Name_ru": "неясно",
+            "FourDausLearnPhase": false,
+            "LearnDay": 0,
+            "RepeatIterationNum": 0,
+            "NextRepeatDate": "",
+            "DailyReapeatCountForEng": 0,
+            "DailyReapeatCountForRus": 0,
+            "Dictors_ru": [{}]
+        },
+        {
+            "Name_en": "intermediary",
+            "Name_ru": "посредник",
+            "FourDausLearnPhase": false,
+            "LearnDay": 0,
+            "RepeatIterationNum": 0,
+            "NextRepeatDate": "",
+            "DailyReapeatCountForEng": 0,
+            "DailyReapeatCountForRus": 0,
+            "Dictors_ru": [{}]
+        },
+        {
+            "Name_en": "overstep",
+            "Name_ru": "перешагнуть",
+            "FourDausLearnPhase": false,
+            "LearnDay": 0,
+            "RepeatIterationNum": 0,
+            "NextRepeatDate": "",
+            "DailyReapeatCountForEng": 0,
+            "DailyReapeatCountForRus": 0,
+            "Dictors_ru": [{}]
+        },
+        {
+            "Name_en": "dishonour",
+            "Name_ru": "бесчестие",
+            "FourDausLearnPhase": false,
+            "LearnDay": 0,
+            "RepeatIterationNum": 0,
+            "NextRepeatDate": "",
+            "DailyReapeatCountForEng": 0,
+            "DailyReapeatCountForRus": 0,
+            "Dictors_ru": [{}]
+        },
+        {
+            "Name_en": "cordial",
+            "Name_ru": "радушный",
+            "FourDausLearnPhase": false,
+            "LearnDay": 0,
+            "RepeatIterationNum": 0,
+            "NextRepeatDate": "",
+            "DailyReapeatCountForEng": 0,
+            "DailyReapeatCountForRus": 0,
+            "Dictors_ru": [{}]
+        },
+        {
+            "Name_en": "honourable",
+            "Name_ru": "почетный",
+            "FourDausLearnPhase": false,
+            "LearnDay": 0,
+            "RepeatIterationNum": 0,
+            "NextRepeatDate": "",
+            "DailyReapeatCountForEng": 0,
+            "DailyReapeatCountForRus": 0,
+            "Dictors_ru": [{}]
+        },
+        {
+            "Name_en": "pleasurable",
+            "Name_ru": "приятный",
+            "FourDausLearnPhase": false,
+            "LearnDay": 0,
+            "RepeatIterationNum": 0,
+            "NextRepeatDate": "",
+            "DailyReapeatCountForEng": 0,
+            "DailyReapeatCountForRus": 0,
+            "Dictors_ru": [{}]
+        },
+        {
+            "Name_en": "sentimentality",
+            "Name_ru": "сентиментальность",
+            "FourDausLearnPhase": false,
+            "LearnDay": 0,
+            "RepeatIterationNum": 0,
+            "NextRepeatDate": "",
+            "DailyReapeatCountForEng": 0,
+            "DailyReapeatCountForRus": 0,
+            "Dictors_ru": [{}]
+        },
+        {
+            "Name_en": "scarecrow",
+            "Name_ru": "чучело",
+            "FourDausLearnPhase": false,
+            "LearnDay": 0,
+            "RepeatIterationNum": 0,
+            "NextRepeatDate": "",
+            "DailyReapeatCountForEng": 0,
+            "DailyReapeatCountForRus": 0,
+            "Dictors_ru": [{}]
+        },
+        {
+            "Name_en": "streak",
+            "Name_ru": "полоса",
+            "FourDausLearnPhase": false,
+            "LearnDay": 0,
+            "RepeatIterationNum": 0,
+            "NextRepeatDate": "",
+            "DailyReapeatCountForEng": 0,
+            "DailyReapeatCountForRus": 0,
+            "Dictors_ru": [{}]
+        },
+        {
+            "Name_en": "victuals",
+            "Name_ru": "пища",
+            "FourDausLearnPhase": false,
+            "LearnDay": 0,
+            "RepeatIterationNum": 0,
+            "NextRepeatDate": "",
+            "DailyReapeatCountForEng": 0,
+            "DailyReapeatCountForRus": 0,
+            "Dictors_ru": [{}]
+        },
+        {
+            "Name_en": "murmur",
+            "Name_ru": "бормотать",
+            "FourDausLearnPhase": false,
+            "LearnDay": 0,
+            "RepeatIterationNum": 0,
+            "NextRepeatDate": "",
+            "DailyReapeatCountForEng": 0,
+            "DailyReapeatCountForRus": 0,
+            "Dictors_ru": [{}]
+        },
+        {
+            "Name_en": "torpid",
+            "Name_ru": "вялый",
+            "FourDausLearnPhase": false,
+            "LearnDay": 0,
+            "RepeatIterationNum": 0,
+            "NextRepeatDate": "",
+            "DailyReapeatCountForEng": 0,
+            "DailyReapeatCountForRus": 0,
+            "Dictors_ru": [{}]
+        },
+        {
+            "Name_en": "intensify",
+            "Name_ru": "усиливать",
+            "FourDausLearnPhase": false,
+            "LearnDay": 0,
+            "RepeatIterationNum": 0,
+            "NextRepeatDate": "",
+            "DailyReapeatCountForEng": 0,
+            "DailyReapeatCountForRus": 0,
+            "Dictors_ru": [{}]
+        },
+        {
+            "Name_en": "conciliate",
+            "Name_ru": "примирять",
+            "FourDausLearnPhase": false,
+            "LearnDay": 0,
+            "RepeatIterationNum": 0,
+            "NextRepeatDate": "",
+            "DailyReapeatCountForEng": 0,
+            "DailyReapeatCountForRus": 0,
+            "Dictors_ru": [{}]
+        },
+        {
+            "Name_en": "secretary",
+            "Name_ru": "секретарь",
+            "FourDausLearnPhase": false,
+            "LearnDay": 0,
+            "RepeatIterationNum": 0,
+            "NextRepeatDate": "",
+            "DailyReapeatCountForEng": 0,
+            "DailyReapeatCountForRus": 0,
+            "Dictors_ru": [{}]
+        },
+        {
+            "Name_en": "pearl",
+            "Name_ru": "жемчужный",
+            "FourDausLearnPhase": false,
+            "LearnDay": 0,
+            "RepeatIterationNum": 0,
+            "NextRepeatDate": "",
+            "DailyReapeatCountForEng": 0,
+            "DailyReapeatCountForRus": 0,
+            "Dictors_ru": [{}]
         }
     ]

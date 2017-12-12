@@ -1,6 +1,6 @@
 export interface VmDictor {
-    username: string;
-    sex: string;
-    country: string;
-    langname: string;
+    username?: string;
+    sex?: string;
+    country?: string;
+    langname?: string;
 }
