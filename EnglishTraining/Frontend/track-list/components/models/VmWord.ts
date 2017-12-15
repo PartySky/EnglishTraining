@@ -9,6 +9,10 @@ export interface VmWord {
     NextRepeatDate: string;
     DailyReapeatCountForEng: number;
     DailyReapeatCountForRus: number;
-    Dictors_en?: VmDictor[];    
+    Dictors_en?: VmDictor[];
     Dictors_ru?: VmDictor[];
+}
+
+export interface VmWordExtended extends VmWord {
+    CurrentRandomLocalization: string;
 }
