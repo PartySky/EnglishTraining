@@ -1,6 +1,10 @@
 export var WordsTemp =
     [
         {
+            "Name": {
+                "en": "kat",
+                "ru": "кот"
+            },
             "Name_en": "hastily",
             "Name_ru": "торопливо",
             "FourDausLearnPhase": false,

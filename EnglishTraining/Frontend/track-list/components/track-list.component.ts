@@ -5,8 +5,8 @@ export class TrackListComponent {
     private _audioPath: string = "http://wooordhunt.ru/data/sound/word/uk/mp3/";
     private _currentWord: VmWordExtended;
     private _currentLocal: string;
-    // private _words: VmWordExtended[];
-    private _words: any[];
+    private _words: VmWordExtended[];
+    // private _words: any[];
     private _wordsTemp: any;
     private _randomLocalizedName: string;
     fileToPlay: string;
@@ -43,16 +43,10 @@ export class TrackListComponent {
             this._currentWord = this._words[0];
             this._currentWord.CurrentRandomLocalization = this._currentLocal;
 
-            switch (this._currentLocal) {
-                case "en":
-                    this._randomLocalizedName = this._words[0].Name_en;
-                    break;
-                case "ru":
-                    this._randomLocalizedName = this._words[0].Name_ru;
-                    break;
-            }
+            // this.fileToPlay = this._audioPath + this._words[0].Name["en"] + ".mp3";
 
-            this.fileToPlay = this._audioPath + this._randomLocalizedName + ".mp3";
+            this.fileToPlay = this._audioPath + this._words[0].Name[this._currentLocal] + ".mp3";
+
             this._words.shift();
             this.play();
             // console.log("cureent word: " + this._currentWord.Name_en);

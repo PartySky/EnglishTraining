@@ -1,8 +1,10 @@
 import { VmDictor } from "./VmDictor";
 
 export interface VmWord {
-    Name_en: string;
-    Name_ru: string;
+    // Name: object;
+    Name: VmName;
+    // Name_en: string;
+    // Name_ru: string;
     FourDausLearnPhase: boolean;
     LearnDay: number;
     RepeatIterationNum: number;
@@ -11,6 +13,11 @@ export interface VmWord {
     DailyReapeatCountForRus: number;
     Dictors_en?: VmDictor[];
     Dictors_ru?: VmDictor[];
+}
+
+export interface VmName {
+    en: string;
+    ru: string;
 }
 
 export interface VmWordExtended extends VmWord {
