@@ -1,10 +1,7 @@
 import { VmWord } from "./models/VmWord";
 import { WordsTemp } from "./wordsTemp";
 
-
 export class TrackListComponent {
-    // private readonly _rootScope: ng.IRootScopeService;
-
     private _audioPath: string = "http://wooordhunt.ru/data/sound/word/uk/mp3/";
     private _currentWord: VmWord;
     private _words: VmWord[];
@@ -16,12 +13,9 @@ export class TrackListComponent {
     count: number = 0;
 
     constructor(
-        // rootScope: ng.IRootScopeService,
         public $rootScope: ng.IRootScopeService,
 
     ) {
-        // this._rootScope = rootScope;
-
         this.getWords();
         document.addEventListener("keydown", (e) => this.keyDownTextField(e), false);
     }
@@ -71,7 +65,6 @@ export class TrackListComponent {
             stringOfWords = stringOfWords + " " + w.Name_en;
         });
         console.log(stringOfWords);
-        // this._rootScope.$apply();
         this.$rootScope.$apply();
     }
 
@@ -83,9 +76,4 @@ export class TrackListComponent {
         console.log();
         console.log();
     }
-
-    //   count = 0;
-    myFunc() {
-        this.count++;
-    };
 }
