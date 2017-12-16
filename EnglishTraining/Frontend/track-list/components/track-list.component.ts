@@ -1,14 +1,17 @@
-import { VmWord, VmWordExtended } from "./models/VmWord";
+import { VmWord } from "./models/VmWord";
+import { VmWordExtended } from "./models/VmWordExtended";
+import { VmAudioPath } from "./models/VmAudioPath";
 import { WordsTemp } from "./wordsTemp";
 
 export class TrackListComponent {
-    private _audioPath: string = "http://wooordhunt.ru/data/sound/word/uk/mp3/";
+    private _audioPath: VmAudioPath = {
+        "en": "http://wooordhunt.ru/data/sound/word/uk/mp3/",
+        "ru": "./audio/"
+    }
     private _currentWord: VmWordExtended;
     private _currentLocal: string;
     private _words: VmWordExtended[];
-    // private _words: any[];
     private _wordsTemp: any;
-    private _randomLocalizedName: string;
     fileToPlay: string;
     keyNextWord: number = 32;
     keyStop: number = 13;
@@ -28,45 +31,45 @@ export class TrackListComponent {
     }
 
     keyDownTextField(e: any) {
-        if (!this._words[0].CurrentRandomLocalization) {
-            this._currentLocal = this.getRandomLocal();
-        } else {
-            this._currentLocal = this._words[0].CurrentRandomLocalization;
-            this._words[0].CurrentRandomLocalization = null;
-        }
         var keyCode = e.keyCode;
         if (keyCode == this.keyNextWord) {
+            if (!this._words[0].CurrentRandomLocalization) {
+                this._currentLocal = this.getRandomLocal();
+            } else {
+                this._currentLocal = this._words[0].CurrentRandomLocalization;
+                this._words[0].CurrentRandomLocalization = null;
+            }
             this.wordToShow = null;
             if (this._currentWord) {
                 this._words.push(this._currentWord);
             }
             this._currentWord = this._words[0];
-            this._currentWord.CurrentRandomLocalization = this._currentLocal;
 
-            // this.fileToPlay = this._audioPath + this._words[0].Name["en"] + ".mp3";
+            this.fileToPlay = this._audioPath[this._currentLocal] + this._words[0].Name[this._currentLocal] + ".mp3";
 
-            this.fileToPlay = this._audioPath + this._words[0].Name[this._currentLocal] + ".mp3";
-
+            console.log("cureent word: " + this._words[0].Name[this._currentLocal]);
+            
             this._words.shift();
             this.play();
-            // console.log("cureent word: " + this._currentWord.Name_en);
-            // console.log("cureent word: " + this._currentWord.Name_ru);
-            console.log("cureent word: " + this._randomLocalizedName);
             this.logElements();
         }
-        if (keyCode == this.keyStop) {
-            this._words[0].CurrentRandomLocalization = this._currentLocal;
-            let thirdPartOfWordsLenght: number = Math.round(this._words.length / 3);
-            if (this._currentWord) {
-                this._words.splice(this.getRandomNumber(thirdPartOfWordsLenght, thirdPartOfWordsLenght * 2), 0, this._currentWord);
-                // this.wordToShow = this._currentWord.Name_en;
-                // this.wordToShow = this._currentWord.Name_ru;
-                this.wordToShow = this._randomLocalizedName;
-                console.log("Word ToShow = " + this.wordToShow);
-            }
+        if (keyCode == this.keyStop && this._currentWord) {
+            let invertedLang = this.invertLanguage(this._currentLocal);
+
+            let thirdPartOfWordsLenght: number = this._words.length / 3;
+            
+            this._currentWord.CurrentRandomLocalization = this._currentLocal;
+            this.wordToShow = this._currentWord.Name[invertedLang];
+            this._words.splice(this.getRandomNumber(thirdPartOfWordsLenght,
+                thirdPartOfWordsLenght * 2), 0, this._currentWord);
+            
+            console.log("Word ToShow = " + this.wordToShow);
+            
+            this.fileToPlay = this._audioPath[invertedLang] +
+                this._currentWord.Name[invertedLang] + ".mp3";
+            
             this._currentWord = null;
 
-            this.fileToPlay = this._audioPath + "wrong" + ".mp3";
             this.play();
             this.logElements();
         }
@@ -82,7 +85,7 @@ export class TrackListComponent {
         console.log("");
         let stringOfWords: string = "";
         this._words.forEach(w => {
-            stringOfWords = stringOfWords + " " + w.Name_ru;
+            stringOfWords = stringOfWords + " " + w.Name["ru"];
             if (w.CurrentRandomLocalization) {
                 stringOfWords = stringOfWords + "_Has_Stored_local:" + w.CurrentRandomLocalization;
             }
@@ -104,6 +107,14 @@ export class TrackListComponent {
                 return "ru";
         }
 
+    }
+
+    invertLanguage(lang: string) { 
+        if (lang == "en") {
+            return "ru";
+        } else {
+            return "en";
+        }
     }
 
     check() {

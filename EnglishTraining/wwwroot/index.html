@@ -4,45 +4,11 @@
 <head>
     <meta charset="utf-8" />
     <title>EnglishTraining</title>
-    <style>
-        body {
-            background-image: url(img/bkgrnd.png);
-            background-repeat-x: no-repeat;
-            background-repeat-y: no-repeat;
-            background-position-x: center;
-            background-position-y: center;
-        }
-        
-        @media (min-width: 1100px) {
-            body {
-                background-size: cover;
-            }
-        }
-    </style>
+    <link type="text/css" rel="stylesheet" href="./css/styles.css">
 </head>
 
 <body ng-app="EnglishTraining">
     <et-track-list></et-track-list>
-
-
-
-
-
-    <div ng-controller="ExampleController">
-        <p>$document title:
-            <b ng-bind="title"></b>
-        </p>
-        <p>window.document title:
-            <b ng-bind="windowTitle"></b>
-        </p>
-        <div ng-click="check2()">check2()</div>
-    </div>
-
-    <!-- <div ng-controller="myCtrl">
-        <button ng-click="myFunc()">OK</button>
-        <p>The button has been clicked {{count}} times.</p>
-    </div> -->
-
 </body>
 
 <script src="/scripts/index.js"></script>
