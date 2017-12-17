@@ -1,14 +1,8 @@
-<style>
-    .keys-manual {
-        background-image: url(img/keys2.png);
-        background-repeat-x: no-repeat;
-        background-repeat-y: no-repeat;
-        background-position-x: center;
-        background-position-y: center;
-        min-height: 600px;
-    }
-</style>
+<div class="show-word">
+    <span ng-bind="$ctrl.wordToShow"></span>
+</div>
 <div class="keys-manual"></div>
-
 <div ng-click="$ctrl.check()">check()</div>
-<div ng-bind="$ctrl.wordToShow"></div>
+<div>
+    Spent time: <span ng-bind="$ctrl.spentTimeToShow"></span>
+</div>

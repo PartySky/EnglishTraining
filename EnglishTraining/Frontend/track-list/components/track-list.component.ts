@@ -8,15 +8,18 @@ export class TrackListComponent {
         "en": "http://wooordhunt.ru/data/sound/word/uk/mp3/",
         "ru": "./audio/"
     }
-    private _currentWord: VmWordExtended;
     private _currentLocal: string;
+    private _currentTime: number;
+    private _currentWord: VmWordExtended;
+    private _spentTime: number = 0;
     private _words: VmWordExtended[];
     private _wordsTemp: any;
+    spentTimeToShow: string;
+    count: number = 0;
     fileToPlay: string;
     keyNextWord: number = 32;
     keyStop: number = 13;
     wordToShow: string;
-    count: number = 0;
 
     constructor(
         public $rootScope: ng.IRootScopeService,
@@ -31,7 +34,9 @@ export class TrackListComponent {
     }
 
     keyDownTextField(e: any) {
-        var keyCode = e.keyCode;
+        let keyCode = e.keyCode;
+        let today = new Date;
+        this.calculateSpentTime();
         if (keyCode == this.keyNextWord) {
             if (!this._words[0].CurrentRandomLocalization) {
                 this._currentLocal = this.getRandomLocal();
@@ -48,12 +53,14 @@ export class TrackListComponent {
             this.fileToPlay = this._audioPath[this._currentLocal] + this._words[0].Name[this._currentLocal] + ".mp3";
 
             console.log("cureent word: " + this._words[0].Name[this._currentLocal]);
-            
+
             this._words.shift();
             this.play();
             this.logElements();
         }
-        if (keyCode == this.keyStop && this._currentWord) {
+        if ((keyCode == this.keyStop && this._currentWord) ||
+            (keyCode == 16 && this._currentWord)) {
+        // if (keyCode == this.keyStop && this._currentWord) {
             let invertedLang = this.invertLanguage(this._currentLocal);
 
             let thirdPartOfWordsLenght: number = this._words.length / 3;
@@ -70,7 +77,9 @@ export class TrackListComponent {
             
             this._currentWord = null;
 
-            this.play();
+            if (keyCode == 16) {
+                this.play();
+            }
             this.logElements();
         }
     }
@@ -115,6 +124,23 @@ export class TrackListComponent {
         } else {
             return "en";
         }
+    }
+
+    getSecondsToday() {
+        var d = new Date();
+        return d.getHours() * 3600 + d.getMinutes() * 60 + d.getSeconds();
+    };
+
+    calculateSpentTime() {
+        let timeDiff = (this.getSecondsToday() - this._currentTime);
+        if (timeDiff < 15) {
+            this._spentTime = this._spentTime + timeDiff;
+        }
+        let min = Math.floor(this._spentTime / 60);
+        let sec = this._spentTime - min * 60;
+        this.spentTimeToShow = min + " : " + sec;
+        console.log(timeDiff);
+        this._currentTime = this.getSecondsToday();
     }
 
     check() {
