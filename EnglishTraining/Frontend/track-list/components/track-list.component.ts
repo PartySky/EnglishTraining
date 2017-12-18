@@ -14,11 +14,12 @@ export class TrackListComponent {
     private _spentTime: number = 0;
     private _words: VmWordExtended[];
     private _wordsTemp: any;
+    private _keyNextWord: number = 32;
+    private _keyStop: number = 13;
+    private _highRateLearn: number = 48;
     spentTimeToShow: string;
     count: number = 0;
     fileToPlay: string;
-    keyNextWord: number = 32;
-    keyStop: number = 13;
     wordToShow: string;
 
     constructor(
@@ -37,7 +38,7 @@ export class TrackListComponent {
         let keyCode = e.keyCode;
         let today = new Date;
         this.calculateSpentTime();
-        if (keyCode == this.keyNextWord) {
+        if (keyCode === this._keyNextWord) {
             if (!this._words[0].CurrentRandomLocalization) {
                 this._currentLocal = this.getRandomLocal();
             } else {
@@ -58,23 +59,30 @@ export class TrackListComponent {
             this.play();
             this.logElements();
         }
-        if ((keyCode == this.keyStop && this._currentWord) ||
-            (keyCode == 16 && this._currentWord)) {
-        // if (keyCode == this.keyStop && this._currentWord) {
+        if ((keyCode === this._keyStop && this._currentWord) ||
+            (keyCode === 16 && this._currentWord) ||
+            (keyCode === this._highRateLearn && this._currentWord)) {
+            // if (keyCode == this.keyStop && this._currentWord) {
+            let numberToSplice: number;
             let invertedLang = this.invertLanguage(this._currentLocal);
 
             let thirdPartOfWordsLenght: number = this._words.length / 3;
-            
+            if (keyCode === this._highRateLearn) {
+                numberToSplice = this.getRandomNumber(4, 8);
+            } else {
+                numberToSplice = this.getRandomNumber(thirdPartOfWordsLenght,
+                    thirdPartOfWordsLenght * 2);
+            }
+
             this._currentWord.CurrentRandomLocalization = this._currentLocal;
             this.wordToShow = this._currentWord.Name[invertedLang];
-            this._words.splice(this.getRandomNumber(thirdPartOfWordsLenght,
-                thirdPartOfWordsLenght * 2), 0, this._currentWord);
-            
+            this._words.splice(numberToSplice, 0, this._currentWord);
+
             console.log("Word ToShow = " + this.wordToShow);
-            
+
             this.fileToPlay = this._audioPath[invertedLang] +
                 this._currentWord.Name[invertedLang] + ".mp3";
-            
+
             this._currentWord = null;
 
             if (keyCode == 16) {
@@ -118,7 +126,7 @@ export class TrackListComponent {
 
     }
 
-    invertLanguage(lang: string) { 
+    invertLanguage(lang: string) {
         if (lang == "en") {
             return "ru";
         } else {
