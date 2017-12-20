@@ -13,6 +13,7 @@
     <Content Remove="obj\**" />
     <EmbeddedResource Remove="obj\**" />
     <None Remove="obj\**" />
+    <Compile Remove="Classes\EmptyStruct.cs" />
   </ItemGroup>
   
   <ItemGroup>
@@ -24,6 +25,9 @@
   <ItemGroup>
     <Folder Include="Frontend\" />
     <Folder Include="wwwroot\scripts\" />
+    <Folder Include="Tests\" />
+    <Folder Include="Interfaces\" />
+    <Folder Include="Classes\" />
   </ItemGroup>
 
 </Project>

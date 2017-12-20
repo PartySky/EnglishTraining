@@ -1,26 +1,44 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.VisualBasic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.IO;
 using Microsoft.AspNetCore.Hosting;
 
-namespace WaveChart
+namespace EnglishTraining
 {
     public class Program
     {
-		public static void Main(string[] args)
-        {	
-            var host = new WebHostBuilder()
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
-                .UseStartup<Startup>()
-                .UseApplicationInsights()
-                .Build();
-            
-            host.Run();
+        public static void Main(string[] args)
+        {
+            string runMode = "Host"; 
+
+            switch (runMode)
+            {
+                case "Host":
+                    var host = new WebHostBuilder()
+                    .UseKestrel()
+                    .UseContentRoot(Directory.GetCurrentDirectory())
+                    .UseIISIntegration()
+                    .UseStartup<Startup>()
+                    .UseApplicationInsights()
+                    .Build();
+
+                    host.Run();
+                    break;
+
+                case "Parser":
+                    Parser parser = new Parser();
+                    parser.Download();
+                    break;
+
+                case "WordConverter":
+                    WordConverter wordConverter = new WordConverter();
+                    wordConverter.Convert();
+                    break;
+                
+                case "Tests":
+                    TestRunner.RunTests();
+                    break;
+
+            }
+
         }
     }
 }

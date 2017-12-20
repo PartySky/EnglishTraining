@@ -1,0 +1,85 @@
+﻿{
+  "Word": [
+    {
+      "attributes": {
+        "total": 11
+      },
+      "items": [
+        {
+          "id": 936598,
+          "word": "кот",
+          "addtime": "2010-12-28 06:09:43",
+          "hits": 3964,
+          "username": "alex_efimov",
+          "sex": "m",
+          "country": "New Zealand",
+          "code": "ru",
+          "langname": "Russian",
+          "pathmp3": "https://someurl",
+          "pathogg": "https://someurl",
+          "rate": 2,
+          "num_votes": 4,
+          "num_positive_votes": 3
+        },
+        {
+          "id": 936598,
+          "word": "кот",
+          "addtime": "2010-12-28 06:09:43",
+          "hits": 3964,
+          "username": "alex_efimov",
+          "sex": "m",
+          "country": "New Zealand",
+          "code": "ru",
+          "langname": "Russian",
+          "pathmp3": "https://someurl",
+          "pathogg": "https://someurl",
+          "rate": 2,
+          "num_votes": 4,
+          "num_positive_votes": 3
+        }
+      ]
+    },
+    {
+      "attributes": {
+        "total": 11
+      },
+      "items": [
+        {
+          "id": 936598,
+          "word": "лошадь",
+          "addtime": "2010-12-28 06:09:43",
+          "hits": 3964,
+          "username": "alex_efimov",
+          "sex": "m",
+          "country": "New Zealand",
+          "code": "ru",
+          "langname": "Russian",
+          "pathmp3": "https://someurl",
+          "pathogg": "https://someurl",
+          "rate": 2,
+          "num_votes": 4,
+          "num_positive_votes": 3
+        },
+        {
+          "id": 936598,
+          "word": "лошадь",
+          "addtime": "2010-12-28 06:09:43",
+          "hits": 3964,
+          "username": "alex_efimov",
+          "sex": "m",
+          "country": "New Zealand",
+          "code": "ru",
+          "langname": "Russian",
+          "pathmp3": "https://someurl",
+          "pathogg": "https://someurl",
+          "rate": 2,
+          "num_votes": 4,
+          "num_positive_votes": 3
+        }
+      ]
+    },
+    {
+
+    }
+  ]
+}
