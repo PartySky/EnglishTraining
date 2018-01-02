@@ -66,27 +66,6 @@ namespace EnglishTraining
             return words;
         }
 
-        static VmWordCollection GetWordsCollectionOld()
-        {
-            VmWordCollection words;
-            var jsonPath = Path.Combine(Directory.GetCurrentDirectory(), "jsons", "words_volume_02.json");
-
-            if (!File.Exists(jsonPath))
-            {
-                Console.WriteLine("File doesn't exist, path: {0}", jsonPath);
-                throw new ArgumentNullException(jsonPath);
-            }
-            // read file into a string and deserialize JSON to a type
-            VmWordCollection wordCollection = JsonConvert.DeserializeObject<VmWordCollection>(File.ReadAllText(jsonPath));
-            // deserialize JSON directly from a file
-            using (StreamReader file = File.OpenText(jsonPath))
-            {
-                JsonSerializer serializer = new JsonSerializer();
-                words = (VmWordCollection)serializer.Deserialize(file, typeof(VmWordCollection));
-            }
-            return words;
-        }
-
         static void GetAndSave(string filename, string url)
         {
             var filepath = Path.Combine(Directory.GetCurrentDirectory(), audioPath, filename + ".mp3");
