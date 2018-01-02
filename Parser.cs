@@ -1,42 +1,47 @@
 ﻿using System;
 using System.IO;
 using System.Net;
+using System.Text;
 using Newtonsoft.Json;
 
 namespace EnglishTraining
 {
     public class Parser
     {
-        public static string audioPath = "Audio";
+        public static string audioPath = "wwwroot/audio";
         public void Download()
         {
             var jsonConfigPath = Path.Combine(Directory.GetCurrentDirectory(), "jsons", "api-config.json");
-            VmApiCongig api = JsonConvert.DeserializeObject<VmApiCongig>(File.ReadAllText(jsonConfigPath));
+            VmParserConfig api = JsonConvert.DeserializeObject<VmParserConfig>(File.ReadAllText(jsonConfigPath));
 
-            // TODO: obsolete, remove
-            // we don't need internal collections like words_volume_N.json
             VmCurrentWord[] words = GetWordsCollection();
 
             foreach (VmCurrentWord parserWords in words)
             {
-                // TODO: check if audio of word already exist, if it's, don't download it again
                 string wordName = parserWords.Name_ru;
-                string wordRequestUrl = api.Url + wordName + "/language/ru";
-                Console.WriteLine(wordRequestUrl);
 
-                // TODO: get mp3 url from response json
-                //string url = GetMp3Url(wordRequestUrl);
+                Console.WriteLine(audioPath + "/" + parserWords.Name_ru + ".mp3");
 
+                if (!File.Exists(audioPath + "/" + parserWords.Name_ru + ".mp3")){
 
-                Console.WriteLine("");
-                Console.WriteLine("delay");
-                Console.WriteLine(wordName);
-                //Console.WriteLine(url);
+                    string wordRequestUrl = api.Url + wordName + "/language/ru";
+                    Console.WriteLine(wordRequestUrl);
 
-                System.Threading.Thread.Sleep(1000);
-                //GetAndSave(wordName, url);
-                GetAndSavePng();
-                Console.WriteLine("");
+                    string url = GetMp3Url(wordRequestUrl);
+
+                    Console.WriteLine("");
+                    Console.WriteLine("delay");
+                    Console.WriteLine(wordName);
+                    Console.WriteLine(url);
+
+                    System.Threading.Thread.Sleep(50);
+                    if (url != null){
+						GetAndSave(wordName, url);
+                    } else {
+                        // TODO: write log with words without audio
+                        Console.WriteLine("Word \"{0}\" hasn't audio", wordName);
+                    }
+				}
             }
         }
 
@@ -97,16 +102,28 @@ namespace EnglishTraining
 
         static string GetMp3Url(string url)
         {
+            string responseText;
             WebRequest request = WebRequest.Create(url);
             WebResponse response = request.GetResponseAsync().Result;
-            var responseStream = response.GetResponseStream();
 
-            var filepath = Path.Combine(audioPath, "hello.json");
-            using (FileStream fileStream = new FileStream(filepath, FileMode.Create))
+            WebHeaderCollection header = response.Headers;
+
+            var encoding = Encoding.ASCII;
+            using (var reader = new StreamReader(response.GetResponseStream(), encoding))
             {
-                responseStream.CopyTo(fileStream);
+                responseText = reader.ReadToEnd();
+                Console.WriteLine(responseText);
             }
-            return "some url";
+
+            VmResponseWord wordCollection = JsonConvert.DeserializeObject<VmResponseWord>(responseText);
+            if (wordCollection.items.Count > 0){
+				var mp3Url = wordCollection.items[0].pathmp3;
+				Console.WriteLine(mp3Url);
+				return mp3Url;
+            } else {
+                return null;
+            }
+
         }
 
         static void GetAndSavePng()
