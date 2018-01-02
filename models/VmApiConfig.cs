@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace EnglishTraining
+﻿namespace EnglishTraining
 {
     public class VmWordCollection
     {

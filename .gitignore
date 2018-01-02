@@ -1,15 +1,13 @@
 
 Tests/bin/*
 Tests/obj/*
-WaveGenerator/bin/*
-WaveGenerator/obj/*
 .vs/*
 ForTests/bin/*
 ForTests/obj/*
-WaveReader/bin/*
-WaveReader/obj/*
-WaveReader/ForTests/*
-WaveChart/node_modules/.bin/acorn
+bin/*
+obj/*
+ForTests/*
+node_modules/.bin/acorn
 
 #Custom gitignor
 ## Ignore Visual Studio temporary files, build results, and
@@ -273,14 +271,15 @@ paket-files/
 # Python Tools for Visual Studio (PTVS)
 __pycache__/
 *.pyc
-WaveChart/wwwroot/scripts/*.js
-WaveChart/wwwroot/scripts/*.map
+wwwroot/scripts/*.js
+wwwroot/scripts/*.map
 *.wav
 WaveChart/ChartGenerator.cs
 EnglishTraining/parserTests/*
-EnglishTraining/Audio/*
-EnglishTraining/jsons/words_volume_01.json
-EnglishTraining/wwwroot/scripts/index.js
-EnglishTraining/wwwroot/scripts/index.js
-EnglishTraining/wwwroot/scripts/index.js.map
-EnglishTraining/jsons/words_volume_01.json
+Audio/*
+wwwroot/scripts/index.js
+wwwroot/scripts/index.js
+wwwroot/scripts/index.js.map
+wwwroot/audio/*
+jsons/words_volume_02.json
+jsons/words_volume_01.json

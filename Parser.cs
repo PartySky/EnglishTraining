@@ -7,30 +7,55 @@ namespace EnglishTraining
 {
     public class Parser
     {
-        public static string audioPath = "./Audio";
+        public static string audioPath = "Audio";
         public void Download()
         {
-            VmWordCollection words = GetWordsCollection();
+            var jsonConfigPath = Path.Combine(Directory.GetCurrentDirectory(), "jsons", "api-config.json");
+            VmApiCongig api = JsonConvert.DeserializeObject<VmApiCongig>(File.ReadAllText(jsonConfigPath));
 
-            foreach (VmParserWord parserWords in words.Word)
+            VmCurrentWord[] words = GetWordsCollection();
+
+            foreach (VmCurrentWord parserWords in words)
             {
-                string wordName = parserWords.Items[0].word;
-                string url = parserWords.Items[0].pathmp3;
+                string wordName = parserWords.Name_ru;
+                string wordRequestUrl = api.Url + wordName + "/language/ru";
+                Console.WriteLine(wordRequestUrl);
 
                 Console.WriteLine("");
                 Console.WriteLine("delay");
                 Console.WriteLine(wordName);
-                Console.WriteLine(url);
 
                 System.Threading.Thread.Sleep(1000);
-                GetAndSave(wordName, url);
+                //GetAndSave(wordName, url);
             }
         }
 
-        static VmWordCollection GetWordsCollection()
+        static VmCurrentWord[] GetWordsCollection()
+        {
+            VmCurrentWord[] words;
+            var jsonPath = Path.Combine(Directory.GetCurrentDirectory(), "jsons", "current-words.json");
+
+            if (!File.Exists(jsonPath))
+            {
+                Console.WriteLine("File doesn't exist, path: {0}", jsonPath);
+                throw new ArgumentNullException(jsonPath);
+            }
+            // read file into a string and deserialize JSON to a type
+            VmCurrentWord[] wordCollection = JsonConvert.DeserializeObject<VmCurrentWord[]>(File.ReadAllText(jsonPath));
+            // deserialize JSON directly from a file
+            using (StreamReader file = File.OpenText(jsonPath))
+            {
+                JsonSerializer serializer = new JsonSerializer();
+                words = (VmCurrentWord[])serializer.Deserialize(file, typeof(VmCurrentWord[]));
+            }
+            return words;
+        }
+
+        static VmWordCollection GetWordsCollectionOld()
         {
             VmWordCollection words;
-            string jsonPath = "./jsons/words_volume_01.json";
+            var jsonPath = Path.Combine(Directory.GetCurrentDirectory(), "jsons", "words_volume_02.json");
+
             if (!File.Exists(jsonPath))
             {
                 Console.WriteLine("File doesn't exist, path: {0}", jsonPath);
@@ -49,10 +74,10 @@ namespace EnglishTraining
 
         static void GetAndSave(string filename, string url)
         {
-            var filepath = Path.Combine(audioPath, filename + ".mp3");
+            var filepath = Path.Combine(Directory.GetCurrentDirectory(), audioPath, filename + ".mp3");
 
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
-            HttpWebResponse response = (HttpWebResponse)request.GetResponseAsync().Result;
+            WebRequest request = WebRequest.Create(url);
+            WebResponse response = request.GetResponseAsync().Result;
             var responseStream = response.GetResponseStream();
             using (FileStream fileStream = new FileStream(filepath, FileMode.Create))
             {
@@ -62,10 +87,11 @@ namespace EnglishTraining
 
         static void GetAndSavePng()
         {
-            var filepath = Path.Combine(audioPath, "hello3.png");
+            var filepath = Path.Combine(audioPath, "hello9.png");
 
-            HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create("https://www.google.ru/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png");
-            HttpWebResponse response = (HttpWebResponse)request.GetResponseAsync().Result;
+            WebRequest request = WebRequest.Create("https://www.google.ru/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png");
+			WebResponse response = request.GetResponseAsync().Result;
+
             var responseStream = response.GetResponseStream();
             using (FileStream fileStream = new FileStream(filepath, FileMode.Create))
             {
