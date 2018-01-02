@@ -13,20 +13,30 @@ namespace EnglishTraining
             var jsonConfigPath = Path.Combine(Directory.GetCurrentDirectory(), "jsons", "api-config.json");
             VmApiCongig api = JsonConvert.DeserializeObject<VmApiCongig>(File.ReadAllText(jsonConfigPath));
 
+            // TODO: obsolete, remove
+            // we don't need internal collections like words_volume_N.json
             VmCurrentWord[] words = GetWordsCollection();
 
             foreach (VmCurrentWord parserWords in words)
             {
+                // TODO: check if audio of word already exist, if it's, don't download it again
                 string wordName = parserWords.Name_ru;
                 string wordRequestUrl = api.Url + wordName + "/language/ru";
                 Console.WriteLine(wordRequestUrl);
 
+                // TODO: get mp3 url from response json
+                //string url = GetMp3Url(wordRequestUrl);
+
+
                 Console.WriteLine("");
                 Console.WriteLine("delay");
                 Console.WriteLine(wordName);
+                //Console.WriteLine(url);
 
                 System.Threading.Thread.Sleep(1000);
                 //GetAndSave(wordName, url);
+                GetAndSavePng();
+                Console.WriteLine("");
             }
         }
 
@@ -83,6 +93,20 @@ namespace EnglishTraining
             {
                 responseStream.CopyTo(fileStream);
             }
+        }
+
+        static string GetMp3Url(string url)
+        {
+            WebRequest request = WebRequest.Create(url);
+            WebResponse response = request.GetResponseAsync().Result;
+            var responseStream = response.GetResponseStream();
+
+            var filepath = Path.Combine(audioPath, "hello.json");
+            using (FileStream fileStream = new FileStream(filepath, FileMode.Create))
+            {
+                responseStream.CopyTo(fileStream);
+            }
+            return "some url";
         }
 
         static void GetAndSavePng()
