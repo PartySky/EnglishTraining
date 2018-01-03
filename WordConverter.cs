@@ -21,16 +21,16 @@ namespace EnglishTraining
             {
                 outWords[i] = new VmWord
                 {
-                    Name_ru = inWords.Word[i].Items[0].word,
-                    Name_en = currentWords?.FirstOrDefault(p => p.Name_ru == inWords.Word[i].Items[0].word).Name_en,
+                    Name_en = inWords.Word[i].Items[0].word,
+                    Name_ru = currentWords?.FirstOrDefault(p => p.Name_ru == inWords.Word[i].Items[0].word).Name_en,
                     FourDausLearnPhase = false,
                     LearnDay = 0,
                     RepeatIterationNum = 0,
                     NextRepeatDate = null,
                     DailyReapeatCountForEng = 0,
-                    DailyReapeatCountForRus = 0,
-                    Dictors_en = null,
-                    Dictors_ru = null
+                    DailyReapeatCountForRus = 0
+                    //Dictors_en = null,
+					//Dictors_ru = new VmDictor[getDictors.lenght]
                 };
             }
 
