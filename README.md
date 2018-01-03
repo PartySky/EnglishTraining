@@ -1,6 +1,6 @@
 # EnglishTraining
 
-## Simple application to master your vacabular.
+###  Simple application to master your vacabular.
 
 ### Use next keys:
 
@@ -14,7 +14,7 @@ For all ather word you know not perfectly use:
 
 
 
-## Простоe приложение для заучивания новых слов.
+### Простоe приложение для заучивания новых слов.
 
 ### Используемые клавиши:
 
