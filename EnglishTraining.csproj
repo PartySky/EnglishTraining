@@ -7,13 +7,20 @@
   <ItemGroup>
     <Folder Include="wwwroot\" />
     <Folder Include="models\VmResponseWord\" />
+    <Folder Include="models\Entities\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <DotNetCliToolReference Include="Microsoft.EntityFrameworkCore.Tools.DotNet" Version="2.0.0" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="2.0.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.Design" Version="1.1.5" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Remove="jsons\words_volume_02.json" />
+    <Compile Remove="models\VmWordName.cs" />
   </ItemGroup>
 </Project>
