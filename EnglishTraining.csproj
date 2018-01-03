@@ -8,6 +8,7 @@
     <Folder Include="wwwroot\" />
     <Folder Include="models\VmResponseWord\" />
     <Folder Include="models\Entities\" />
+    <Folder Include="Controllers\" />
   </ItemGroup>
 
   <ItemGroup>
