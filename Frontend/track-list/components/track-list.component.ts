@@ -21,6 +21,7 @@ export class TrackListComponent {
     private _keyStop: number = 13;
     private _highRateLearn: number = 48;
     spentTimeToShow: string;
+    autoSaveTimerPrevious: number;
     count: number = 0;
     fileToPlay: string;
     wordToShow: string;
@@ -33,9 +34,8 @@ export class TrackListComponent {
         // apiService: ApiService
     ) {
         // this._http = http;
-        this._apiUrl = "/main/getwords";
+        this._apiUrl = "/main";
         // this._apiSrv = apiService;
-        
         this.getWords()
             .then((words) => {
                 this._words = words
@@ -48,16 +48,36 @@ export class TrackListComponent {
                     }));
             });
         document.addEventListener("keydown", (e) => this.keyDownTextField(e), false);
+        this.autoSaveTimerPrevious = this.getSecondsToday();
     }
 
     getWords() {
         // TODO: move to services
         return this.$http
-            .get<VmWord[]>(`${this._apiUrl}`)
+            .get<VmWord[]>(`${this._apiUrl}/getwords`)
             .then(response => response.data);
     }
 
+    updateWord(word: VmWord) { 
+        return this.$http
+            .post<VmWord[]>(`${this._apiUrl}/updateword`, word)
+            .then(response => response.data);
+    }
+
+    autoSave() {
+        let autoSaveTimer = this.getSecondsToday() - this.autoSaveTimerPrevious ;
+        const timerAmmount: number = 15;
+        if (autoSaveTimer > timerAmmount) {
+            this._words.forEach(word => {
+                this.updateWord(word);
+            });
+            console.log("Auto Save!!!");
+            this.autoSaveTimerPrevious = this.getSecondsToday();
+        }
+    }
+
     keyDownTextField(e: any) {
+        this.autoSave();
         let keyCode = e.keyCode;
         let today = new Date;
         this.calculateSpentTime();
@@ -177,7 +197,5 @@ export class TrackListComponent {
     check() {
         console.log();
         console.log();
-        // this._apiSrv.get();
-        // this.getWords();
     }
 }

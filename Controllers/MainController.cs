@@ -38,11 +38,13 @@ namespace EnglishTraining
             //});
         }
 
-        public async Task<VmWord[]> UpdateWords()
+        public async Task<VmWord> UpdateWord(VmWord word)
         {
-            return await Task<VmWord[]>.Factory.StartNew(() =>
+            return await Task<VmWord>.Factory.StartNew(() =>
             {
                 // TODO: return true and false
+                Console.WriteLine("updating");
+                Console.WriteLine(word);
                 return null;
             });
         }
