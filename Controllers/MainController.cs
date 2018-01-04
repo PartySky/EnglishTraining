@@ -2,6 +2,9 @@
 
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
+using System.Collections.Generic;
+using EnglishTraining.models.Commonmodels;
+using System.Linq;
 
 namespace EnglishTraining
 {
@@ -12,32 +15,36 @@ namespace EnglishTraining
             return View();
         }
 
-        // TODO: use correct model
-        public async Task<VmCurrentWord> GetWords()
+        public async Task<VmWord[]> GetWords()
         {
-            return await Task<VmCurrentWord>.Factory.StartNew(() =>
+            VmWord[] words;
+
+            using (var db = new WordContext())
             {
-                var testObject = new VmCurrentWord
-                {
-                    Name_ru = "кот",
-                    Name_en = "kat"
-                };
-                return testObject;
+                words = db.Words.ToArray();
+                int tryCount = db.Words.Count();
+            }
+
+            return await Task<VmWord[]>.Factory.StartNew(() =>
+            {
+                return words;
             });
+
+
+            // TODO: use VmCommonTableResponse
+            // TODO: use mapper from dto to vm
+            //return await Task<VmCommonTableResponse<VmWord>>.Factory.StartNew(() =>
+            //{
+            //    //return words;
+            //});
         }
 
-        // TODO: use correct model
-        public async Task<VmCurrentWord> UpdateWords()
+        public async Task<VmWord[]> UpdateWords()
         {
-            return await Task<VmCurrentWord>.Factory.StartNew(() =>
+            return await Task<VmWord[]>.Factory.StartNew(() =>
             {
-                var testObject = new VmCurrentWord
-                {
-                    Name_ru = "кот",
-                    Name_en = "kat"
-                };
                 // TODO: return true and false
-                return testObject;
+                return null;
             });
         }
     }
