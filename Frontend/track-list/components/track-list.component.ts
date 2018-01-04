@@ -1,9 +1,13 @@
 import { VmWord } from "./models/VmWord";
 import { VmWordExtended } from "./models/VmWordExtended";
 import { VmAudioPath } from "./models/VmAudioPath";
-import { WordsTemp } from "./wordsTemp";
+import { name } from "../track-list.module";
+// import { ApiService } from "../services/api.service";
 
 export class TrackListComponent {
+    // private readonly _http: ng.IHttpService;
+    private readonly _apiUrl: string;
+    // private readonly _apiSrv: ApiService;
     private _audioPath: VmAudioPath = {
         "en": "http://wooordhunt.ru/data/sound/word/uk/mp3/",
         "ru": "./audio/"
@@ -13,7 +17,6 @@ export class TrackListComponent {
     private _currentWord: VmWordExtended;
     private _spentTime: number = 0;
     private _words: VmWordExtended[];
-    private _wordsTemp: any;
     private _keyNextWord: number = 32;
     private _keyStop: number = 13;
     private _highRateLearn: number = 48;
@@ -23,15 +26,35 @@ export class TrackListComponent {
     wordToShow: string;
 
     constructor(
+        // http: ng.IHttpService,
+        private $http: ng.IHttpService,
+        
         public $rootScope: ng.IRootScopeService,
-
+        // apiService: ApiService
     ) {
-        this.getWords();
+        // this._http = http;
+        this._apiUrl = "/main/getwords";
+        // this._apiSrv = apiService;
+        
+        this.getWords()
+            .then((words) => {
+                this._words = words
+                    .map((word: VmWordExtended) => ({
+                        ...word,
+                        Name: {
+                            en: word.name_en,
+                            ru: word.name_ru
+                        }
+                    }));
+            });
         document.addEventListener("keydown", (e) => this.keyDownTextField(e), false);
     }
 
     getWords() {
-        this._words = WordsTemp;
+        // TODO: move to services
+        return this.$http
+            .get<VmWord[]>(`${this._apiUrl}`)
+            .then(response => response.data);
     }
 
     keyDownTextField(e: any) {
@@ -154,5 +177,7 @@ export class TrackListComponent {
     check() {
         console.log();
         console.log();
+        // this._apiSrv.get();
+        // this.getWords();
     }
 }

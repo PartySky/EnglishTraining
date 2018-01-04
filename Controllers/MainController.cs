@@ -22,7 +22,6 @@ namespace EnglishTraining
             using (var db = new WordContext())
             {
                 words = db.Words.ToArray();
-                int tryCount = db.Words.Count();
             }
 
             return await Task<VmWord[]>.Factory.StartNew(() =>

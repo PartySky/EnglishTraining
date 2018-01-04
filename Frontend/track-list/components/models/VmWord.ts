@@ -1,8 +1,11 @@
 import { VmDictor } from "./VmDictor";
-import { VmName } from "./VmName";
 
 export interface VmWord {
-    Name: VmName;
+    Id: number;
+    // HACK returned in lover case
+    name_en: string;
+    // HACK returned in lover case
+    name_ru: string;
     FourDausLearnPhase: boolean;
     LearnDay: number;
     RepeatIterationNum: number;
