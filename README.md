@@ -9,8 +9,8 @@
 
 For all ather word you know not perfectly use:
 
-* Enter - if you want to listen word
-* Shift - if you don't need to listen it
+* Enter - if you don't need to listen it
+* Shift - if you want to listen word
 
 
 
@@ -23,5 +23,5 @@ For all ather word you know not perfectly use:
 
 Для всех остальных слов используются следующие клавиши:
 
-* Enter - если необходимо услышать произношение слова
-* Shift - если не требуется услышать произношение.
+* Enter - если не требуется услышать произношение.
+* Shift - если необходимо услышать произношение слова
