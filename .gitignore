@@ -283,3 +283,4 @@ wwwroot/scripts/index.js.map
 wwwroot/audio/*
 jsons/words_volume_02.json
 jsons/words_volume_01.json
+jsons/api-config.json

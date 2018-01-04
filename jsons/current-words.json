@@ -1,154 +1,194 @@
 [
     {
-      "Name_ru": "торопливо",
-      "Name_en": "hastily"
+        "Name_en": "envenomed",
+        "Name_ru": "злобный"
     },
     {
-      "Name_ru": "гардероб",
-      "Name_en": "wardrobe"
+        "Name_en": "consider",
+        "Name_ru": "рассматривать"
     },
     {
-      "Name_ru": "неизмеримо",
-      "Name_en": "immeasurable"
+        "Name_en": "lodgings",
+        "Name_ru": "сдаваемая комната"
     },
     {
-      "Name_ru": "капать",
-      "Name_en": "drop"
+        "Name_en": "lodge",
+        "Name_ru": "поселить"
     },
     {
-      "Name_ru": "готовность",
-      "Name_en": "readiness"
+        "Name_en": "sleeveless",
+        "Name_ru": "безрукавный"
     },
     {
-      "Name_ru": "открыто",
-      "Name_en": "candidly"
+        "Name_en": "nightfall",
+        "Name_ru": "наступление ночи"
     },
     {
-      "Name_ru": "суровость",
-      "Name_en": "severity"
+        "Name_en": "flourishing",
+        "Name_ru": "цветущий"
     },
     {
-      "Name_ru": "наследственный",
-      "Name_en": "hereditary"
+        "Name_en": "wretched",
+        "Name_ru": "несчастный"
     },
     {
-      "Name_ru": "принудительный",
-      "Name_en": "forcible"
+        "Name_en": "genteel",
+        "Name_ru": "благовоспитанный"
     },
     {
-      "Name_ru": "повествование",
-      "Name_en": "narrative"
+        "Name_en": "respectively",
+        "Name_ru": "соответственно"
     },
     {
-      "Name_ru": "оживленный",
-      "Name_en": "liveliest"
+        "Name_en": "playfulness",
+        "Name_ru": "шаловливость"
     },
     {
-      "Name_ru": "бежевый",
-      "Name_en": "beige"
+        "Name_en": "baliff",
+        "Name_ru": "судебный пристав"
     },
     {
-      "Name_ru": "костюмер",
-      "Name_en": "dresser"
+        "Name_en": "scat",
+        "Name_ru": "налог"
     },
     {
-      "Name_ru": "будуар",
-      "Name_en": "boudoir"
+        "Name_en": "passionately",
+        "Name_ru": "страстно"
     },
     {
-      "Name_ru": "ненужный",
-      "Name_en": "unnecessary"
+        "Name_en": "passers",
+        "Name_ru": "прохожий"
     },
     {
-      "Name_ru": "беслпатный",
-      "Name_en": "gratis"
+        "Name_en": "intend",
+        "Name_ru": "намереваться"
     },
     {
-      "Name_ru": "живость",
-      "Name_en": "alacrity"
+        "Name_en": "complexion",
+        "Name_ru": "цвет лица"
     },
     {
-      "Name_ru": "раздражать",
-      "Name_en": "rile"
+        "Name_en": "entry",
+        "Name_ru": "вход"
     },
     {
-      "Name_ru": "телесный",
-      "Name_en": "bodily"
+        "Name_en": "bolt",
+        "Name_ru": "запирать на засов"
     },
     {
-      "Name_ru": "в очереди",
-      "Name_en": "inline"
+        "Name_en": "readily",
+        "Name_ru": "легко, охотно"
     },
     {
-      "Name_ru": "неясно",
-      "Name_en": "vaguely"
+        "Name_en": "familiarly",
+        "Name_ru": "фамильярно"
     },
     {
-      "Name_ru": "посредник",
-      "Name_en": "intermediary"
+        "Name_en": "hitherto",
+        "Name_ru": "до сих пор"
     },
     {
-      "Name_ru": "перешагнуть",
-      "Name_en": "overstep"
+        "Name_en": "keeper",
+        "Name_ru": "хранитель"
     },
     {
-      "Name_ru": "бесчестие",
-      "Name_en": "dishonour"
+        "Name_en": "afloat",
+        "Name_ru": "на плаву"
     },
     {
-      "Name_ru": "радушный",
-      "Name_en": "cordial"
+        "Name_en": "youthful",
+        "Name_ru": "юношеский"
     },
     {
-      "Name_ru": "почетный",
-      "Name_en": "honourable"
+        "Name_en": "princely",
+        "Name_ru": "княжеский"
     },
     {
-      "Name_ru": "приятный",
-      "Name_en": "pleasurable"
+        "Name_en": "tweak",
+        "Name_ru": "щипать"
     },
     {
-      "Name_ru": "сентиментальность",
-      "Name_en": "sentimentality"
+        "Name_en": "flunky",
+        "Name_ru": "лакей"
     },
     {
-      "Name_ru": "чучело",
-      "Name_en": "scarecrow"
+        "Name_en": "cleverly",
+        "Name_ru": "умно"
     },
     {
-      "Name_ru": "полоса",
-      "Name_en": "streak"
+        "Name_en": "emaciated",
+        "Name_ru": "истощенный"
     },
     {
-      "Name_ru": "пища",
-      "Name_en": "victuals"
+        "Name_en": "sharply",
+        "Name_ru": "резко"
     },
     {
-      "Name_ru": "бормотать",
-      "Name_en": "murmur"
+        "Name_en": "evidently",
+        "Name_ru": "очевидно"
     },
     {
-      "Name_ru": "вялый",
-      "Name_en": "torpid"
+        "Name_en": "candid",
+        "Name_ru": "искренний"
     },
     {
-      "Name_ru": "срашивающий",
-      "Name_en": "inquirer"
+        "Name_en": "shabby",
+        "Name_ru": "потертый"
     },
     {
-      "Name_ru": "усиливать",
-      "Name_en": "intensify"
+        "Name_en": "alternation",
+        "Name_ru": "чередование"
     },
     {
-      "Name_ru": "примирять",
-      "Name_en": "conciliate"
+        "Name_en": "observable",
+        "Name_ru": "наблюдаемый"
     },
     {
-      "Name_ru": "секретарь",
-      "Name_en": "secretary"
+        "Name_en": "beloved",
+        "Name_ru": "возлюбленный"
     },
     {
-      "Name_ru": "жемчужный",
-      "Name_en": "pearl"
+        "Name_en": "mantle",
+        "Name_ru": "мантия"
+    },
+    {
+        "Name_en": "lucerne",
+        "Name_ru": "люцерна"
+    },
+    {
+        "Name_en": "reprieve",
+        "Name_ru": "отсрочка"
+    },
+    {
+        "Name_en": "exclaim",
+        "Name_ru": "восклицать"
+    },
+    {
+        "Name_en": "splendor",
+        "Name_ru": "великолепие"
+    },
+    {
+        "Name_en": "inquisitive",
+        "Name_ru": "любознательный"
+    },
+    {
+        "Name_en": "linen",
+        "Name_ru": "полотно"
+    },
+    {
+        "Name_en": "partial",
+        "Name_ru": "частичный"
+    },
+    {
+        "Name_en": "unnatural",
+        "Name_ru": "неестественный"
+    },
+    {
+        "Name_en": "lit",
+        "Name_ru": "освещенный"
+    },
+    {
+        "Name_en": "blacker",
+        "Name_ru": "чернее"
     }
-  ]
+]

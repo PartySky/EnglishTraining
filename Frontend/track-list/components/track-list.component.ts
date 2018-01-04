@@ -1,9 +1,13 @@
 import { VmWord } from "./models/VmWord";
 import { VmWordExtended } from "./models/VmWordExtended";
 import { VmAudioPath } from "./models/VmAudioPath";
-import { WordsTemp } from "./wordsTemp";
+import { name } from "../track-list.module";
+// import { ApiService } from "../services/api.service";
 
 export class TrackListComponent {
+    // private readonly _http: ng.IHttpService;
+    private readonly _apiUrl: string;
+    // private readonly _apiSrv: ApiService;
     private _audioPath: VmAudioPath = {
         "en": "http://wooordhunt.ru/data/sound/word/uk/mp3/",
         "ru": "./audio/"
@@ -13,28 +17,67 @@ export class TrackListComponent {
     private _currentWord: VmWordExtended;
     private _spentTime: number = 0;
     private _words: VmWordExtended[];
-    private _wordsTemp: any;
     private _keyNextWord: number = 32;
     private _keyStop: number = 13;
     private _highRateLearn: number = 48;
     spentTimeToShow: string;
+    autoSaveTimerPrevious: number;
     count: number = 0;
     fileToPlay: string;
     wordToShow: string;
 
     constructor(
+        // http: ng.IHttpService,
+        private $http: ng.IHttpService,
+        
         public $rootScope: ng.IRootScopeService,
-
+        // apiService: ApiService
     ) {
-        this.getWords();
+        // this._http = http;
+        this._apiUrl = "/main";
+        // this._apiSrv = apiService;
+        this.getWords()
+            .then((words) => {
+                this._words = words
+                    .map((word: VmWordExtended) => ({
+                        ...word,
+                        Name: {
+                            en: word.name_en,
+                            ru: word.name_ru
+                        }
+                    }));
+            });
         document.addEventListener("keydown", (e) => this.keyDownTextField(e), false);
+        this.autoSaveTimerPrevious = this.getSecondsToday();
     }
 
     getWords() {
-        this._words = WordsTemp;
+        // TODO: move to services
+        return this.$http
+            .get<VmWord[]>(`${this._apiUrl}/getwords`)
+            .then(response => response.data);
+    }
+
+    updateWord(word: VmWord) { 
+        return this.$http
+            .post<VmWord[]>(`${this._apiUrl}/updateword`, word)
+            .then(response => response.data);
+    }
+
+    autoSave() {
+        let autoSaveTimer = this.getSecondsToday() - this.autoSaveTimerPrevious ;
+        const timerAmmount: number = 15;
+        if (autoSaveTimer > timerAmmount) {
+            this._words.forEach(word => {
+                this.updateWord(word);
+            });
+            console.log("Auto Save!!!");
+            this.autoSaveTimerPrevious = this.getSecondsToday();
+        }
     }
 
     keyDownTextField(e: any) {
+        this.autoSave();
         let keyCode = e.keyCode;
         let today = new Date;
         this.calculateSpentTime();

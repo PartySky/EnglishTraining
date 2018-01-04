@@ -1,32 +1,47 @@
 ﻿using System;
 using System.IO;
 using System.Net;
+using System.Text;
 using Newtonsoft.Json;
 
 namespace EnglishTraining
 {
     public class Parser
     {
-        public static string audioPath = "Audio";
+        public static string audioPath = "wwwroot/audio";
         public void Download()
         {
             var jsonConfigPath = Path.Combine(Directory.GetCurrentDirectory(), "jsons", "api-config.json");
-            VmApiCongig api = JsonConvert.DeserializeObject<VmApiCongig>(File.ReadAllText(jsonConfigPath));
+            VmParserConfig api = JsonConvert.DeserializeObject<VmParserConfig>(File.ReadAllText(jsonConfigPath));
 
             VmCurrentWord[] words = GetWordsCollection();
 
             foreach (VmCurrentWord parserWords in words)
             {
                 string wordName = parserWords.Name_ru;
-                string wordRequestUrl = api.Url + wordName + "/language/ru";
-                Console.WriteLine(wordRequestUrl);
 
-                Console.WriteLine("");
-                Console.WriteLine("delay");
-                Console.WriteLine(wordName);
+                Console.WriteLine(audioPath + "/" + parserWords.Name_ru + ".mp3");
 
-                System.Threading.Thread.Sleep(1000);
-                //GetAndSave(wordName, url);
+                if (!File.Exists(audioPath + "/" + parserWords.Name_ru + ".mp3")){
+
+                    string wordRequestUrl = api.Url + wordName + "/language/ru";
+                    Console.WriteLine(wordRequestUrl);
+
+                    string url = GetMp3Url(wordRequestUrl);
+
+                    Console.WriteLine("");
+                    Console.WriteLine("delay");
+                    Console.WriteLine(wordName);
+                    Console.WriteLine(url);
+
+                    System.Threading.Thread.Sleep(50);
+                    if (url != null){
+						GetAndSave(wordName, url);
+                    } else {
+                        // TODO: write log with words without audio
+                        Console.WriteLine("Word \"{0}\" hasn't audio", wordName);
+                    }
+				}
             }
         }
 
@@ -51,27 +66,6 @@ namespace EnglishTraining
             return words;
         }
 
-        static VmWordCollection GetWordsCollectionOld()
-        {
-            VmWordCollection words;
-            var jsonPath = Path.Combine(Directory.GetCurrentDirectory(), "jsons", "words_volume_02.json");
-
-            if (!File.Exists(jsonPath))
-            {
-                Console.WriteLine("File doesn't exist, path: {0}", jsonPath);
-                throw new ArgumentNullException(jsonPath);
-            }
-            // read file into a string and deserialize JSON to a type
-            VmWordCollection wordCollection = JsonConvert.DeserializeObject<VmWordCollection>(File.ReadAllText(jsonPath));
-            // deserialize JSON directly from a file
-            using (StreamReader file = File.OpenText(jsonPath))
-            {
-                JsonSerializer serializer = new JsonSerializer();
-                words = (VmWordCollection)serializer.Deserialize(file, typeof(VmWordCollection));
-            }
-            return words;
-        }
-
         static void GetAndSave(string filename, string url)
         {
             var filepath = Path.Combine(Directory.GetCurrentDirectory(), audioPath, filename + ".mp3");
@@ -83,6 +77,32 @@ namespace EnglishTraining
             {
                 responseStream.CopyTo(fileStream);
             }
+        }
+
+        static string GetMp3Url(string url)
+        {
+            string responseText;
+            WebRequest request = WebRequest.Create(url);
+            WebResponse response = request.GetResponseAsync().Result;
+
+            WebHeaderCollection header = response.Headers;
+
+            var encoding = Encoding.ASCII;
+            using (var reader = new StreamReader(response.GetResponseStream(), encoding))
+            {
+                responseText = reader.ReadToEnd();
+                Console.WriteLine(responseText);
+            }
+
+            VmResponseWord wordCollection = JsonConvert.DeserializeObject<VmResponseWord>(responseText);
+            if (wordCollection.items.Count > 0){
+				var mp3Url = wordCollection.items[0].pathmp3;
+				Console.WriteLine(mp3Url);
+				return mp3Url;
+            } else {
+                return null;
+            }
+
         }
 
         static void GetAndSavePng()

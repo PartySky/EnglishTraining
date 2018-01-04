@@ -1,7 +1,8 @@
 ﻿namespace EnglishTraining
 {
-    public class VmApiCongig
+    public class VmWordCollection
     {
-        public string Url { get; set; }
+        //public IList<VmParserWord> Word { get; set; }
+        public VmParserWord[] Word { get; set; }
     }
 }
