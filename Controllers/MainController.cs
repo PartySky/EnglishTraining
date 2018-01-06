@@ -1,5 +1,4 @@
 ﻿using System;
-
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using System.Collections.Generic;
@@ -8,13 +7,15 @@ using System.Linq;
 
 namespace EnglishTraining
 {
-    public class MainController : Controller
+    [Route("main/[controller]")]
+    public class WordController : Controller
     {
         public IActionResult Index()
         {
             return View();
         }
 
+        [HttpGet]
         public async Task<VmWord[]> GetWords()
         {
             VmWord[] words;
@@ -38,15 +39,21 @@ namespace EnglishTraining
             //});
         }
 
-        public async Task<VmWord> UpdateWord(VmWord word)
+        [HttpPost("update")]
+        public string Update([FromBody] VmWord word)
         {
-            return await Task<VmWord>.Factory.StartNew(() =>
+            if (word == null)
             {
-                // TODO: return true and false
-                Console.WriteLine("updating");
-                Console.WriteLine(word);
-                return null;
-            });
+                return "word = null";
+            }
+            using (var db = new WordContext())
+            {
+                db.Words.Update(word);
+                db.SaveChanges();
+
+                Console.WriteLine("Updating word \"{0}\" id {1}", word.Name_en, word.Id);
+            }
+            return "succes";
         }
-    }
+	}
 }

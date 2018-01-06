@@ -5,12 +5,13 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.EntityFrameworkCore.Storage.Internal;
 using System;
 
 namespace EnglishTraining.Migrations
 {
     [DbContext(typeof(WordContext))]
-    [Migration("20180103173519_InitialCreate")]
+    [Migration("20180106212228_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -28,7 +29,7 @@ namespace EnglishTraining.Migrations
 
                     b.Property<int>("DailyReapeatCountForRus");
 
-                    b.Property<bool>("FourDausLearnPhase");
+                    b.Property<bool>("FourDaysLearnPhase");
 
                     b.Property<int>("LearnDay");
 
@@ -36,7 +37,7 @@ namespace EnglishTraining.Migrations
 
                     b.Property<string>("Name_ru");
 
-                    b.Property<string>("NextRepeatDate");
+                    b.Property<DateTime>("NextRepeatDate");
 
                     b.Property<int>("RepeatIterationNum");
 

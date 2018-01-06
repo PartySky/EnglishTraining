@@ -34,7 +34,7 @@ export class TrackListComponent {
         // apiService: ApiService
     ) {
         // this._http = http;
-        this._apiUrl = "/main";
+        this._apiUrl = "/main/word";
         // this._apiSrv = apiService;
         this.getWords()
             .then((words) => {
@@ -54,13 +54,14 @@ export class TrackListComponent {
     getWords() {
         // TODO: move to services
         return this.$http
-            .get<VmWord[]>(`${this._apiUrl}/getwords`)
+            .get<VmWord[]>(`${this._apiUrl}`)
+            // .get<VmWord[]>(`${this._apiUrl}/getwords`)
             .then(response => response.data);
     }
 
-    updateWord(word: VmWord) { 
+    updateWord(word: VmWord) {
         return this.$http
-            .post<VmWord[]>(`${this._apiUrl}/updateword`, word)
+            .post<string>(`${this._apiUrl}/update`, word)
             .then(response => response.data);
     }
 

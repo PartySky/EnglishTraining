@@ -6,12 +6,14 @@ export interface VmWord {
     name_en: string;
     // HACK returned in lover case
     name_ru: string;
-    FourDausLearnPhase: boolean;
+    // FourDaysLearnPhase: boolean;
+    FourDaysLearnPhase: boolean;
     LearnDay: number;
     RepeatIterationNum: number;
-    NextRepeatDate: string;
-    DailyReapeatCountForEng: number;
-    DailyReapeatCountForRus: number;
+    NextRepeatDate: Date;
+    // HACK returned in lover case
+    dailyReapeatCountForEng: number;
+    dailyReapeatCountForRus: number;
     Dictors_en?: VmDictor[];
     Dictors_ru?: any;
     // Dictors_ru?: VmDictor[];

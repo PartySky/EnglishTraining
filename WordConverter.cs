@@ -23,10 +23,10 @@ namespace EnglishTraining
                 {
                     Name_en = inWords.Word[i].Items[0].word,
                     Name_ru = currentWords?.FirstOrDefault(p => p.Name_ru == inWords.Word[i].Items[0].word).Name_en,
-                    FourDausLearnPhase = false,
+                    FourDaysLearnPhase = false,
                     LearnDay = 0,
                     RepeatIterationNum = 0,
-                    NextRepeatDate = null,
+                    NextRepeatDate = DateTime.Today,
                     DailyReapeatCountForEng = 0,
                     DailyReapeatCountForRus = 0
                     //Dictors_en = null,
