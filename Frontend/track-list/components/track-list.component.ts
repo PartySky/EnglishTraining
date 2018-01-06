@@ -94,6 +94,12 @@ export class TrackListComponent {
                 this._words.push(this._currentWord);
             }
             this._currentWord = this._words[0];
+            // TODO: set repeat count after right answer, not before
+            if (this._currentLocal == "en") {
+                this._currentWord.dailyReapeatCountForEng++;
+            } else {
+                this._currentWord.dailyReapeatCountForRus++;
+            }
 
             this.fileToPlay = this._audioPath[this._currentLocal] + this._words[0].Name[this._currentLocal] + ".mp3";
 
