@@ -123,9 +123,15 @@ export class TrackListComponent {
                 numberToSplice = this.getRandomNumber(thirdPartOfWordsLenght,
                     thirdPartOfWordsLenght * 2);
             }
-
             this._currentWord.CurrentRandomLocalization = this._currentLocal;
-            this.wordToShow = this._currentWord.Name[invertedLang];
+            
+            if (keyCode == this._highRateLearn) {
+                this.wordToShow = this._currentWord.Name[this._currentLocal]
+                    + " - " + this._currentWord.Name[invertedLang];
+            } else { 
+                this.wordToShow = this._currentWord.Name[invertedLang];
+            }
+            
             this._words.splice(numberToSplice, 0, this._currentWord);
 
             console.log("Word ToShow = " + this.wordToShow);
