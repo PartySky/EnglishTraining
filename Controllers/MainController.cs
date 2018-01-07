@@ -22,7 +22,7 @@ namespace EnglishTraining
 
             using (var db = new WordContext())
             {
-                words = db.Words.ToArray();
+                words = db.Words.Where(p => p.Name_ru.IndexOf(' ') < 0).ToArray();
             }
 
             return await Task<VmWord[]>.Factory.StartNew(() =>
