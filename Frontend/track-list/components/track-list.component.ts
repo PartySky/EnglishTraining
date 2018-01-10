@@ -12,6 +12,10 @@ export class TrackListComponent {
         "en": "http://wooordhunt.ru/data/sound/word/uk/mp3/",
         "ru": "./audio/"
     }
+    private _audioFormat: any = {
+        "en": ".mp3",
+        "ru": ".wav"
+    }
     private _currentLocal: string;
     private _currentTime: number;
     private _currentWord: VmWordExtended;
@@ -101,7 +105,7 @@ export class TrackListComponent {
                 this._currentWord.dailyReapeatCountForRus++;
             }
 
-            this.fileToPlay = this._audioPath[this._currentLocal] + this._words[0].Name[this._currentLocal] + ".mp3";
+            this.fileToPlay = this._audioPath[this._currentLocal] + this._words[0].Name[this._currentLocal] + this._audioFormat[this._currentLocal];
 
             console.log("cureent word: " + this._words[0].Name[this._currentLocal]);
 
@@ -124,7 +128,7 @@ export class TrackListComponent {
                     thirdPartOfWordsLenght * 2);
             }
             this._currentWord.CurrentRandomLocalization = this._currentLocal;
-            
+
             if (keyCode == this._highRateLearn) {
                 this.wordToShow = this._currentWord.Name[this._currentLocal]
                     + " - " + this._currentWord.Name[invertedLang];
@@ -137,7 +141,7 @@ export class TrackListComponent {
             console.log("Word ToShow = " + this.wordToShow);
 
             this.fileToPlay = this._audioPath[invertedLang] +
-                this._currentWord.Name[invertedLang] + ".mp3";
+                this._currentWord.Name[invertedLang] + this._audioFormat[this._currentLocal];
 
             this._currentWord = null;
 
