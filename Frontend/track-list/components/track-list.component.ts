@@ -33,7 +33,7 @@ export class TrackListComponent {
     constructor(
         // http: ng.IHttpService,
         private $http: ng.IHttpService,
-        
+
         public $rootScope: ng.IRootScopeService,
         // apiService: ApiService
     ) {
@@ -53,6 +53,7 @@ export class TrackListComponent {
             });
         document.addEventListener("keydown", (e) => this.keyDownTextField(e), false);
         this.autoSaveTimerPrevious = this.getSecondsToday();
+        this.checkAudio();
     }
 
     getWords() {
@@ -69,8 +70,13 @@ export class TrackListComponent {
             .then(response => response.data);
     }
 
+    checkAudio() {
+        return this.$http
+            .post<string>(`${this._apiUrl}/checkaudio`, {});
+    }
+
     autoSave() {
-        let autoSaveTimer = this.getSecondsToday() - this.autoSaveTimerPrevious ;
+        let autoSaveTimer = this.getSecondsToday() - this.autoSaveTimerPrevious;
         const timerAmmount: number = 15;
         if (autoSaveTimer > timerAmmount) {
             this._words.forEach(word => {
@@ -132,10 +138,10 @@ export class TrackListComponent {
             if (keyCode == this._highRateLearn) {
                 this.wordToShow = this._currentWord.Name[this._currentLocal]
                     + " - " + this._currentWord.Name[invertedLang];
-            } else { 
+            } else {
                 this.wordToShow = this._currentWord.Name[invertedLang];
             }
-            
+
             this._words.splice(numberToSplice, 0, this._currentWord);
 
             console.log("Word ToShow = " + this.wordToShow);

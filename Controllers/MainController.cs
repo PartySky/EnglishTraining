@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using System.Collections.Generic;
@@ -55,5 +56,31 @@ namespace EnglishTraining
             }
             return "succes";
         }
-	}
+
+        [HttpPost("checkaudio")]
+        public string CheckAudio()
+        {
+            string audioPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "audio");
+            VmWord[] words;
+
+            using (var db = new WordContext())
+            {
+                words = db.Words.Where(p => p.Name_ru.IndexOf(' ') < 0).ToArray();
+            }
+
+            FileChecker fileChecker = new FileChecker();
+
+            foreach (VmWord word in words)
+            {
+                var path = audioPath + word.Name_ru + ".wav";
+                if (!fileChecker.ChecIfkExist(path))
+                {
+                    Console.WriteLine("File doesn't exist, path: {0}", path);
+                    throw new ArgumentNullException("missed audio file");
+                }
+            }
+
+            return null;
+        }
+    }
 }
