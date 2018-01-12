@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using System.Collections.Generic;
@@ -59,7 +60,7 @@ namespace EnglishTraining
         [HttpPost("checkaudio")]
         public string CheckAudio()
         {
-            string audioPath = "./wwwroot/audio/";
+            string audioPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "audio");
             VmWord[] words;
 
             using (var db = new WordContext())
