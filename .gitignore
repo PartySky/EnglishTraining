@@ -287,3 +287,4 @@ jsons/api-config.json
 wwwroot/Frontend/*
 wwwroot/webpack.config.js
 wwwroot/webpack.config.js.map
+Dictionary.db

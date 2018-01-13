@@ -1,8 +1,6 @@
 <div class="show-word">
     <span ng-bind="$ctrl.wordToShow"></span>
-</div>
-<div class="show-word error">
-    <span ng-bind="$ctrl.error"></span>
+    <span ng-if="$ctrl.error" ng-bind="$ctrl.error" class="error"></span>
 </div>
 <div class="keys-manual"></div>
 <div ng-click="$ctrl.check()">check()</div>
