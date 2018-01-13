@@ -32,6 +32,10 @@ body {
     color: #ffffff59;
 }
 
+.error {
+    color: #ff000059 !important;
+}
+
 .keys-manual {
     background-image: url(../img/keys2.png);
     background-repeat-x: no-repeat;

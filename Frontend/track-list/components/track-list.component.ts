@@ -29,6 +29,7 @@ export class TrackListComponent {
     count: number = 0;
     fileToPlay: string;
     wordToShow: string;
+    error: string;
 
     constructor(
         // http: ng.IHttpService,
@@ -159,8 +160,13 @@ export class TrackListComponent {
     }
 
     play() {
+        this.error = null;        
         var audio = new Audio(this.fileToPlay);
-        audio.play();
+        audio.play()
+            .catch((error) => { 
+                this.error = this._currentWord.name_ru + this._audioFormat[this._currentLocal] + " not found";
+                console.log("Error while playing " + error);
+            });
         console.log(this.fileToPlay);
     }
 
