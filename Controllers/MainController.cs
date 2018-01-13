@@ -40,6 +40,22 @@ namespace EnglishTraining
             //});
         }
 
+        [HttpGet("dictionary")]
+        public async Task<VmWord[]> GetDictionary()
+        {
+            VmWord[] words;
+
+            using (var db = new DictionaryContext())
+            {
+                words = db.Words.ToArray();
+            }
+
+            return await Task<VmWord[]>.Factory.StartNew(() =>
+            {
+                return words;
+            });
+        }
+
         [HttpPost("update")]
         public string Update([FromBody] VmWord word)
         {
@@ -48,6 +64,23 @@ namespace EnglishTraining
                 return "word = null";
             }
             using (var db = new WordContext())
+            {
+                db.Words.Update(word);
+                db.SaveChanges();
+
+                Console.WriteLine("Updating word \"{0}\" id {1}", word.Name_en, word.Id);
+            }
+            return "succes";
+        }
+
+        [HttpPost("updatedictionary")]
+        public string UpdateDictionary([FromBody] VmWord word)
+        {
+            if (word == null)
+            {
+                return "word = null";
+            }
+            using (var db = new DictionaryContext())
             {
                 db.Words.Update(word);
                 db.SaveChanges();

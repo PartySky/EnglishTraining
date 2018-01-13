@@ -30,6 +30,7 @@ export class TrackListComponent {
     fileToPlay: string;
     wordToShow: string;
     error: string;
+    mode: string;
 
     constructor(
         // http: ng.IHttpService,
@@ -41,6 +42,7 @@ export class TrackListComponent {
         // this._http = http;
         this._apiUrl = "/main/word";
         // this._apiSrv = apiService;
+        this.mode = "Dictionary";
         this.getWords()
             .then((words) => {
                 this._words = words
@@ -54,20 +56,47 @@ export class TrackListComponent {
             });
         document.addEventListener("keydown", (e) => this.keyDownTextField(e), false);
         this.autoSaveTimerPrevious = this.getSecondsToday();
-        this.checkAudio();
+        if (this.mode === "Words") { 
+            this.checkAudio();
+        }
     }
 
     getWords() {
+        let methodUrl: string;
         // TODO: move to services
+        switch (this.mode) { 
+            case "Dictionary":
+                methodUrl = "dictionary";
+                break
+            case "Words":
+                methodUrl = "";
+                break
+            default:
+                console.log("Mode should be setted");    
+            return null;
+        }
+
         return this.$http
-            .get<VmWord[]>(`${this._apiUrl}`)
-            // .get<VmWord[]>(`${this._apiUrl}/getwords`)
+            .get<VmWord[]>(`${this._apiUrl}/${methodUrl}`)
             .then(response => response.data);
     }
 
     updateWord(word: VmWord) {
+        let methodUrl: string;
+        switch (this.mode) {
+            case "Dictionary":
+                methodUrl = "updatedictionary";
+                break
+            case "Words":
+                methodUrl = "update";
+                break
+            default:
+                console.log("Mode should be setted");
+                return null;
+        }
+
         return this.$http
-            .post<string>(`${this._apiUrl}/update`, word)
+            .post<string>(`${this._apiUrl}/${methodUrl}`, word)
             .then(response => response.data);
     }
 
@@ -101,6 +130,10 @@ export class TrackListComponent {
                 this._words[0].CurrentRandomLocalization = null;
             }
             this.wordToShow = null;
+            if (this.mode === "Dictionary") {
+                this.wordToShow = this._words[0].Name[this._currentLocal];
+            }
+
             if (this._currentWord) {
                 this._words.push(this._currentWord);
             }
@@ -160,6 +193,9 @@ export class TrackListComponent {
     }
 
     play() {
+        if (this.mode != "Words") { 
+            return;
+        }
         this.error = null;        
         var audio = new Audio(this.fileToPlay);
         audio.play()
