@@ -163,8 +163,9 @@ export class TrackListComponent {
         this.error = null;        
         var audio = new Audio(this.fileToPlay);
         audio.play()
-            .catch((error) => { 
-                this.error = this._currentWord.name_ru + this._audioFormat[this._currentLocal] + " not found";
+            .catch((error) => {
+                let wordNameTemp = (this._currentWord) ? this._currentWord.name_ru : this.wordToShow;
+                this.error = wordNameTemp + this._audioFormat[this._currentLocal] + " not found";
                 console.log("Error while playing " + error);
             });
         console.log(this.fileToPlay);
