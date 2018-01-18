@@ -42,7 +42,7 @@ export class TrackListComponent {
         // this._http = http;
         this._apiUrl = "/main/word";
         // this._apiSrv = apiService;
-        this.mode = "Dictionary";
+        this.mode = "Words";
         this.getWords()
             .then((words) => {
                 this._words = words
@@ -89,7 +89,7 @@ export class TrackListComponent {
             } else if (word.NextRepeatDate < dateToday) { 
                 // начинается новый день повторения,
                 // нужно передвинуть счетчик графика
-                word.NextRepeatDate = this.getNextRepeatDate(word);
+                word = this.updateSchedule(word);
                 // и обнулить счетчик дневных повторений
                 word.dailyReapeatCountForRus = 0;
                 word.dailyReapeatCountForEng = 0;
@@ -97,34 +97,36 @@ export class TrackListComponent {
         });
     }
 
-    getNextRepeatDate(word: VmWord) {
-        if (FourDaysLearnPhase < 4) {
-            LastRepeatingQuality = getLastRepeatingQuality();
-            // switch (LastRepeatingQuality)
-            //     case "good":
-            //     FourDaysLearnPhase++;
-            //     break;
-            //     case "neutral":
-            //         break;
-            //     case "bad":
-            //         FourDaysLearnPhase--;
-            //         break;
-            //         NextRepeatDate = today;
-            } else {
-                // // 5 means phase is off
-                // FourDaysLearnPhase = 5;
-                // RepeatIterationNum++;
-                // NextRepeatDate = today + (7 * RepeatIterationNum);
-                return "smthng";
-            };
-        }
+    updateSchedule(word: VmWordExtended) {  
+        if (word.FourDaysLearnPhase) {
+            let LastRepeatingQuality = this.getLastRepeatingQuality();
+            switch (LastRepeatingQuality) {
+                case "good":
+                    word.LearnDay++;   
+                    break;
+                case "neutral":
+                    break;
+                case "bad":
+                    word.LearnDay--;
+                    break;
+            }
+            word.NextRepeatDate = new Date();
+        } else {
+            word.RepeatIterationNum++;
+            word.NextRepeatDate = new Date();
+            let days = 7;
+            word.NextRepeatDate.setDate(word.NextRepeatDate.getDate()
+                + (days * word.RepeatIterationNum));
+        };
+        return word;
+    }
 
-        getLastRepeatingQuality(){
-            // TODO: нужно проверять повторялось ли слово в прошлом,
-            // если не повторялось, то не увеличивать FourDaysLearnPhase
-            // если не повторялось слишком долго, то уменьшать FourDaysLearnPhase
-            return "good";
-        }
+    getLastRepeatingQuality(){
+        // TODO: нужно проверять повторялось ли слово в прошлом,
+        // если не повторялось, то не увеличивать FourDaysLearnPhase
+        // если не повторялось слишком долго, то уменьшать FourDaysLearnPhase
+        return "good";
+    }
 
     updateWord(word: VmWord) {
         let methodUrl: string;
