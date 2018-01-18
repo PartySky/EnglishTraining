@@ -42,9 +42,12 @@ export class TrackListComponent {
         // this._http = http;
         this._apiUrl = "/main/word";
         // this._apiSrv = apiService;
-        this.mode = "Dictionary";
+        this.mode = "Words";
         this.getWords()
             .then((words) => {
+                words.map(word => (
+                    word.nextRepeatDate = new Date(word.nextRepeatDate as any)
+                ));
                 this._words = words
                     .map((word: VmWordExtended) => ({
                         ...word,
@@ -53,6 +56,7 @@ export class TrackListComponent {
                             ru: word.name_ru
                         }
                     }));
+                this.setNextRepeateDate();
             });
         document.addEventListener("keydown", (e) => this.keyDownTextField(e), false);
         this.autoSaveTimerPrevious = this.getSecondsToday();
@@ -75,10 +79,56 @@ export class TrackListComponent {
                 console.log("Mode should be setted");    
             return null;
         }
-
         return this.$http
             .get<VmWord[]>(`${this._apiUrl}/${methodUrl}`)
             .then(response => response.data);
+    }
+
+    setNextRepeateDate() {
+        let dateToday = new Date();
+        this._words.forEach(word => {
+            if (word.nextRepeatDate === dateToday) {
+                // do nothing
+            } else if (word.nextRepeatDate < dateToday) { 
+                // начинается новый день повторения,
+                // нужно передвинуть счетчик графика
+                word = this.updateSchedule(word);
+                // и обнулить счетчик дневных повторений
+                word.dailyReapeatCountForRus = 0;
+                word.dailyReapeatCountForEng = 0;
+            }
+        });
+    }
+
+    updateSchedule(word: VmWordExtended) {  
+        if (word.fourDaysLearnPhase) {
+            let LastRepeatingQuality = this.getLastRepeatingQuality();
+            switch (LastRepeatingQuality) {
+                case "good":
+                    word.learnDay++;   
+                    break;
+                case "neutral":
+                    break;
+                case "bad":
+                    word.learnDay--;
+                    break;
+            }
+            word.nextRepeatDate = new Date();
+        } else {
+            word.repeatIterationNum++;
+            word.nextRepeatDate = new Date();
+            let days = 7;
+            word.nextRepeatDate.setDate(word.nextRepeatDate.getDate()
+                + (days * word.repeatIterationNum));
+        };
+        return word;
+    }
+
+    getLastRepeatingQuality(){
+        // TODO: нужно проверять повторялось ли слово в прошлом,
+        // если не повторялось, то не увеличивать FourDaysLearnPhase
+        // если не повторялось слишком долго, то уменьшать FourDaysLearnPhase
+        return "good";
     }
 
     updateWord(word: VmWord) {
@@ -94,7 +144,6 @@ export class TrackListComponent {
                 console.log("Mode should be setted");
                 return null;
         }
-
         return this.$http
             .post<string>(`${this._apiUrl}/${methodUrl}`, word)
             .then(response => response.data);

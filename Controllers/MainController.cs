@@ -20,10 +20,12 @@ namespace EnglishTraining
         public async Task<VmWord[]> GetWords()
         {
             VmWord[] words;
+            DateTime dateToday = DateTime.Now;
 
             using (var db = new WordContext())
             {
-                words = db.Words.Where(p => p.Name_ru.IndexOf(' ') < 0).ToArray();
+                words = db.Words.Where(p => (p.Name_ru.IndexOf(' ') < 0) 
+                                       && (p.NextRepeatDate <= dateToday)).ToArray();
             }
 
             return await Task<VmWord[]>.Factory.StartNew(() =>
@@ -44,10 +46,11 @@ namespace EnglishTraining
         public async Task<VmWord[]> GetDictionary()
         {
             VmWord[] words;
+            DateTime dateToday = DateTime.Now;
 
             using (var db = new DictionaryContext())
             {
-                words = db.Words.ToArray();
+                words = db.Words.Where(p => p.NextRepeatDate <= dateToday).ToArray();
             }
 
             return await Task<VmWord[]>.Factory.StartNew(() =>
