@@ -45,6 +45,9 @@ export class TrackListComponent {
         this.mode = "Words";
         this.getWords()
             .then((words) => {
+                words.map(word => (
+                    word.nextRepeatDate = new Date(word.nextRepeatDate as any)
+                ));
                 this._words = words
                     .map((word: VmWordExtended) => ({
                         ...word,
@@ -84,9 +87,9 @@ export class TrackListComponent {
     setNextRepeateDate() {
         let dateToday = new Date();
         this._words.forEach(word => {
-            if (word.NextRepeatDate === dateToday) {
+            if (word.nextRepeatDate === dateToday) {
                 // do nothing
-            } else if (word.NextRepeatDate < dateToday) { 
+            } else if (word.nextRepeatDate < dateToday) { 
                 // начинается новый день повторения,
                 // нужно передвинуть счетчик графика
                 word = this.updateSchedule(word);
@@ -98,25 +101,25 @@ export class TrackListComponent {
     }
 
     updateSchedule(word: VmWordExtended) {  
-        if (word.FourDaysLearnPhase) {
+        if (word.fourDaysLearnPhase) {
             let LastRepeatingQuality = this.getLastRepeatingQuality();
             switch (LastRepeatingQuality) {
                 case "good":
-                    word.LearnDay++;   
+                    word.learnDay++;   
                     break;
                 case "neutral":
                     break;
                 case "bad":
-                    word.LearnDay--;
+                    word.learnDay--;
                     break;
             }
-            word.NextRepeatDate = new Date();
+            word.nextRepeatDate = new Date();
         } else {
-            word.RepeatIterationNum++;
-            word.NextRepeatDate = new Date();
+            word.repeatIterationNum++;
+            word.nextRepeatDate = new Date();
             let days = 7;
-            word.NextRepeatDate.setDate(word.NextRepeatDate.getDate()
-                + (days * word.RepeatIterationNum));
+            word.nextRepeatDate.setDate(word.nextRepeatDate.getDate()
+                + (days * word.repeatIterationNum));
         };
         return word;
     }

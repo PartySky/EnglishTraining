@@ -7,10 +7,10 @@ export interface VmWord {
     // HACK returned in lover case
     name_ru: string;
     // FourDaysLearnPhase: boolean;
-    FourDaysLearnPhase: boolean;
-    LearnDay: number;
-    RepeatIterationNum: number;
-    NextRepeatDate: Date;
+    fourDaysLearnPhase: boolean;
+    learnDay: number;
+    repeatIterationNum: number;
+    nextRepeatDate: Date;
     // HACK returned in lover case
     dailyReapeatCountForEng: number;
     dailyReapeatCountForRus: number;
