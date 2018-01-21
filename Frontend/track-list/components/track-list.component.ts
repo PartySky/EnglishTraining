@@ -85,7 +85,8 @@ export class TrackListComponent {
     }
 
     setNextRepeateDate() {
-        let dateToday = new Date();
+        let now = new Date();
+        var dateToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
         this._words.forEach(word => {
             if (word.nextRepeatDate === dateToday) {
                 // do nothing
@@ -100,7 +101,9 @@ export class TrackListComponent {
         });
     }
 
-    updateSchedule(word: VmWordExtended) {  
+    updateSchedule(word: VmWordExtended) {
+        let now = new Date();
+        var dateToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
         if (word.fourDaysLearnPhase) {
             let LastRepeatingQuality = this.getLastRepeatingQuality();
             switch (LastRepeatingQuality) {
@@ -113,10 +116,10 @@ export class TrackListComponent {
                     word.learnDay--;
                     break;
             }
-            word.nextRepeatDate = new Date();
+            word.nextRepeatDate = dateToday;
         } else {
             word.repeatIterationNum++;
-            word.nextRepeatDate = new Date();
+            word.nextRepeatDate = dateToday;
             let days = 7;
             word.nextRepeatDate.setDate(word.nextRepeatDate.getDate()
                 + (days * word.repeatIterationNum));
