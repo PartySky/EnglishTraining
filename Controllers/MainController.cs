@@ -11,6 +11,8 @@ namespace EnglishTraining
     [Route("main/[controller]")]
     public class WordController : Controller
     {
+        string audioPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "audio");
+
         public IActionResult Index()
         {
             return View();
@@ -24,13 +26,40 @@ namespace EnglishTraining
 
             using (var db = new WordContext())
             {
-                words = db.Words.Where(p => (p.Name_ru.IndexOf(' ') < 0) 
+                words = db.Words.Where(p => (p.Name_ru.IndexOf(' ') < 0)
+                                       && (p.Name_en.IndexOf(' ') < 0)
                                        && (p.NextRepeatDate <= dateToday)).ToArray();
+            }
+
+            FileChecker fileChecker = new FileChecker();
+
+            // TODO: optimaze it
+            int i = 0;
+            foreach (VmWord word in words)
+            {
+                var path = audioPath + word.Name_ru + ".wav";
+                if (fileChecker.ChecIfkExist(path))
+                {
+                    i++;
+                }
+            }
+
+            VmWord[] words2 = new VmWord[i];
+            int y = 0;
+
+            foreach (VmWord word in words)
+            {
+                var path = audioPath + word.Name_ru + ".wav";
+                if (fileChecker.ChecIfkExist(path))
+                {
+                    words2[y] = word;
+                    i++;
+                }
             }
 
             return await Task<VmWord[]>.Factory.StartNew(() =>
             {
-                return words;
+                return words2;
             });
 
 
@@ -96,7 +125,6 @@ namespace EnglishTraining
         [HttpPost("checkaudio")]
         public string CheckAudio()
         {
-            string audioPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "audio");
             VmWord[] words;
 
             using (var db = new WordContext())
