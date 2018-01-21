@@ -131,7 +131,7 @@ export class TrackListComponent {
         return "good";
     }
 
-    updateWord(word: VmWord) {
+    updateWord(words: VmWord[]) {
         let methodUrl: string;
         switch (this.mode) {
             case "Dictionary":
@@ -145,7 +145,7 @@ export class TrackListComponent {
                 return null;
         }
         return this.$http
-            .post<string>(`${this._apiUrl}/${methodUrl}`, word)
+            .post<string>(`${this._apiUrl}/${methodUrl}`, words)
             .then(response => response.data);
     }
 
@@ -158,9 +158,7 @@ export class TrackListComponent {
         let autoSaveTimer = this.getSecondsToday() - this.autoSaveTimerPrevious;
         const timerAmmount: number = 15;
         if (autoSaveTimer > timerAmmount) {
-            this._words.forEach(word => {
-                this.updateWord(word);
-            });
+            this.updateWord(this._words);
             console.log("Auto Save!!!");
             this.autoSaveTimerPrevious = this.getSecondsToday();
         }
@@ -230,7 +228,7 @@ export class TrackListComponent {
             console.log("Word ToShow = " + this.wordToShow);
 
             this.fileToPlay = this._audioPath[invertedLang] +
-                this._currentWord.Name[invertedLang] + this._audioFormat[this._currentLocal];
+                this._currentWord.Name[invertedLang] + this._audioFormat[invertedLang];
 
             this._currentWord = null;
 

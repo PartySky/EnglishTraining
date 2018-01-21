@@ -89,37 +89,45 @@ namespace EnglishTraining
         }
 
         [HttpPost("update")]
-        public string Update([FromBody] VmWord word)
+        public string Update([FromBody] VmWord[] words)
         {
-            if (word == null)
-            {
-                return "word = null";
-            }
-            using (var db = new WordContext())
-            {
-                db.Words.Update(word);
-                db.SaveChanges();
-
-                Console.WriteLine("Updating word \"{0}\" id {1}", word.Name_en, word.Id);
-            }
-            return "succes";
+			using (var db = new WordContext())
+			{
+                foreach(VmWord word in words)
+                {
+                    if (word == null)
+                    {
+                        Console.WriteLine("Word is null");
+                        throw new ArgumentNullException("Word is null");
+                    } 
+                    else
+                    {
+                        db.Words.Update(word);
+                        Console.WriteLine("Updating word \"{0}\" id {1}", word.Name_en, word.Id);
+                    }
+                }
+				db.SaveChanges();
+			}
+			return "succes";
         }
 
         [HttpPost("updatedictionary")]
-        public string UpdateDictionary([FromBody] VmWord word)
+        public string UpdateDictionary([FromBody] VmWord[] words)
         {
-            if (word == null)
-            {
-                return "word = null";
-            }
             using (var db = new DictionaryContext())
             {
-                db.Words.Update(word);
-                db.SaveChanges();
-
-                Console.WriteLine("Updating word \"{0}\" id {1}", word.Name_en, word.Id);
+                foreach (VmWord word in words)
+                {
+                    if (word == null)
+                    {
+                        return "word = null";
+                    }
+                    db.Words.Update(word);
+                    Console.WriteLine("Updating word \"{0}\" id {1}", word.Name_en, word.Id);
+                }
+				db.SaveChanges();
             }
-            return "succes";
+			return "succes";
         }
 
         [HttpPost("checkaudio")]
