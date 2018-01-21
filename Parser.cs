@@ -141,6 +141,7 @@ namespace EnglishTraining
                 for (int i = 0; i < wordCollection.items.Count; i++)
                 {
                     var dictor = wordCollection.items[i].username;
+                    // TODO: get dictors from config
                     if((dictor == "Selene71") ||
                        (dictor == "manyaha") ||
                        (dictor == "NatalyaT") ||
