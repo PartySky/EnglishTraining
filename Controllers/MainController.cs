@@ -37,7 +37,7 @@ namespace EnglishTraining
             int i = 0;
             foreach (VmWord word in words)
             {
-                var path = audioPath + word.Name_ru + ".wav";
+                var path = Path.Combine(audioPath, word.Name_ru) + ".wav";
                 if (fileChecker.ChecIfkExist(path))
                 {
                     i++;
@@ -49,11 +49,11 @@ namespace EnglishTraining
 
             foreach (VmWord word in words)
             {
-                var path = audioPath + word.Name_ru + ".wav";
+                var path = Path.Combine(audioPath, word.Name_ru) + ".wav";
                 if (fileChecker.ChecIfkExist(path))
                 {
                     words2[y] = word;
-                    i++;
+                    y++;
                 }
             }
 
@@ -136,7 +136,7 @@ namespace EnglishTraining
 
             foreach (VmWord word in words)
             {
-                var path = audioPath + word.Name_ru + ".wav";
+                var path = Path.Combine(audioPath, word.Name_ru) + ".wav";
                 if (!fileChecker.ChecIfkExist(path))
                 {
                     Console.WriteLine("File doesn't exist, path: {0}", path);
