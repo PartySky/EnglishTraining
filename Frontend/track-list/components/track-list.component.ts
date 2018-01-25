@@ -25,6 +25,7 @@ export class TrackListComponent {
     private _keyStop: number = 13;
     private _highRateLearn: number = 48;
     spentTimeToShow: string;
+    wordsLoaded: number;
     autoSaveTimerPrevious: number;
     count: number = 0;
     fileToPlay: string;
@@ -57,6 +58,7 @@ export class TrackListComponent {
                         }
                     }));
                 this.setNextRepeateDate();
+                this.wordsLoaded = this._words.length;
             });
         document.addEventListener("keydown", (e) => this.keyDownTextField(e), false);
         this.autoSaveTimerPrevious = this.getSecondsToday();
