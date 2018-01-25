@@ -15,15 +15,23 @@ namespace EnglishTraining
             var jsonConfigPath = Path.Combine(Directory.GetCurrentDirectory(), "jsons", "api-config.json");
             VmParserConfig api = JsonConvert.DeserializeObject<VmParserConfig>(File.ReadAllText(jsonConfigPath));
 
-            VmCurrentWord[] words = GetWordsCollection();
+            VmWord[] words;
 
-            foreach (VmCurrentWord parserWords in words)
+            using (var db = new WordContext())
+            {
+                words = db.Words.Where(p => p.Name_ru.IndexOf(' ') < 0
+                                       && (p.Name_en.IndexOf(' ') < 0)).ToArray();
+            }
+
+
+            foreach (VmWord parserWords in words)
             {
                 string wordName = parserWords.Name_ru;
 
                 Console.WriteLine(audioPath + "/" + parserWords.Name_ru + ".mp3");
 
-                if (!File.Exists(audioPath + "/" + parserWords.Name_ru + ".mp3")){
+                if (!File.Exists(audioPath + "/" + parserWords.Name_ru + ".mp3") 
+                    && !File.Exists(audioPath + "/" + parserWords.Name_ru + ".wav")){
 
                     string wordRequestUrl = api.Url + wordName + "/language/ru";
                     Console.WriteLine(wordRequestUrl);
@@ -35,7 +43,7 @@ namespace EnglishTraining
                     Console.WriteLine(wordName);
                     Console.WriteLine(url);
 
-                    System.Threading.Thread.Sleep(50);
+                    System.Threading.Thread.Sleep(20);
                     if (url != null){
 						GetAndSave(wordName, url);
                     } else {
@@ -48,7 +56,7 @@ namespace EnglishTraining
 
         public void UpdateDictionary()
         {
-            VmCurrentWord[] words = GetWordsCollection();
+            VmCurrentWord[] words = GetWordsCollectionFromJson();
             using (var db = new WordContext())
             {
                 var existedWords = db.Words.ToArray();
@@ -76,7 +84,7 @@ namespace EnglishTraining
             }
         }
 
-        static VmCurrentWord[] GetWordsCollection()
+        static VmCurrentWord[] GetWordsCollectionFromJson()
         {
             VmCurrentWord[] words;
             var jsonPath = Path.Combine(Directory.GetCurrentDirectory(), "jsons", "current-words.json");
@@ -128,7 +136,22 @@ namespace EnglishTraining
 
             VmResponseWord wordCollection = JsonConvert.DeserializeObject<VmResponseWord>(responseText);
             if (wordCollection.items.Count > 0){
-				var mp3Url = wordCollection.items[0].pathmp3;
+                var mp3Url = wordCollection.items[0].pathmp3;
+
+                for (int i = 0; i < wordCollection.items.Count; i++)
+                {
+                    var dictor = wordCollection.items[i].username;
+                    // TODO: get dictors from config
+                    if((dictor == "Selene71") ||
+                       (dictor == "manyaha") ||
+                       (dictor == "NatalyaT") ||
+                       (dictor == "Skvodo") ||
+                       (dictor == "1640max"))
+                    {
+						mp3Url = wordCollection.items[i].pathmp3;
+                    }
+                }
+
 				Console.WriteLine(mp3Url);
 				return mp3Url;
             } else {

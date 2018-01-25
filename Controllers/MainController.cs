@@ -11,6 +11,8 @@ namespace EnglishTraining
     [Route("main/[controller]")]
     public class WordController : Controller
     {
+        string audioPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "audio");
+
         public IActionResult Index()
         {
             return View();
@@ -24,13 +26,40 @@ namespace EnglishTraining
 
             using (var db = new WordContext())
             {
-                words = db.Words.Where(p => (p.Name_ru.IndexOf(' ') < 0) 
+                words = db.Words.Where(p => (p.Name_ru.IndexOf(' ') < 0)
+                                       && (p.Name_en.IndexOf(' ') < 0)
                                        && (p.NextRepeatDate <= dateToday)).ToArray();
+            }
+
+            FileChecker fileChecker = new FileChecker();
+
+            // TODO: optimaze it
+            int i = 0;
+            foreach (VmWord word in words)
+            {
+                var path = Path.Combine(audioPath, word.Name_ru) + ".wav";
+                if (fileChecker.ChecIfkExist(path))
+                {
+                    i++;
+                }
+            }
+
+            VmWord[] words2 = new VmWord[i];
+            int y = 0;
+
+            foreach (VmWord word in words)
+            {
+                var path = Path.Combine(audioPath, word.Name_ru) + ".wav";
+                if (fileChecker.ChecIfkExist(path))
+                {
+                    words2[y] = word;
+                    y++;
+                }
             }
 
             return await Task<VmWord[]>.Factory.StartNew(() =>
             {
-                return words;
+                return words2;
             });
 
 
@@ -60,43 +89,50 @@ namespace EnglishTraining
         }
 
         [HttpPost("update")]
-        public string Update([FromBody] VmWord word)
+        public string Update([FromBody] VmWord[] words)
         {
-            if (word == null)
-            {
-                return "word = null";
-            }
-            using (var db = new WordContext())
-            {
-                db.Words.Update(word);
-                db.SaveChanges();
-
-                Console.WriteLine("Updating word \"{0}\" id {1}", word.Name_en, word.Id);
-            }
-            return "succes";
+			using (var db = new WordContext())
+			{
+                foreach(VmWord word in words)
+                {
+                    if (word == null)
+                    {
+                        Console.WriteLine("Word is null");
+                        throw new ArgumentNullException("Word is null");
+                    } 
+                    else
+                    {
+                        db.Words.Update(word);
+                        Console.WriteLine("Updating word \"{0}\" id {1}", word.Name_en, word.Id);
+                    }
+                }
+				db.SaveChanges();
+			}
+			return "succes";
         }
 
         [HttpPost("updatedictionary")]
-        public string UpdateDictionary([FromBody] VmWord word)
+        public string UpdateDictionary([FromBody] VmWord[] words)
         {
-            if (word == null)
-            {
-                return "word = null";
-            }
             using (var db = new DictionaryContext())
             {
-                db.Words.Update(word);
-                db.SaveChanges();
-
-                Console.WriteLine("Updating word \"{0}\" id {1}", word.Name_en, word.Id);
+                foreach (VmWord word in words)
+                {
+                    if (word == null)
+                    {
+                        return "word = null";
+                    }
+                    db.Words.Update(word);
+                    Console.WriteLine("Updating word \"{0}\" id {1}", word.Name_en, word.Id);
+                }
+				db.SaveChanges();
             }
-            return "succes";
+			return "succes";
         }
 
         [HttpPost("checkaudio")]
         public string CheckAudio()
         {
-            string audioPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "audio");
             VmWord[] words;
 
             using (var db = new WordContext())
@@ -108,7 +144,7 @@ namespace EnglishTraining
 
             foreach (VmWord word in words)
             {
-                var path = audioPath + word.Name_ru + ".wav";
+                var path = Path.Combine(audioPath, word.Name_ru) + ".wav";
                 if (!fileChecker.ChecIfkExist(path))
                 {
                     Console.WriteLine("File doesn't exist, path: {0}", path);

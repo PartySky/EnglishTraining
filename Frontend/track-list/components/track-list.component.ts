@@ -25,6 +25,7 @@ export class TrackListComponent {
     private _keyStop: number = 13;
     private _highRateLearn: number = 48;
     spentTimeToShow: string;
+    wordsLoaded: number;
     autoSaveTimerPrevious: number;
     count: number = 0;
     fileToPlay: string;
@@ -57,6 +58,7 @@ export class TrackListComponent {
                         }
                     }));
                 this.setNextRepeateDate();
+                this.wordsLoaded = this._words.length;
             });
         document.addEventListener("keydown", (e) => this.keyDownTextField(e), false);
         this.autoSaveTimerPrevious = this.getSecondsToday();
@@ -85,7 +87,8 @@ export class TrackListComponent {
     }
 
     setNextRepeateDate() {
-        let dateToday = new Date();
+        let now = new Date();
+        var dateToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
         this._words.forEach(word => {
             if (word.nextRepeatDate === dateToday) {
                 // do nothing
@@ -100,7 +103,9 @@ export class TrackListComponent {
         });
     }
 
-    updateSchedule(word: VmWordExtended) {  
+    updateSchedule(word: VmWordExtended) {
+        let now = new Date();
+        var dateToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
         if (word.fourDaysLearnPhase) {
             let LastRepeatingQuality = this.getLastRepeatingQuality();
             switch (LastRepeatingQuality) {
@@ -113,10 +118,10 @@ export class TrackListComponent {
                     word.learnDay--;
                     break;
             }
-            word.nextRepeatDate = new Date();
+            word.nextRepeatDate = dateToday;
         } else {
             word.repeatIterationNum++;
-            word.nextRepeatDate = new Date();
+            word.nextRepeatDate = dateToday;
             let days = 7;
             word.nextRepeatDate.setDate(word.nextRepeatDate.getDate()
                 + (days * word.repeatIterationNum));
@@ -131,7 +136,7 @@ export class TrackListComponent {
         return "good";
     }
 
-    updateWord(word: VmWord) {
+    updateWord(words: VmWord[]) {
         let methodUrl: string;
         switch (this.mode) {
             case "Dictionary":
@@ -145,7 +150,7 @@ export class TrackListComponent {
                 return null;
         }
         return this.$http
-            .post<string>(`${this._apiUrl}/${methodUrl}`, word)
+            .post<string>(`${this._apiUrl}/${methodUrl}`, words)
             .then(response => response.data);
     }
 
@@ -158,9 +163,7 @@ export class TrackListComponent {
         let autoSaveTimer = this.getSecondsToday() - this.autoSaveTimerPrevious;
         const timerAmmount: number = 15;
         if (autoSaveTimer > timerAmmount) {
-            this._words.forEach(word => {
-                this.updateWord(word);
-            });
+            this.updateWord(this._words);
             console.log("Auto Save!!!");
             this.autoSaveTimerPrevious = this.getSecondsToday();
         }
@@ -230,7 +233,7 @@ export class TrackListComponent {
             console.log("Word ToShow = " + this.wordToShow);
 
             this.fileToPlay = this._audioPath[invertedLang] +
-                this._currentWord.Name[invertedLang] + this._audioFormat[this._currentLocal];
+                this._currentWord.Name[invertedLang] + this._audioFormat[invertedLang];
 
             this._currentWord = null;
 
