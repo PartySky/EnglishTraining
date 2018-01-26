@@ -107,32 +107,59 @@ export class TrackListComponent {
         let now = new Date();
         var dateToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
         if (word.fourDaysLearnPhase) {
-            let LastRepeatingQuality = this.getLastRepeatingQuality();
+            let LastRepeatingQuality = this
+                .getLastRepeatingQuality(dateToday, word.nextRepeatDate);
             switch (LastRepeatingQuality) {
                 case "good":
-                    word.learnDay++;   
+                    word.learnDay++;
+                    if (word.learnDay == 4) { 
+                        word.fourDaysLearnPhase = false;
+                    }
                     break;
                 case "neutral":
                     break;
                 case "bad":
-                    word.learnDay--;
+                    if (word.learnDay > 0) {
+                        word.learnDay--;
+                    }    
                     break;
             }
             word.nextRepeatDate = dateToday;
         } else {
-            word.repeatIterationNum++;
-            word.nextRepeatDate = dateToday;
-            let days = 7;
-            word.nextRepeatDate.setDate(word.nextRepeatDate.getDate()
+            if (word.nextRepeatDate == dateToday) {
+                // do nothing
+                // the words are being repeated this day
+            } else if ((word.dailyReapeatCountForEng != 0)
+                        && (word.dailyReapeatCountForRus != 0)    
+                        && (word.nextRepeatDate < dateToday)) {
+                // the whords are not repeated
+                // set repeat day to today
+                word.nextRepeatDate = dateToday;
+            } else if ((word.dailyReapeatCountForEng == 0)
+                        && (word.dailyReapeatCountForRus == 0)
+                        && (word.nextRepeatDate < dateToday)) {
+                // whord are repeated
+                // set repeat day to next iteration day
+                word.repeatIterationNum++;
+                word.nextRepeatDate = dateToday;
+                let days = 7;
+                word.nextRepeatDate.setDate(word.nextRepeatDate.getDate()
                 + (days * word.repeatIterationNum));
+            }
         };
         return word;
     }
 
-    getLastRepeatingQuality(){
-        // TODO: нужно проверять повторялось ли слово в прошлом,
-        // если не повторялось, то не увеличивать FourDaysLearnPhase
-        // если не повторялось слишком долго, то уменьшать FourDaysLearnPhase
+    getLastRepeatingQuality(dayToday: Date, lastRepeatDay: Date) {
+        const timeDiff = Math.abs(dayToday.getTime() - lastRepeatDay.getTime());
+        const diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
+        if (diffDays == 1) {
+            return "good";
+        } else if ((diffDays > 1) && (diffDays <= 3)) { 
+            return "neutral"
+        } else if ((diffDays > 3)) {
+            return "bad"
+        }
         return "good";
     }
 
