@@ -90,12 +90,14 @@ export class TrackListComponent {
         let now = new Date();
         var dateToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
         this._words.forEach(word => {
-            if (word.nextRepeatDate === dateToday) {
+            const timeDiff = Math.abs(dateToday.getTime() - word.nextRepeatDate.getTime());
+            const diffDays = Math.floor(timeDiff / (1000 * 3600 * 24));
+            if (diffDays < 1) {
                 // do nothing
-            } else if (word.nextRepeatDate < dateToday) { 
+            } else if (diffDays >= 1) { 
                 // начинается новый день повторения,
                 // нужно передвинуть счетчик графика
-                word = this.updateSchedule(word);
+                word = this.updateSchedule(word, dateToday, diffDays);
                 // и обнулить счетчик дневных повторений
                 word.dailyReapeatCountForRus = 0;
                 word.dailyReapeatCountForEng = 0;
@@ -103,16 +105,14 @@ export class TrackListComponent {
         });
     }
 
-    updateSchedule(word: VmWordExtended) {
-        let now = new Date();
-        var dateToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+    updateSchedule(word: VmWordExtended, dateToday: Date, diffDays: number) {
         if (word.fourDaysLearnPhase) {
             let LastRepeatingQuality = this
-                .getLastRepeatingQuality(dateToday, word.nextRepeatDate);
+                .getLastRepeatingQuality(diffDays);
             switch (LastRepeatingQuality) {
                 case "good":
                     word.learnDay++;
-                    if (word.learnDay == 4) { 
+                    if (word.learnDay >= 4) {
                         word.fourDaysLearnPhase = false;
                     }
                     break;
@@ -123,36 +123,26 @@ export class TrackListComponent {
                         word.learnDay--;
                     }    
                     break;
-            }
+                }
             word.nextRepeatDate = dateToday;
         } else {
-            if (word.nextRepeatDate == dateToday) {
+            if (diffDays < 1) {
+                console.log();
+                console.log();
                 // do nothing
                 // the words are being repeated this day
-            } else if ((word.dailyReapeatCountForEng != 0)
-                        && (word.dailyReapeatCountForRus != 0)    
-                        && (word.nextRepeatDate < dateToday)) {
+            } else if ((word.dailyReapeatCountForEng == 0)
+                && (word.dailyReapeatCountForRus == 0)
+                && (diffDays >= 1)) {
                 // the whords are not repeated
                 // set repeat day to today
                 word.nextRepeatDate = dateToday;
-            } else if ((word.dailyReapeatCountForEng == 0)
-                        && (word.dailyReapeatCountForRus == 0)
-                        && (word.nextRepeatDate < dateToday)) {
-                // whord are repeated
-                // set repeat day to next iteration day
-                word.repeatIterationNum++;
-                word.nextRepeatDate = dateToday;
-                let days = 7;
-                word.nextRepeatDate.setDate(word.nextRepeatDate.getDate()
-                + (days * word.repeatIterationNum));
             }
         };
         return word;
     }
 
-    getLastRepeatingQuality(dayToday: Date, lastRepeatDay: Date) {
-        const timeDiff = Math.abs(dayToday.getTime() - lastRepeatDay.getTime());
-        const diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
+    getLastRepeatingQuality(diffDays: number) {
         if (diffDays == 1) {
             return "good";
         } else if ((diffDays > 1) && (diffDays <= 3)) { 
