@@ -22,10 +22,32 @@ namespace EnglishTraining
         public async Task<VmWord[]> GetWords()
         {
             VmWord[] words;
+            VmWord[] renewingIteration;
             DateTime dateToday = DateTime.Now;
 
             using (var db = new WordContext())
             {
+                renewingIteration = db.Words.Where(p => (p.Name_ru.IndexOf(' ') < 0)
+				                           && (p.Name_en.IndexOf(' ') < 0)
+				                           && (p.NextRepeatDate <= dateToday)
+				                           && (p.DailyReapeatCountForEng != 0)
+				                           && (p.DailyReapeatCountForRus != 0)
+				                           && (p.FourDaysLearnPhase == false)).ToArray();
+                
+				var daysInIteration = 7;
+                foreach (VmWord word in renewingIteration)
+                {
+                    word.RepeatIterationNum++;
+                    word.NextRepeatDate = dateToday.AddDays((daysInIteration 
+                                                             * word.RepeatIterationNum));
+                    word.DailyReapeatCountForEng = 0;
+                    word.DailyReapeatCountForRus = 0;
+
+					db.Words.Update(word);
+					Console.WriteLine("Updating word \"{0}\" id {1}", word.Name_en, word.Id);
+				}
+				db.SaveChanges();
+                
                 words = db.Words.Where(p => (p.Name_ru.IndexOf(' ') < 0)
                                        && (p.Name_en.IndexOf(' ') < 0)
                                        && (p.NextRepeatDate <= dateToday)).ToArray();
@@ -91,7 +113,7 @@ namespace EnglishTraining
         [HttpPost("update")]
         public string Update([FromBody] VmWord[] words)
         {
-			using (var db = new WordContext())
+  			using (var db = new WordContext())
 			{
                 foreach(VmWord word in words)
                 {
