@@ -102,8 +102,17 @@ export class TrackListComponent {
                 // нужно передвинуть счетчик графика
                 word = this.updateSchedule(word, dateToday, diffDays);
                 // и обнулить счетчик дневных повторений
-                word.dailyReapeatCountForRus = 0;
-                word.dailyReapeatCountForEng = 0;
+                const minReapeatCountPerDay: number = 5;
+                if ((word.dailyReapeatCountForRus < minReapeatCountPerDay)
+                    && (word.dailyReapeatCountForEng < minReapeatCountPerDay)) {
+                    if (word.fourDaysLearnPhase
+                        && (word.learnDay > 0)) {
+                        word.learnDay--;
+                    }   
+                } else { 
+                    word.dailyReapeatCountForRus = 0;
+                    word.dailyReapeatCountForEng = 0;
+                }
             }
         });
     }
@@ -134,9 +143,7 @@ export class TrackListComponent {
                 console.log();
                 // do nothing
                 // the words are being repeated this day
-            } else if ((word.dailyReapeatCountForEng == 0)
-                && (word.dailyReapeatCountForRus == 0)
-                && (diffDays >= 1)) {
+            } else if (diffDays >= 1) {
                 // the whords are not repeated
                 // set repeat day to today
                 word.nextRepeatDate = dateToday;

@@ -22,63 +22,12 @@ namespace EnglishTraining
         public async Task<VmWord[]> GetWords()
         {
             VmWord[] words;
-            VmWord[] renewingIteration;
             DateTime dateToday = DateTime.Now;
+
+            UpdateSchedule();
 
             using (var db = new WordContext())
             {
-                // TODO: move it to separated methods
-                // Auto-removing duplicates
-                var allWords = db.Words.ToArray();
-                var duplicates = db.Words.Where(x => allWords
-                                            .Count(n => ((n.Name_ru == x.Name_ru)
-                                                      && (n.Name_en == x.Name_en))) > 1)
-                                            .GroupBy(p => p.Name_ru)
-                                            .Select(p => p.LastOrDefault());
-
-                // TODO: dell all duplicates in one time,
-                // now p.Skip(1) doesn't make it works
-
-                foreach (VmWord word in duplicates)
-                {
-                    db.Words.Remove(word);
-                    Console.WriteLine("Removing duplicate \"{0}\" id {1}", word.Name_en, word.Id);
-                }
-
-                // Manually-removing duplicates
-                var duplicatesToResolve = db.Words.Where(x => allWords
-                   .Count(n => ((n.Name_ru != x.Name_ru) && (n.Name_en == x.Name_en)) 
-                            || ((n.Name_ru == x.Name_ru) && (n.Name_en != x.Name_en))) > 1)
-                                                   .GroupBy(p => p.Name_ru)
-                                                   .Select(p => p.LastOrDefault());
-
-                if (duplicatesToResolve.Count() > 0)
-                {
-                    throw new Exception("There are duplicates thet should be resolved");
-                }
-
-                // Renewing Schedule
-                renewingIteration = db.Words.Where(p => (p.Name_ru.IndexOf(' ') < 0)
-                                           && (p.Name_en.IndexOf(' ') < 0)
-                                           && (p.NextRepeatDate <= dateToday)
-                                           && (p.DailyReapeatCountForEng != 0)
-                                           && (p.DailyReapeatCountForRus != 0)
-                                           && (p.FourDaysLearnPhase == false)).ToArray();
-
-                var daysInIteration = 7;
-                foreach (VmWord word in renewingIteration)
-                {
-                    word.RepeatIterationNum++;
-                    word.NextRepeatDate = dateToday.AddDays((daysInIteration
-                                                             * word.RepeatIterationNum));
-                    word.DailyReapeatCountForEng = 0;
-                    word.DailyReapeatCountForRus = 0;
-
-                    db.Words.Update(word);
-                    Console.WriteLine("Updating word \"{0}\" id {1}", word.Name_en, word.Id);
-                }
-                db.SaveChanges();
-
                 // Get words to return
                 words = db.Words.Where(p => (p.Name_ru.IndexOf(' ') < 0)
                                        && (p.Name_en.IndexOf(' ') < 0)
@@ -115,14 +64,6 @@ namespace EnglishTraining
             {
                 return wordsWithAudio;
             });
-
-
-            // TODO: use VmCommonTableResponse
-            // TODO: use mapper from dto to vm
-            //return await Task<VmCommonTableResponse<VmWord>>.Factory.StartNew(() =>
-            //{
-            //    //return words;
-            //});
         }
 
         [HttpGet("dictionary")]
@@ -130,6 +71,8 @@ namespace EnglishTraining
         {
             VmWord[] words;
             DateTime dateToday = DateTime.Now;
+
+            UpdateSchedule();
 
             using (var db = new DictionaryContext())
             {
@@ -207,5 +150,80 @@ namespace EnglishTraining
             }
             return null;
         }
+
+        #region Helpers
+        public void UpdateSchedule()
+        {
+            DateTime dateToday = DateTime.Now;
+            VmWord[] renewingIteration;
+            using (var db = new WordContext())
+            {
+                // TODO: move it to separated methods
+                // Auto-removing duplicates
+                var allWords = db.Words.ToArray();
+                var duplicates = db.Words.Where(x => allWords
+                                            .Count(n => ((n.Name_ru == x.Name_ru)
+                                                      && (n.Name_en == x.Name_en))) > 1)
+                                            .GroupBy(p => p.Name_ru)
+                                            .Select(p => p.LastOrDefault());
+
+                // TODO: dell all duplicates in one time,
+                // now p.Skip(1) doesn't make it works
+
+                foreach (VmWord word in duplicates)
+                {
+                    db.Words.Remove(word);
+                    Console.WriteLine("Removing duplicate \"{0}\" id {1}", word.Name_en, word.Id);
+                }
+
+                // Manually-removing duplicates
+                var duplicatesToResolve = db.Words.Where(x => allWords
+                   .Count(n => ((n.Name_ru != x.Name_ru) && (n.Name_en == x.Name_en))
+                            || ((n.Name_ru == x.Name_ru) && (n.Name_en != x.Name_en))) > 1)
+                                                   .GroupBy(p => p.Name_ru)
+                                                   .Select(p => p.LastOrDefault());
+
+                if (duplicatesToResolve.Count() > 0)
+                {
+                    throw new Exception("There are duplicates thet should be resolved");
+                }
+
+                // Renewing Schedule
+                var minReapeatCountPerDay = 5;
+                renewingIteration = db.Words.Where(p => (p.NextRepeatDate <= dateToday)
+                                           && (p.DailyReapeatCountForEng >= minReapeatCountPerDay)
+                                           && (p.DailyReapeatCountForRus >= minReapeatCountPerDay)
+                                           && (p.FourDaysLearnPhase == false)).ToArray();
+
+                var iterationIncrement = 7;
+                foreach (VmWord word in renewingIteration)
+                {
+                    word.RepeatIterationNum++;
+                    var iteration = iterationIncrement * getIterationLenght(word.RepeatIterationNum);
+
+                    word.NextRepeatDate = dateToday.AddDays(iteration);
+                    word.DailyReapeatCountForEng = 0;
+                    word.DailyReapeatCountForRus = 0;
+
+                    db.Words.Update(word);
+                    Console.WriteLine("Set new day for repeating word \"{0}\" iterations {1} id {2}",
+                                      word.Name_en, word.RepeatIterationNum, word.Id);
+                }
+                db.SaveChanges();
+            }
+        }
+
+        static int getIterationLenght(int i)
+        {
+            if (i == 0)
+            {
+                return 1;
+            }
+            else
+            {
+                return 2 *  getIterationLenght(i - 1);
+            }
+        }
+        #endregion
     }
 }
