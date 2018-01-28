@@ -17,12 +17,15 @@ export class TrackListComponent {
         "ru": ".wav"
     }
     private _currentLocal: string;
+    private _engLocal: string = "en";
+    private _rusLocal: string = "en";
     private _currentTime: number;
     private _currentWord: VmWordExtended;
     private _spentTime: number = 0;
     private _words: VmWordExtended[];
     private _keyNextWord: number = 32;
     private _keyStop: number = 13;
+    private _keyStopAndPlay: number = 16;
     private _highRateLearn: number = 48;
     spentTimeToShow: string;
     wordsLoaded: number;
@@ -214,7 +217,8 @@ export class TrackListComponent {
                 this._currentWord.dailyReapeatCountForRus++;
             }
 
-            this.fileToPlay = this._audioPath[this._currentLocal] + this._words[0].Name[this._currentLocal] + this._audioFormat[this._currentLocal];
+            this.fileToPlay = this._audioPath[this._currentLocal] +
+                this._words[0].Name[this._currentLocal] + this._audioFormat[this._currentLocal];
 
             console.log("cureent word: " + this._words[0].Name[this._currentLocal]);
 
@@ -223,7 +227,7 @@ export class TrackListComponent {
             this.logElements();
         }
         if ((keyCode === this._keyStop && this._currentWord) ||
-            (keyCode === 16 && this._currentWord) ||
+            (keyCode === this._keyStopAndPlay && this._currentWord) ||
             (keyCode === this._highRateLearn && this._currentWord)) {
             // if (keyCode == this.keyStop && this._currentWord) {
             let numberToSplice: number;
@@ -238,9 +242,18 @@ export class TrackListComponent {
             }
             this._currentWord.CurrentRandomLocalization = this._currentLocal;
 
+            this.fileToPlay = this._audioPath[invertedLang] +
+                this._currentWord.Name[invertedLang] + this._audioFormat[invertedLang];
+
             if (keyCode == this._highRateLearn) {
                 this.wordToShow = this._currentWord.Name[this._currentLocal]
                     + " - " + this._currentWord.Name[invertedLang];
+                
+                // Сделать переключение языка для _highRateLearn
+                // Сделать включение/выключение проигрывания аудио для _highRateLearn
+                this.fileToPlay = this._audioPath[this._engLocal] +
+                    this._currentWord.Name[this._engLocal] + this._audioFormat[this._engLocal];
+                
             } else {
                 this.wordToShow = this._currentWord.Name[invertedLang];
             }
@@ -249,12 +262,10 @@ export class TrackListComponent {
 
             console.log("Word ToShow = " + this.wordToShow);
 
-            this.fileToPlay = this._audioPath[invertedLang] +
-                this._currentWord.Name[invertedLang] + this._audioFormat[invertedLang];
-
             this._currentWord = null;
 
-            if (keyCode == 16) {
+            if ((keyCode == this._keyStopAndPlay)
+                || (keyCode == this._highRateLearn)) {
                 this.play();
             }
             this.logElements();
