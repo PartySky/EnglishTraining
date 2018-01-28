@@ -61,6 +61,7 @@ export class TrackListComponent {
                         }
                     }));
                 this.setNextRepeateDate();
+                this._words.sort(this.compareRandom);
                 this.wordsLoaded = this._words.length;
             });
         document.addEventListener("keydown", (e) => this.keyDownTextField(e), false);
@@ -179,6 +180,10 @@ export class TrackListComponent {
         return this.$http
             .post<string>(`${this._apiUrl}/${methodUrl}`, words)
             .then(response => response.data);
+    }
+
+    compareRandom(a: VmWord, b: VmWord) {
+        return Math.random() - 0.5;
     }
 
     checkAudio() {
