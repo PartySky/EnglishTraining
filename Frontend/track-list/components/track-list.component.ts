@@ -208,7 +208,9 @@ export class TrackListComponent {
         this.calculateSpentTime();
         if (keyCode === this._keyNextWord) {
             if (!this._words[0].CurrentRandomLocalization) {
-                this._currentLocal = this.getRandomLocal();
+                this._currentLocal = this.getRandomLocal(
+                    this._words[0].dailyReapeatCountForEng,
+                    this._words[0].dailyReapeatCountForRus);
             } else {
                 this._currentLocal = this._words[0].CurrentRandomLocalization;
                 this._words[0].CurrentRandomLocalization = null;
@@ -316,7 +318,16 @@ export class TrackListComponent {
         return Math.random() * (max - min) + min;
     }
 
-    getRandomLocal() {
+    getRandomLocal(countForEng: number, countForRus: number) {
+        var maxDiff = 3;
+        var diff = countForEng - countForRus;
+        if (diff > maxDiff) { 
+            return "ru";
+        }
+        if (diff < -maxDiff) { 
+            return "en";
+        }
+
         let num = Math.round(this.getRandomNumber(0, 1));
         switch (num) {
             case 0:
@@ -324,7 +335,6 @@ export class TrackListComponent {
             case 1:
                 return "ru";
         }
-
     }
 
     invertLanguage(lang: string) {
