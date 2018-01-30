@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Text;
 using Newtonsoft.Json;
@@ -14,15 +15,23 @@ namespace EnglishTraining
             var jsonConfigPath = Path.Combine(Directory.GetCurrentDirectory(), "jsons", "api-config.json");
             VmParserConfig api = JsonConvert.DeserializeObject<VmParserConfig>(File.ReadAllText(jsonConfigPath));
 
-            VmCurrentWord[] words = GetWordsCollection();
+            VmWord[] words;
 
-            foreach (VmCurrentWord parserWords in words)
+            using (var db = new WordContext())
+            {
+                words = db.Words.Where(p => p.Name_ru.IndexOf(' ') < 0
+                                       && (p.Name_en.IndexOf(' ') < 0)).ToArray();
+            }
+
+
+            foreach (VmWord parserWords in words)
             {
                 string wordName = parserWords.Name_ru;
 
                 Console.WriteLine(audioPath + "/" + parserWords.Name_ru + ".mp3");
 
-                if (!File.Exists(audioPath + "/" + parserWords.Name_ru + ".mp3")){
+                if (!File.Exists(audioPath + "/" + parserWords.Name_ru + ".mp3") 
+                    && !File.Exists(audioPath + "/" + parserWords.Name_ru + ".wav")){
 
                     string wordRequestUrl = api.Url + wordName + "/language/ru";
                     Console.WriteLine(wordRequestUrl);
@@ -34,7 +43,7 @@ namespace EnglishTraining
                     Console.WriteLine(wordName);
                     Console.WriteLine(url);
 
-                    System.Threading.Thread.Sleep(50);
+                    System.Threading.Thread.Sleep(20);
                     if (url != null){
 						GetAndSave(wordName, url);
                     } else {
@@ -45,7 +54,37 @@ namespace EnglishTraining
             }
         }
 
-        static VmCurrentWord[] GetWordsCollection()
+        public void UpdateDictionary()
+        {
+            VmCurrentWord[] words = GetWordsCollectionFromJson();
+            using (var db = new WordContext())
+            {
+                var existedWords = db.Words.ToArray();
+                foreach(VmCurrentWord word in words){
+                    if (!Array.Exists(existedWords, element => element.Name_en == word.Name_en))
+                    {
+                        db.Words.Update(new VmWord
+                        {
+                            Name_ru = word.Name_ru,
+                            Name_en = word.Name_en,
+                            FourDaysLearnPhase = true,
+                            LearnDay = 0,
+                            RepeatIterationNum = 0,
+                            NextRepeatDate = DateTime.Today,
+                            DailyReapeatCountForEng = 0,
+                            DailyReapeatCountForRus = 0
+                        });
+                        Console.WriteLine("Updating word \"{0}\"", word.Name_en);
+                    } else {
+                        Console.WriteLine("Skipped word \"{0}\"", word.Name_en);
+                    }
+				}
+                var count = db.SaveChanges();
+                Console.WriteLine("{0} records saved to database", count);
+            }
+        }
+
+        static VmCurrentWord[] GetWordsCollectionFromJson()
         {
             VmCurrentWord[] words;
             var jsonPath = Path.Combine(Directory.GetCurrentDirectory(), "jsons", "current-words.json");
@@ -56,7 +95,8 @@ namespace EnglishTraining
                 throw new ArgumentNullException(jsonPath);
             }
             // read file into a string and deserialize JSON to a type
-            VmCurrentWord[] wordCollection = JsonConvert.DeserializeObject<VmCurrentWord[]>(File.ReadAllText(jsonPath));
+            VmCurrentWord[] wordCollection = JsonConvert
+                .DeserializeObject<VmCurrentWord[]>(File.ReadAllText(jsonPath));
             // deserialize JSON directly from a file
             using (StreamReader file = File.OpenText(jsonPath))
             {
@@ -96,7 +136,22 @@ namespace EnglishTraining
 
             VmResponseWord wordCollection = JsonConvert.DeserializeObject<VmResponseWord>(responseText);
             if (wordCollection.items.Count > 0){
-				var mp3Url = wordCollection.items[0].pathmp3;
+                var mp3Url = wordCollection.items[0].pathmp3;
+
+                for (int i = 0; i < wordCollection.items.Count; i++)
+                {
+                    var dictor = wordCollection.items[i].username;
+                    // TODO: get dictors from config
+                    if((dictor == "Selene71") ||
+                       (dictor == "manyaha") ||
+                       (dictor == "NatalyaT") ||
+                       (dictor == "Skvodo") ||
+                       (dictor == "1640max"))
+                    {
+						mp3Url = wordCollection.items[i].pathmp3;
+                    }
+                }
+
 				Console.WriteLine(mp3Url);
 				return mp3Url;
             } else {

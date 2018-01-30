@@ -15,17 +15,17 @@ namespace EnglishTraining
         public static void Main(string[] args)
         {
 
+            Parser parser = new Parser();
             string runMode = "Host"; 
 
             switch (runMode)
             {
                 case "Host":
-					BuildWebHost(args).Run();
+                    BuildWebHost(args).Run();
 
                     break;
 
                 case "Parser":
-                    Parser parser = new Parser();
                     parser.Download();
                     break;
 
@@ -36,6 +36,10 @@ namespace EnglishTraining
 
                 case "Tests":
                     TestRunner.RunTests();
+                    break;
+
+                case "Dictionary Update":
+                    parser.UpdateDictionary();
                     break;
 
             }

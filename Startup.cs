@@ -31,9 +31,7 @@ namespace EnglishTraining
 
             app.UseMvc(routes =>
             {
-                routes.MapRoute(
-                    name: "default",
-                    template: "{controller=Main}/{action=Index}/{id?}");
+                routes.MapRoute("default", "main{controller}/{action?}/{id?}");
             });
         }
     }
