@@ -189,7 +189,7 @@ namespace EnglishTraining
                 }
 
                 // Renewing Schedule
-                var minReapeatCountPerDay = 5;
+                var minReapeatCountPerDay = 3;
                 renewingIteration = db.Words.Where(p => (p.NextRepeatDate <= dateToday)
                                            && (p.DailyReapeatCountForEng >= minReapeatCountPerDay)
                                            && (p.DailyReapeatCountForRus >= minReapeatCountPerDay)
@@ -198,12 +198,13 @@ namespace EnglishTraining
                 var iterationIncrement = 7;
                 foreach (VmWord word in renewingIteration)
                 {
-                    word.RepeatIterationNum++;
                     var iteration = iterationIncrement * getIterationLenght(word.RepeatIterationNum);
 
                     word.NextRepeatDate = dateToday.AddDays(iteration);
                     word.DailyReapeatCountForEng = 0;
                     word.DailyReapeatCountForRus = 0;
+
+                    word.RepeatIterationNum++;
 
                     db.Words.Update(word);
                     Console.WriteLine("Set new day for repeating word \"{0}\" iterations {1} id {2}",

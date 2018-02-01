@@ -103,7 +103,8 @@ export class TrackListComponent {
                 // нужно передвинуть счетчик графика
                 word = this.updateSchedule(word, dateToday, diffDays);
                 // и обнулить счетчик дневных повторений
-                const minReapeatCountPerDay: number = 5;
+                // TODO: get it from backend
+                const minReapeatCountPerDay: number = 3;
                 if ((word.dailyReapeatCountForRus < minReapeatCountPerDay)
                     && (word.dailyReapeatCountForEng < minReapeatCountPerDay)) {
                     if (word.fourDaysLearnPhase
