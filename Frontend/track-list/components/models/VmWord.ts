@@ -15,7 +15,6 @@ export interface VmWord {
     dailyReapeatCountForEng: number;
     dailyReapeatCountForRus: number;
     Dictors_en?: VmDictor[];
-    Dictors_ru?: any;
-    // Dictors_ru?: VmDictor[];
+    Dictors_ru?: VmDictor[];
 }
 

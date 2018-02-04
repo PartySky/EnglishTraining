@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace EnglishTraining
 {
@@ -15,5 +16,11 @@ namespace EnglishTraining
         public int DailyReapeatCountForRus { get; set; }
         //public IList<VmDictor> Dictors_en { get; set; }
         //public IList<VmDictor> Dictors_ru { get; set; }
+    }
+
+    public class VmWordWithDictors : VmWord
+    {
+        public IList<VmDictor> Dictors_en { get; set; }
+        public IList<VmDictor> Dictors_ru { get; set; }
     }
 }
