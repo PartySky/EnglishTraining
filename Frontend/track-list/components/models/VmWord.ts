@@ -14,7 +14,7 @@ export interface VmWord {
     // HACK returned in lover case
     dailyReapeatCountForEng: number;
     dailyReapeatCountForRus: number;
-    Dictors_en?: VmDictor[];
-    Dictors_ru?: VmDictor[];
+    dictors_en?: VmDictor[];
+    dictors_ru?: VmDictor[];
 }
 

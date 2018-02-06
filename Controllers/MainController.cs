@@ -28,14 +28,14 @@ namespace EnglishTraining
 
             using (var db = new WordContext())
             {
-                // Get words to return
                 words = db.Words.Where(p => (p.Name_ru.IndexOf(' ') < 0)
                                        && (p.Name_en.IndexOf(' ') < 0)
                                        && (p.NextRepeatDate <= dateToday)).ToArray();
             }
 
             List<VmWordWithDictors> wordsWithDictors = new List<VmWordWithDictors>();
-            int y = 0;
+
+            FileChecker fileChecker = new FileChecker();
 
 			foreach (VmWord word in words)
 			{
@@ -43,9 +43,24 @@ namespace EnglishTraining
                 var dictors_en = GetDictors(path, "en", word.Name_en);
                 var dictors_ru = GetDictors(path, "ru", word.Name_ru);
 
-                if((dictors_en.Count() != 0)
-                   && (dictors_ru.Count() != 0))
-				{
+                List<VmDictor> tempDictors_en = (dictors_en.Any()) ? dictors_en : new List<VmDictor>();
+                List<VmDictor> tempDictors_ru = (dictors_ru.Any()) ? dictors_ru : new List<VmDictor>();
+
+				//var pathTempRu = Path.Combine(audioPath, word.Name_en) + ".wav";
+				// TODO: add english words
+				//if (!tempDictors_en.Any()
+				//   && !fileChecker.ChecIfExist(pathTempEn))
+				//{
+				//    break;
+				//}
+
+                var pathTempRu = Path.Combine(audioPath, word.Name_ru) + ".wav";
+                if(!tempDictors_ru.Any()
+                   && !fileChecker.CheckIfExist(pathTempRu)){
+                    Console.WriteLine("Word has no audio: {0}", word.Name_ru);
+                } 
+                else 
+                {
                     wordsWithDictors.Add(new VmWordWithDictors{
                         Id = word.Id,
                         Name_en = word.Name_en,
@@ -55,46 +70,14 @@ namespace EnglishTraining
                         RepeatIterationNum = word.RepeatIterationNum,
                         NextRepeatDate = word.NextRepeatDate,
                         DailyReapeatCountForEng = word.DailyReapeatCountForEng,
-                        Dictors_en = dictors_en,
-                        Dictors_ru = dictors_ru
+                        Dictors_en = tempDictors_en,
+                        Dictors_ru = tempDictors_ru
                     });
-                }
-                y++;
+				}
 			}
 
-            //FileChecker fileChecker = new FileChecker();
-
-            //// TODO: optimaze it
-            //int i = 0;
-            //foreach (VmWord word in words)
-            //{
-            //    var path = Path.Combine(audioPath, word.Name_ru) + ".wav";
-            //    if (fileChecker.ChecIfExist(path))
-            //    {
-            //        i++;
-            //    }
-            //}
-
-
-
-            //VmWord[] wordsWithAudio = new VmWord[i];
-            //int y = 0;
-
-            //foreach (VmWord word in words)
-            //{
-            //    var path = Path.Combine(audioPath, word.Name_ru) + ".wav";
-            //    if (fileChecker.ChecIfExist(path))
-            //    {
-            //        wordsWithAudio[y] = word;
-            //        y++;
-            //    }
-            //}
-
-            //return await Task<VmWord[]>.Factory.StartNew(() =>
-            //return await Task<List<VmWordExtended>>.Factory.StartNew(() =>
             return await Task<List<VmWordWithDictors>>.Factory.StartNew(() =>
             {
-                //return wordsWithAudio;
                 return wordsWithDictors;
             });
         }
@@ -175,7 +158,7 @@ namespace EnglishTraining
             foreach (VmWord word in words)
             {
                 var path = Path.Combine(audioPath, word.Name_ru) + ".wav";
-                if (!fileChecker.ChecIfExist(path))
+                if (!fileChecker.CheckIfExist(path))
                 {
                     Console.WriteLine("File doesn't exist, path: {0}", path);
                     //throw new ArgumentNullException("missed audio file");
@@ -264,36 +247,39 @@ namespace EnglishTraining
 			List<VmDictor> dictors = new List<VmDictor>();
             try
             {
-                var landPath = Path.Combine(wordPath, lang);
-                
-                List<string> dirs = new List<string>(Directory.EnumerateDirectories(landPath));
+                var langPath = Path.Combine(wordPath, lang);
+
+                if (!Directory.Exists(langPath)){
+                    Console.WriteLine("Directory not found: {0}", langPath);
+                    return new List<VmDictor>{};
+                }
+
+				List<string> dirs = new List<string>(Directory.EnumerateDirectories(langPath));  
+
                 FileChecker fileChecker = new FileChecker();
 
                 foreach (var dir in dirs)
                 {
-                    var wavPath = Path.Combine(dir, wordNameInLocal + ".wav");
+                    var audioFormatTemp = (lang=="ru") ? ".wav" : ".mp3";
+                    var audioPathTemp = Path.Combine(dir, wordNameInLocal + audioFormatTemp);
                     //var mp3Path = Path.Combine(dir, wordNameInLocal + ".mp3");
-                    var isWavExist = fileChecker.ChecIfExist(wavPath);
+                    //var wavPath = Path.Combine(dir, wordNameInLocal + ".wav");
+                    var isWavExist = fileChecker.CheckIfExist(audioPathTemp);
                     //var isMp3Exist = fileChecker.ChecIfExist(mp3Path);
+                    //var wavExist = fileChecker.ChecIfExist(wavPath);
                     if (isWavExist)
                     {
                         var dictor = new VmDictor
                         {
-                            username = dir.Substring(dir.LastIndexOf("\\") + 1),
+                            username = dir.Substring(dir.LastIndexOf(lang) + 3),
                             sex = "",
                             country = "",
                             langname = lang
                         };
                         dictors.Add(dictor);
                     }
-
-                //    Console.WriteLine("{0}", dir.Substring(dir.LastIndexOf("\\") + 1));
+                    Console.WriteLine("{0} dictor(s) found for word {1}.", dirs.Count, wordNameInLocal);
                 }
-                Console.WriteLine("{0} directories found.", dirs.Count);
-            }
-            catch (UnauthorizedAccessException UAEx)
-            {
-                Console.WriteLine(UAEx.Message);
             }
             catch (PathTooLongException PathEx)
             {

@@ -232,8 +232,25 @@ export class TrackListComponent {
                 this._currentWord.dailyReapeatCountForRus++;
             }
 
-            this.fileToPlay = this._audioPath[this._currentLocal] +
-                this._words[0].Name[this._currentLocal] + this._audioFormat[this._currentLocal];
+            if (this._words[0].dictors_en
+                && this._words[0].dictors_ru &&
+                (this._words[0].dictors_en.length != 0)
+                && (this._words[0].dictors_ru.length != 0))
+            {
+                // TODO: get random dictor
+                let wordTemp = this._words[0].Name[this._currentLocal];
+                let usernameTemp;
+                if (this._currentLocal == "en") {
+                    usernameTemp = this._words[0].dictors_en[0].username
+                } else { 
+                    usernameTemp = this._words[0].dictors_ru[0].username
+                }
+                this.fileToPlay = "./audio/" + wordTemp + "/" + this._currentLocal +
+                    usernameTemp + "/" + wordTemp + this._audioFormat[this._currentLocal];
+            } else {
+                this.fileToPlay = this._audioPath[this._currentLocal] +
+                   this._words[0].Name[this._currentLocal] + this._audioFormat[this._currentLocal];
+            }
 
             console.log("cureent word: " + this._words[0].Name[this._currentLocal]);
 
