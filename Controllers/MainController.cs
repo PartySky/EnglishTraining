@@ -40,22 +40,24 @@ namespace EnglishTraining
 			foreach (VmWord word in words)
 			{
 				var path = Path.Combine(audioPath, word.Name_ru);
-                var dictors_en = GetDictors(path, "en");
-                var dictors_ru = GetDictors(path, "ru");
+                var dictors_en = GetDictors(path, "en", word.Name_en);
+                var dictors_ru = GetDictors(path, "ru", word.Name_ru);
 
                 if((dictors_en.Count() != 0)
                    && (dictors_ru.Count() != 0))
 				{
-                    wordsWithDictors[y].Id = word.Id;
-                    wordsWithDictors[y].Name_en = word.Name_en;
-                    wordsWithDictors[y].Name_ru = word.Name_ru;
-                    wordsWithDictors[y].FourDaysLearnPhase = word.FourDaysLearnPhase;
-                    wordsWithDictors[y].LearnDay = word.LearnDay;
-                    wordsWithDictors[y].RepeatIterationNum = word.RepeatIterationNum;
-                    wordsWithDictors[y].NextRepeatDate = word.NextRepeatDate;
-                    wordsWithDictors[y].DailyReapeatCountForEng = word.DailyReapeatCountForEng;
-                    wordsWithDictors[y].Dictors_en = dictors_en;
-                    wordsWithDictors[y].Dictors_ru = dictors_ru;
+                    wordsWithDictors.Add(new VmWordWithDictors{
+                        Id = word.Id,
+                        Name_en = word.Name_en,
+                        Name_ru = word.Name_ru,
+                        FourDaysLearnPhase = word.FourDaysLearnPhase,
+                        LearnDay = word.LearnDay,
+                        RepeatIterationNum = word.RepeatIterationNum,
+                        NextRepeatDate = word.NextRepeatDate,
+                        DailyReapeatCountForEng = word.DailyReapeatCountForEng,
+                        Dictors_en = dictors_en,
+                        Dictors_ru = dictors_ru
+                    });
                 }
                 y++;
 			}
@@ -176,7 +178,7 @@ namespace EnglishTraining
                 if (!fileChecker.ChecIfExist(path))
                 {
                     Console.WriteLine("File doesn't exist, path: {0}", path);
-                    throw new ArgumentNullException("missed audio file");
+                    //throw new ArgumentNullException("missed audio file");
                 }
             }
             return null;
@@ -257,24 +259,32 @@ namespace EnglishTraining
             }
         }
 
-        public List<VmDictor> GetDictors(string dirPath, string lang)
+        public List<VmDictor> GetDictors(string wordPath, string lang, string wordNameInLocal)
         {
-			List<VmDictor> SomeList = new List<VmDictor>();
+			List<VmDictor> dictors = new List<VmDictor>();
             try
             {
-                var ruPath = Path.Combine(dirPath, "ru");
-
-                //List<string> dirs = new List<string>(Directory.EnumerateDirectories(enPath));
-
-                List<string> dirs = new List<string>(Directory.EnumerateDirectories(ruPath));
+                var landPath = Path.Combine(wordPath, lang);
+                
+                List<string> dirs = new List<string>(Directory.EnumerateDirectories(landPath));
                 FileChecker fileChecker = new FileChecker();
 
                 foreach (var dir in dirs)
                 {
-                    var isExist = fileChecker.ChecIfExist(dir + ".wav");
-                    if(isExist)
+                    var wavPath = Path.Combine(dir, wordNameInLocal + ".wav");
+                    //var mp3Path = Path.Combine(dir, wordNameInLocal + ".mp3");
+                    var isWavExist = fileChecker.ChecIfExist(wavPath);
+                    //var isMp3Exist = fileChecker.ChecIfExist(mp3Path);
+                    if (isWavExist)
                     {
-                        
+                        var dictor = new VmDictor
+                        {
+                            username = dir.Substring(dir.LastIndexOf("\\") + 1),
+                            sex = "",
+                            country = "",
+                            langname = lang
+                        };
+                        dictors.Add(dictor);
                     }
 
                 //    Console.WriteLine("{0}", dir.Substring(dir.LastIndexOf("\\") + 1));
@@ -289,7 +299,7 @@ namespace EnglishTraining
             {
                 Console.WriteLine(PathEx.Message);
             }
-            return SomeList;
+            return dictors;
         }
         #endregion
     }
