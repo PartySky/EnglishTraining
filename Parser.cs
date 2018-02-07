@@ -36,7 +36,11 @@ namespace EnglishTraining
                     string wordRequestUrl = api.Url + wordName + "/language/ru";
                     Console.WriteLine(wordRequestUrl);
 
-                    string url = GetMp3Url(wordRequestUrl);
+                    //string url = GetMp3Url(wordRequestUrl);
+                    // TODO: made url switcher
+                    // TODO: made lang switcher
+                    // Get from wooordhunt
+                    string url = "http://wooordhunt.ru/data/sound/word/uk/mp3/" + parserWords.Name_en + ".mp3";
 
                     Console.WriteLine("");
                     Console.WriteLine("delay");
@@ -45,7 +49,9 @@ namespace EnglishTraining
 
                     System.Threading.Thread.Sleep(20);
                     if (url != null){
-						GetAndSave(wordName, url);
+                        //GetAndSave(wordName, url);
+                        // TODO: made lang switcher
+                        GetAndSave(parserWords.Name_en, url);
                     } else {
                         // TODO: write log with words without audio
                         Console.WriteLine("Word \"{0}\" hasn't audio", wordName);
