@@ -20,5 +20,6 @@ namespace EnglishTraining
     {
         public IList<VmDictor> Dictors_en { get; set; }
         public IList<VmDictor> Dictors_ru { get; set; }
+        public string AudioType { get; set; }
     }
 }

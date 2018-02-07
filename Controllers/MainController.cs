@@ -61,6 +61,7 @@ namespace EnglishTraining
                 } 
                 else 
                 {
+                    // TODO: check audio type somewhere
                     wordsWithDictors.Add(new VmWordWithDictors{
                         Id = word.Id,
                         Name_en = word.Name_en,
@@ -71,7 +72,8 @@ namespace EnglishTraining
                         NextRepeatDate = word.NextRepeatDate,
                         DailyReapeatCountForEng = word.DailyReapeatCountForEng,
                         Dictors_en = tempDictors_en,
-                        Dictors_ru = tempDictors_ru
+                        Dictors_ru = tempDictors_ru,
+                        AudioType = "Default wav"
                     });
 				}
 			}
