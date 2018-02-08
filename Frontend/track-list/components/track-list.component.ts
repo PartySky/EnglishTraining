@@ -2,6 +2,7 @@ import { VmWord } from "./models/VmWord";
 import { VmWordExtended } from "./models/VmWordExtended";
 import { VmAudioPath } from "./models/VmAudioPath";
 import { name } from "../track-list.module";
+import { fail } from "assert";
 // import { ApiService } from "../services/api.service";
 
 export class TrackListComponent {
@@ -67,6 +68,8 @@ export class TrackListComponent {
             });
         document.addEventListener("keydown", (e) => this.keyDownTextField(e), false);
         this.autoSaveTimerPrevious = this.getSecondsToday();
+        this.progress = 0;
+        // TODO: remove it
         if (this.mode === "Words") {
             this.checkAudio();
         }
@@ -396,9 +399,9 @@ export class TrackListComponent {
         // check it
         if ((word.dailyReapeatCountForEng > 3)
             && (word.dailyReapeatCountForRus > 3)) {
-            return 1;
+            return true;
         }
-        return -1;
+        return false;
     }
 
     check() {
