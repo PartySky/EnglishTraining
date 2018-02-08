@@ -10,7 +10,7 @@ export class TrackListComponent {
     private readonly _apiUrl: string;
     // private readonly _apiSrv: ApiService;
     private _audioPath: VmAudioPath = {
-        "en": "http://wooordhunt.ru/data/sound/word/uk/mp3/",
+        "en": "./audio/",
         "ru": "./audio/"
     }
     private _audioFormat: any = {
@@ -240,25 +240,29 @@ export class TrackListComponent {
                 this._currentWord.dailyReapeatCountForRus++;
             }
 
-            if (this._words[0].dictors_en
-                && this._words[0].dictors_ru &&
-                (this._words[0].dictors_en.length != 0)
-                && (this._words[0].dictors_ru.length != 0)) {
-                // TODO: get random dictor
-                // TODO: use dicotrs AudioType:
-                // this._audioFormat[this._currentLocal] = this._words[0].dictors_en[0].AudioType;
-                let wordTemp = this._words[0].Name[this._currentLocal];
-                let usernameTemp;
-                if (this._currentLocal == "en") {
-                    usernameTemp = this._words[0].dictors_en[0].username
-                } else {
-                    usernameTemp = this._words[0].dictors_ru[0].username
-                }
-                this.fileToPlay = "./audio/" + wordTemp + "/" + this._currentLocal +
-                    usernameTemp + "/" + wordTemp + this._audioFormat[this._currentLocal];
+            // TODO: get random dictor
+            let wordTemp = this._currentWord.Name[this._currentLocal];
+            let usernameTemp;
+            let audioTypeTemp;
+            if (this._currentLocal == "en") {
+                audioTypeTemp = this._currentWord.dictors_en[0].audioType;
+            } else { 
+                audioTypeTemp = this._currentWord.dictors_ru[0].audioType;                
+            }
+
+            if (this._currentLocal == "en") {
+                usernameTemp = this._words[0].dictors_en[0].username
+            } else {
+                usernameTemp = this._words[0].dictors_ru[0].username
+            }
+            if (usernameTemp != "default") {
+                // TODO: make audio path simple string instead of obj
+                this.fileToPlay = this._audioPath[this._currentLocal] +
+                    this._words[0].name_ru + "/" + this._currentLocal + "/" +
+                    usernameTemp + "/" + wordTemp + audioTypeTemp;
             } else {
                 this.fileToPlay = this._audioPath[this._currentLocal] +
-                    this._words[0].Name[this._currentLocal] + this._audioFormat[this._currentLocal];
+                    this._words[0].Name[this._currentLocal] + audioTypeTemp;
             }
 
             console.log("cureent word: " + this._words[0].Name[this._currentLocal]);
@@ -282,9 +286,33 @@ export class TrackListComponent {
                     thirdPartOfWordsLenght * 2);
             }
             this._currentWord.CurrentRandomLocalization = this._currentLocal;
+            
+            // TODO: get random dictor
+            let wordTemp = this._currentWord.Name[invertedLang];
+            let usernameTemp;
+            let audioTypeTemp;
+            
+            if (invertedLang == "en") {
+                audioTypeTemp = this._currentWord.dictors_en[0].audioType;
+            } else {
+                audioTypeTemp = this._currentWord.dictors_ru[0].audioType;
+            }
 
-            this.fileToPlay = this._audioPath[invertedLang] +
-                this._currentWord.Name[invertedLang] + this._audioFormat[invertedLang];
+            if (invertedLang == "en") {
+                usernameTemp = this._currentWord.dictors_en[0].username
+            } else {
+                usernameTemp = this._currentWord.dictors_ru[0].username
+            }
+            if (usernameTemp != "default") {
+                this.fileToPlay = this._audioPath[invertedLang] +
+                    this._currentWord.name_ru + "/" + invertedLang + "/" +
+                    usernameTemp + "/" + wordTemp + audioTypeTemp;
+            } else {
+                this.fileToPlay = this._audioPath[invertedLang] +
+                    this._currentWord.Name[invertedLang] + audioTypeTemp;
+            }
+
+
 
             if (keyCode == this._highRateLearn) {
                 this.wordToShow = this._currentWord.Name[this._currentLocal]

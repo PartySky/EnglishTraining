@@ -19,28 +19,38 @@ namespace EnglishTraining
 
             using (var db = new WordContext())
             {
-                words = db.Words.Where(p => p.Name_ru.IndexOf(' ') < 0
-                                       && (p.Name_en.IndexOf(' ') < 0)).ToArray();
+                words = db.Words.Where(p => (p.Name_en.IndexOf(' ') < 0)).ToArray();
+                //words = db.Words.Where(p => p.Name_ru.IndexOf(' ') < 0
+                                       //&& (p.Name_en.IndexOf(' ') < 0)).ToArray();
             }
 
 
             foreach (VmWord parserWords in words)
             {
-                string wordName = parserWords.Name_ru;
+                //string wordName = parserWords.Name_ru;
+                string wordName = parserWords.Name_en;
 
                 Console.WriteLine(audioPath + "/" + parserWords.Name_ru + ".mp3");
 
-                if (!File.Exists(audioPath + "/" + parserWords.Name_ru + ".mp3") 
-                    && !File.Exists(audioPath + "/" + parserWords.Name_ru + ".wav")){
+                if (!File.Exists(audioPath + "/" + parserWords.Name_en + ".mp3")
+                    && !File.Exists(audioPath + "/" + parserWords.Name_en + ".wav"))
+                {
+                // TODO: get dicotrs from json
+                // TODO: save each dictor in one's folder
+                // TODO: made lang switcher
+                //if (!File.Exists(audioPath + "/" + parserWords.Name_ru + ".mp3") 
+                    //&& !File.Exists(audioPath + "/" + parserWords.Name_ru + ".wav")){
 
-                    string wordRequestUrl = api.Url + wordName + "/language/ru";
+                    // TODO: made lang switcher
+                    string wordRequestUrl = api.Url + wordName + "/language/en";
+                    //string wordRequestUrl = api.Url + wordName + "/language/ru";
                     Console.WriteLine(wordRequestUrl);
 
-                    //string url = GetMp3Url(wordRequestUrl);
+                    string url = GetMp3Url(wordRequestUrl);
                     // TODO: made url switcher
                     // TODO: made lang switcher
                     // Get from wooordhunt
-                    string url = "http://wooordhunt.ru/data/sound/word/uk/mp3/" + parserWords.Name_en + ".mp3";
+                    //string url = "http://wooordhunt.ru/data/sound/word/uk/mp3/" + parserWords.Name_en + ".mp3";
 
                     Console.WriteLine("");
                     Console.WriteLine("delay");

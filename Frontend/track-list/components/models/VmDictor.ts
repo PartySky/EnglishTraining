@@ -3,5 +3,5 @@ export interface VmDictor {
     sex?: string;
     country?: string;
     langname?: string;
-    AudioType: string;
+    audioType: string;
 }
