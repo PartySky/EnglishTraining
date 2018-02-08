@@ -1,12 +1,20 @@
 <div class="show-word">
     <span ng-bind="$ctrl.wordToShow"></span>
-    <span ng-if="$ctrl.error" ng-bind="$ctrl.error" class="error"></span>
+    <span ng-if="$ctrl.error"
+          ng-bind="$ctrl.error"
+          class="error"></span>
 </div>
 <div class="keys-manual"></div>
 <div ng-click="$ctrl.check()">check()</div>
 <div>
-    Spent time: <span ng-bind="$ctrl.spentTimeToShow"></span>
+    Spent time:
+    <span ng-bind="$ctrl.spentTimeToShow"></span>
 </div>
 <div>
-    Words loaded: <span ng-bind="$ctrl.wordsLoaded"></span>
+    Words loaded:
+    <span ng-bind="$ctrl.wordsLoaded"></span>
+</div>
+<div>
+    Progress:
+    <span ng-bind="$ctrl.progress"></span>
 </div>

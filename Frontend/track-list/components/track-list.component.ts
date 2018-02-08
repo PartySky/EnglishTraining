@@ -33,6 +33,7 @@ export class TrackListComponent {
     count: number = 0;
     fileToPlay: string;
     wordToShow: string;
+    progress: number;
     error: string;
     mode: string;
 
@@ -193,6 +194,10 @@ export class TrackListComponent {
     }
 
     autoSave() {
+        // TODO: count progress somewhere
+        // use filter
+        // use 
+        this.calculateProgress()
         let autoSaveTimer = this.getSecondsToday() - this.autoSaveTimerPrevious;
         const timerAmmount: number = 15;
         if (autoSaveTimer > timerAmmount) {
@@ -379,6 +384,21 @@ export class TrackListComponent {
         this.spentTimeToShow = min + " : " + sec;
         console.log(timeDiff);
         this._currentTime = this.getSecondsToday();
+    }
+
+
+    calculateProgress() {
+        this.progress = this._words.filter(this.someFunc).length;
+    }
+
+    someFunc(word: VmWordExtended) {
+        // TODO: use daily min daily count
+        // check it
+        if ((word.dailyReapeatCountForEng > 3)
+            && (word.dailyReapeatCountForRus > 3)) {
+            return 1;
+        }
+        return -1;
     }
 
     check() {
