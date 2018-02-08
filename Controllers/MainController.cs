@@ -43,8 +43,8 @@ namespace EnglishTraining
                 var dictors_en = GetDictors(path, "en", word.Name_en);
                 var dictors_ru = GetDictors(path, "ru", word.Name_ru);
 
-                List<VmDictor> tempDictors_en = (dictors_en.Any()) ? dictors_en : new List<VmDictor>();
-                List<VmDictor> tempDictors_ru = (dictors_ru.Any()) ? dictors_ru : new List<VmDictor>();
+                //List<VmDictor> tempDictors_en = (dictors_en.Any()) ? dictors_en : new List<VmDictor>();
+                //List<VmDictor> tempDictors_ru = (dictors_ru.Any()) ? dictors_ru : new List<VmDictor>();
 
 				//var pathTempRu = Path.Combine(audioPath, word.Name_en) + ".wav";
 				// TODO: add english words
@@ -54,14 +54,16 @@ namespace EnglishTraining
 				//    break;
 				//}
 
-                var pathTempRu = Path.Combine(audioPath, word.Name_ru) + ".wav";
-                if(!tempDictors_ru.Any()
-                   && !fileChecker.CheckIfExist(pathTempRu)){
-                    Console.WriteLine("Word has no audio: {0}", word.Name_ru);
-                } 
+                // TODO: check for mp3 too
+                if (!dictors_ru.Any()){
+                    Console.WriteLine("Word has no ru audio: {0}", word.Name_ru);
+                }
+                else if (!dictors_en.Any())
+                {
+                    Console.WriteLine("Word has no en audio: {0}", word.Name_en);
+                }
                 else 
                 {
-                    // TODO: check audio type somewhere
                     wordsWithDictors.Add(new VmWordWithDictors{
                         Id = word.Id,
                         Name_en = word.Name_en,
@@ -71,9 +73,8 @@ namespace EnglishTraining
                         RepeatIterationNum = word.RepeatIterationNum,
                         NextRepeatDate = word.NextRepeatDate,
                         DailyReapeatCountForEng = word.DailyReapeatCountForEng,
-                        Dictors_en = tempDictors_en,
-                        Dictors_ru = tempDictors_ru,
-                        AudioType = "Default wav"
+                        Dictors_en = dictors_en,
+                        Dictors_ru = dictors_ru
                     });
 				}
 			}
@@ -249,34 +250,68 @@ namespace EnglishTraining
 			List<VmDictor> dictors = new List<VmDictor>();
             try
             {
+                FileChecker fileChecker = new FileChecker();
                 var langPath = Path.Combine(wordPath, lang);
 
-                if (!Directory.Exists(langPath)){
+                if (!Directory.Exists(langPath)) {
                     Console.WriteLine("Directory not found: {0}", langPath);
-                    return new List<VmDictor>{};
+                    var wavePath = Path.Combine(audioPath, wordNameInLocal + ".wav");
+                    var mp3Path = Path.Combine(audioPath, wordNameInLocal + ".mp3");
+
+                    if (fileChecker.CheckIfExist(wavePath))
+                    {
+                        dictors.Add(new VmDictor
+                        {
+                            username = "default",
+                            sex = "",
+                            country = "",
+                            langname = lang,
+                            AudioType = ".wav"
+                        });
+                    }
+                    else if (fileChecker.CheckIfExist(mp3Path))
+                    {
+                        dictors.Add(new VmDictor
+                        {
+                            username = "default",
+                            sex = "",
+                            country = "",
+                            langname = lang,
+                            AudioType = ".mp3"
+                        });
+                    }
+                    return dictors;
                 }
 
-				List<string> dirs = new List<string>(Directory.EnumerateDirectories(langPath));  
+                List<string> dirs = new List<string>(Directory.EnumerateDirectories(langPath));  
 
-                FileChecker fileChecker = new FileChecker();
 
                 foreach (var dir in dirs)
                 {
-                    var audioFormatTemp = (lang=="ru") ? ".wav" : ".mp3";
-                    var audioPathTemp = Path.Combine(dir, wordNameInLocal + audioFormatTemp);
-                    //var mp3Path = Path.Combine(dir, wordNameInLocal + ".mp3");
-                    //var wavPath = Path.Combine(dir, wordNameInLocal + ".wav");
-                    var isWavExist = fileChecker.CheckIfExist(audioPathTemp);
-                    //var isMp3Exist = fileChecker.ChecIfExist(mp3Path);
-                    //var wavExist = fileChecker.ChecIfExist(wavPath);
-                    if (isWavExist)
+                    var mp3Path = Path.Combine(dir, wordNameInLocal + ".mp3");
+                    var wavPath = Path.Combine(dir, wordNameInLocal + ".wav");
+
+                    if (fileChecker.CheckIfExist(mp3Path))
                     {
                         var dictor = new VmDictor
                         {
                             username = dir.Substring(dir.LastIndexOf(lang) + 3),
                             sex = "",
                             country = "",
-                            langname = lang
+                            langname = lang,
+                            AudioType = ".mp3"
+                        };
+                        dictors.Add(dictor);
+                    }
+                    else if (fileChecker.CheckIfExist(wavPath))
+                    {
+                        var dictor = new VmDictor
+                        {
+                            username = dir.Substring(dir.LastIndexOf(lang) + 3),
+                            sex = "",
+                            country = "",
+                            langname = lang,
+                            AudioType = ".wav"
                         };
                         dictors.Add(dictor);
                     }

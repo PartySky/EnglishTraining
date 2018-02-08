@@ -66,7 +66,7 @@ export class TrackListComponent {
             });
         document.addEventListener("keydown", (e) => this.keyDownTextField(e), false);
         this.autoSaveTimerPrevious = this.getSecondsToday();
-        if (this.mode === "Words") { 
+        if (this.mode === "Words") {
             this.checkAudio();
         }
     }
@@ -74,7 +74,7 @@ export class TrackListComponent {
     getWords() {
         let methodUrl: string;
         // TODO: move to services
-        switch (this.mode) { 
+        switch (this.mode) {
             case "Dictionary":
                 methodUrl = "dictionary";
                 break
@@ -82,8 +82,8 @@ export class TrackListComponent {
                 methodUrl = "";
                 break
             default:
-                console.log("Mode should be setted");    
-            return null;
+                console.log("Mode should be setted");
+                return null;
         }
         return this.$http
             .get<VmWord[]>(`${this._apiUrl}/${methodUrl}`)
@@ -98,7 +98,7 @@ export class TrackListComponent {
             const diffDays = Math.floor(timeDiff / (1000 * 3600 * 24));
             if (diffDays < 1) {
                 // do nothing
-            } else if (diffDays >= 1) { 
+            } else if (diffDays >= 1) {
                 // начинается новый день повторения,
                 // нужно передвинуть счетчик графика
                 word = this.updateSchedule(word, dateToday, diffDays);
@@ -110,8 +110,8 @@ export class TrackListComponent {
                     if (word.fourDaysLearnPhase
                         && (word.learnDay > 0)) {
                         word.learnDay--;
-                    }   
-                } else { 
+                    }
+                } else {
                     word.dailyReapeatCountForRus = 0;
                     word.dailyReapeatCountForEng = 0;
                 }
@@ -135,9 +135,9 @@ export class TrackListComponent {
                 case "bad":
                     if (word.learnDay > 0) {
                         word.learnDay--;
-                    }    
+                    }
                     break;
-                }
+            }
             word.nextRepeatDate = dateToday;
         } else {
             if (diffDays < 1) {
@@ -157,7 +157,7 @@ export class TrackListComponent {
     getLastRepeatingQuality(diffDays: number) {
         if (diffDays == 1) {
             return "good";
-        } else if ((diffDays > 1) && (diffDays <= 3)) { 
+        } else if ((diffDays > 1) && (diffDays <= 3)) {
             return "neutral"
         } else if ((diffDays > 3)) {
             return "bad"
@@ -235,21 +235,22 @@ export class TrackListComponent {
             if (this._words[0].dictors_en
                 && this._words[0].dictors_ru &&
                 (this._words[0].dictors_en.length != 0)
-                && (this._words[0].dictors_ru.length != 0))
-            {
+                && (this._words[0].dictors_ru.length != 0)) {
                 // TODO: get random dictor
+                // TODO: use dicotrs AudioType:
+                // this._audioFormat[this._currentLocal] = this._words[0].dictors_en[0].AudioType;
                 let wordTemp = this._words[0].Name[this._currentLocal];
                 let usernameTemp;
                 if (this._currentLocal == "en") {
                     usernameTemp = this._words[0].dictors_en[0].username
-                } else { 
+                } else {
                     usernameTemp = this._words[0].dictors_ru[0].username
                 }
                 this.fileToPlay = "./audio/" + wordTemp + "/" + this._currentLocal +
                     usernameTemp + "/" + wordTemp + this._audioFormat[this._currentLocal];
             } else {
                 this.fileToPlay = this._audioPath[this._currentLocal] +
-                   this._words[0].Name[this._currentLocal] + this._audioFormat[this._currentLocal];
+                    this._words[0].Name[this._currentLocal] + this._audioFormat[this._currentLocal];
             }
 
             console.log("cureent word: " + this._words[0].Name[this._currentLocal]);
@@ -280,12 +281,12 @@ export class TrackListComponent {
             if (keyCode == this._highRateLearn) {
                 this.wordToShow = this._currentWord.Name[this._currentLocal]
                     + " - " + this._currentWord.Name[invertedLang];
-                
+
                 // Сделать переключение языка для _highRateLearn
                 // Сделать включение/выключение проигрывания аудио для _highRateLearn
                 this.fileToPlay = this._audioPath[this._engLocal] +
                     this._currentWord.Name[this._engLocal] + this._audioFormat[this._engLocal];
-                
+
             } else {
                 this.wordToShow = this._currentWord.Name[invertedLang];
             }
@@ -305,10 +306,10 @@ export class TrackListComponent {
     }
 
     play() {
-        if (this.mode != "Words") { 
+        if (this.mode != "Words") {
             return;
         }
-        this.error = null;        
+        this.error = null;
         var audio = new Audio(this.fileToPlay);
         audio.play()
             .catch((error) => {
@@ -339,10 +340,10 @@ export class TrackListComponent {
     getRandomLocal(countForEng: number, countForRus: number) {
         var maxDiff = 3;
         var diff = countForEng - countForRus;
-        if (diff > maxDiff) { 
+        if (diff > maxDiff) {
             return "ru";
         }
-        if (diff < -maxDiff) { 
+        if (diff < -maxDiff) {
             return "en";
         }
 
