@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -19,54 +20,77 @@ namespace EnglishTraining
 
             using (var db = new WordContext())
             {
-                words = db.Words.Where(p => (p.Name_en.IndexOf(' ') < 0)).ToArray();
-                //words = db.Words.Where(p => p.Name_ru.IndexOf(' ') < 0
-                                       //&& (p.Name_en.IndexOf(' ') < 0)).ToArray();
+                //words = db.Words.Where(p => (p.Name_en.IndexOf(' ') < 0)).ToArray();
+                words = db.Words.Where(p => p.Name_ru.IndexOf(' ') < 0
+                && (p.Name_en.IndexOf(' ') < 0)).ToArray();
             }
 
-
-            foreach (VmWord parserWords in words)
+            foreach (VmWord parserWord in words)
             {
-                //string wordName = parserWords.Name_ru;
-                string wordName = parserWords.Name_en;
+                var lang = "ru";
+                string wordName;
 
-                Console.WriteLine(audioPath + "/" + parserWords.Name_ru + ".mp3");
-
-                if (!File.Exists(audioPath + "/" + parserWords.Name_en + ".mp3")
-                    && !File.Exists(audioPath + "/" + parserWords.Name_en + ".wav"))
+                switch (lang)
                 {
-                // TODO: get dicotrs from json
-                // TODO: save each dictor in one's folder
-                // TODO: made lang switcher
-                //if (!File.Exists(audioPath + "/" + parserWords.Name_ru + ".mp3") 
-                    //&& !File.Exists(audioPath + "/" + parserWords.Name_ru + ".wav")){
+                    case "ru":
+						wordName = parserWord.Name_ru;
+                        break;
+                    case "en":
+						wordName = parserWord.Name_en;
+                        break;
+                    default:
+                        throw new Exception("lang should be setted");
+                }
 
-                    // TODO: made lang switcher
-                    string wordRequestUrl = api.Url + wordName + "/language/en";
-                    //string wordRequestUrl = api.Url + wordName + "/language/ru";
+                Console.WriteLine(audioPath + "/" + parserWord.Name_ru + ".mp3");
+
+                if (!File.Exists(audioPath + "/" + wordName + ".mp3")
+                    && !File.Exists(audioPath + "/" + wordName + ".wav"))
+                {
+                    string wordRequestUrl = api.Url + wordName + "/language/" + lang;
                     Console.WriteLine(wordRequestUrl);
 
-                    string url = GetMp3Url(wordRequestUrl);
+                    VmResponseWord wordCollection = GetWordColletion(wordRequestUrl);
+
+                    var maxDictorsCount = 5;
                     // TODO: made url switcher
-                    // TODO: made lang switcher
                     // Get from wooordhunt
-                    //string url = "http://wooordhunt.ru/data/sound/word/uk/mp3/" + parserWords.Name_en + ".mp3";
+                    // string url = "http://wooordhunt.ru/data/sound/word/uk/mp3/"
+                    // + parserWords.Name_en + ".mp3";
 
                     Console.WriteLine("");
                     Console.WriteLine("delay");
                     Console.WriteLine(wordName);
-                    Console.WriteLine(url);
 
-                    System.Threading.Thread.Sleep(20);
-                    if (url != null){
-                        //GetAndSave(wordName, url);
-                        // TODO: made lang switcher
-                        GetAndSave(parserWords.Name_en, url);
-                    } else {
-                        // TODO: write log with words without audio
-                        Console.WriteLine("Word \"{0}\" hasn't audio", wordName);
+                    string dictorLang;
+
+					int i = 0;
+                    // TODO: add all not found words to log list
+                    // TODO: don't make request for words in not-found list
+                    foreach (VmResponseWordItem item in wordCollection.items)
+                    {
+                        dictorLang = item.code;
+                        System.Threading.Thread.Sleep(20);
+                        if ((item.pathmp3 != null) && ((dictorLang == "en") || (dictorLang == "ru")))
+                        {
+                            //GetAndSave(wordName, url);
+                            // TODO: made lang switcher
+
+                            // TODO: if not default, save to separated folders
+                            if (i <= maxDictorsCount)
+                            {
+                                GetAndSave(parserWord.Name_en, parserWord.Name_ru, 
+                                           wordName, dictorLang, item.pathmp3, item.username);
+                            }
+                            i++;
+                        }
+                        else
+                        {
+                            // TODO: write log with words without audio
+                            Console.WriteLine("Word \"{0}\" hasn't audio", wordName);
+                        }
                     }
-				}
+                }
             }
         }
 
@@ -76,7 +100,8 @@ namespace EnglishTraining
             using (var db = new WordContext())
             {
                 var existedWords = db.Words.ToArray();
-                foreach(VmCurrentWord word in words){
+                foreach (VmCurrentWord word in words)
+                {
                     if (!Array.Exists(existedWords, element => element.Name_en == word.Name_en))
                     {
                         db.Words.Update(new VmWord
@@ -91,10 +116,12 @@ namespace EnglishTraining
                             DailyReapeatCountForRus = 0
                         });
                         Console.WriteLine("Updating word \"{0}\"", word.Name_en);
-                    } else {
+                    }
+                    else
+                    {
                         Console.WriteLine("Skipped word \"{0}\"", word.Name_en);
                     }
-				}
+                }
                 var count = db.SaveChanges();
                 Console.WriteLine("{0} records saved to database", count);
             }
@@ -122,20 +149,29 @@ namespace EnglishTraining
             return words;
         }
 
-        static void GetAndSave(string filename, string url)
+        static void GetAndSave(string wordName_en, string wordName_ru, string wordNameInLang, 
+                               string lang, string url, string dictor)
         {
-            var filepath = Path.Combine(Directory.GetCurrentDirectory(), audioPath, filename + ".mp3");
+            var folderPath = Path.Combine(Directory.GetCurrentDirectory(),
+                                          audioPath, wordName_ru, lang, dictor);
+            var filePath = Path.Combine(folderPath, wordNameInLang + ".mp3");
+
+            if (File.Exists(filePath)) {
+                return;
+            }
 
             WebRequest request = WebRequest.Create(url);
             WebResponse response = request.GetResponseAsync().Result;
             var responseStream = response.GetResponseStream();
-            using (FileStream fileStream = new FileStream(filepath, FileMode.Create))
+
+            Directory.CreateDirectory(folderPath);
+            using (FileStream fileStream = new FileStream(filePath, FileMode.Create))
             {
                 responseStream.CopyTo(fileStream);
             }
         }
 
-        static string GetMp3Url(string url)
+        static VmResponseWord GetWordColletion(string url)
         {
             string responseText;
             WebRequest request = WebRequest.Create(url);
@@ -150,30 +186,15 @@ namespace EnglishTraining
                 Console.WriteLine(responseText);
             }
 
-            VmResponseWord wordCollection = JsonConvert.DeserializeObject<VmResponseWord>(responseText);
-            if (wordCollection.items.Count > 0){
-                var mp3Url = wordCollection.items[0].pathmp3;
-
-                for (int i = 0; i < wordCollection.items.Count; i++)
-                {
-                    var dictor = wordCollection.items[i].username;
-                    // TODO: get dictors from config
-                    if((dictor == "Selene71") ||
-                       (dictor == "manyaha") ||
-                       (dictor == "NatalyaT") ||
-                       (dictor == "Skvodo") ||
-                       (dictor == "1640max"))
-                    {
-						mp3Url = wordCollection.items[i].pathmp3;
-                    }
-                }
-
-				Console.WriteLine(mp3Url);
-				return mp3Url;
-            } else {
-                return null;
-            }
-
+            // TODO: sort by best dictors
+            // TODO: get dictors from config
+            ////  //              if((dictor == "Selene71") ||
+            ////  //                 (dictor == "manyaha") ||
+            ////  //                 (dictor == "NatalyaT") ||
+            ////  //                 (dictor == "Skvodo") ||
+            ////  //                 (dictor == "1640max"))
+            ////  //              {
+			return JsonConvert.DeserializeObject<VmResponseWord>(responseText);
         }
 
         static void GetAndSavePng()
