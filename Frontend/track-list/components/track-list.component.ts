@@ -360,7 +360,7 @@ export class TrackListComponent {
     }
 
     getRandomNumber(min: number, max: number) {
-        return Math.random() * (max - min) + min;
+        return Math.round(Math.random() * (max - min) + min);
     }
 
     getRandomLocal(countForEng: number, countForRus: number) {
@@ -382,7 +382,7 @@ export class TrackListComponent {
             return "en";
         }
 
-        let num = Math.round(this.getRandomNumber(0, 1));
+        let num = this.getRandomNumber(0, 1);
         switch (num) {
             case 0:
                 return "en";
