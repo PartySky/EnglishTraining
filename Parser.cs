@@ -44,15 +44,22 @@ namespace EnglishTraining
 
                 Console.WriteLine(audioPath + "/" + parserWord.Name_ru + ".mp3");
 
+				var maxDictorsCount = 5;
+                var existDictors = 0;
+                if(Directory.Exists(audioPath + "/" + parserWord.Name_ru + "/" + lang)){
+                    existDictors = Directory
+                        .GetDirectories(audioPath + "/" + parserWord.Name_ru + "/" + lang).Length;
+                }
+
                 if (!File.Exists(audioPath + "/" + wordName + ".mp3")
-                    && !File.Exists(audioPath + "/" + wordName + ".wav"))
+                    && !File.Exists(audioPath + "/" + wordName + ".wav")
+                    && existDictors <= maxDictorsCount)
                 {
                     string wordRequestUrl = api.Url + wordName + "/language/" + lang;
                     Console.WriteLine(wordRequestUrl);
+                    
+					VmResponseWord wordCollection = GetWordColletion(wordRequestUrl);
 
-                    VmResponseWord wordCollection = GetWordColletion(wordRequestUrl);
-
-                    var maxDictorsCount = 5;
                     // TODO: made url switcher
                     // Get from wooordhunt
                     // string url = "http://wooordhunt.ru/data/sound/word/uk/mp3/"

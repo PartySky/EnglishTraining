@@ -303,18 +303,23 @@ export class TrackListComponent {
         let audioTypeTemp: string;
         let usernameTemp: string;
         let fileToPlay: string;
+        let randNum = 0;
 
         // TODO: get random dictor
         if (lang == "en") {
-            audioTypeTemp = currentWord.dictors_en[0].audioType;
+            if (currentWord.dictors_en.length > 1) {
+                randNum = this.getRandomNumber(0, currentWord.dictors_en.length - 1);
+            }
+            audioTypeTemp = currentWord.dictors_en[randNum].audioType;
+            usernameTemp = currentWord.dictors_en[randNum].username
         } else {
-            audioTypeTemp = currentWord.dictors_ru[0].audioType;
+            if (currentWord.dictors_ru.length > 1) {
+                randNum = this.getRandomNumber(0, currentWord.dictors_ru.length - 1);            
+            }
+            audioTypeTemp = currentWord.dictors_ru[randNum].audioType;
+            usernameTemp = currentWord.dictors_ru[randNum].username
         }
-        if (lang == "en") {
-            usernameTemp = currentWord.dictors_en[0].username
-        } else {
-            usernameTemp = currentWord.dictors_ru[0].username
-        }
+
         if (usernameTemp != "default") {
             fileToPlay = this._audioPath[lang] +
                 currentWord.name_ru + "/" + lang + "/" +
