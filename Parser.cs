@@ -27,16 +27,16 @@ namespace EnglishTraining
 
             foreach (VmWord parserWord in words)
             {
-                var lang = "ru";
+                var lang = "en";
                 string wordName;
 
                 switch (lang)
                 {
                     case "ru":
-						wordName = parserWord.Name_ru;
+						wordName = parserWord.Name_ru.ToLower();
                         break;
                     case "en":
-						wordName = parserWord.Name_en;
+                        wordName = parserWord.Name_en.ToLower();
                         break;
                     default:
                         throw new Exception("lang should be setted");
@@ -44,7 +44,7 @@ namespace EnglishTraining
 
                 Console.WriteLine(audioPath + "/" + parserWord.Name_ru + ".mp3");
 
-				var maxDictorsCount = 5;
+                var maxDictorsCount = 5;
                 var existDictors = 0;
                 if(Directory.Exists(audioPath + "/" + parserWord.Name_ru + "/" + lang)){
                     existDictors = Directory
@@ -58,13 +58,29 @@ namespace EnglishTraining
                 {
                     string wordRequestUrl = api.Url + wordName + "/language/" + lang;
                     Console.WriteLine(wordRequestUrl);
-                    
-					VmResponseWord wordCollection = GetWordColletion(wordRequestUrl);
 
-                    // TODO: made url switcher
-                    // Get from wooordhunt
-                    // string url = "http://wooordhunt.ru/data/sound/word/uk/mp3/"
-                    // + parserWords.Name_en + ".mp3";
+                    VmResponseWord wordCollection = GetWordColletion(wordRequestUrl);
+
+                    // Adding woordhunt's dictors
+                    // TODO: check if mp3 exist
+                    //if (lang == "en"){
+                    //    wordCollection.items.Add(new VmResponseWordItem
+                    //    {
+                    //        id = 0,
+                    //        word = wordName,
+                    //        code = "en",
+                    //        username = "WooordhuntUk",
+                    //        pathmp3 = "http://wooordhunt.ru/data/sound/word/uk/mp3/" + wordName + ".mp3"
+                    //    });
+                    //    wordCollection.items.Add(new VmResponseWordItem
+                    //    {
+                    //        id = 0,
+                    //        word = wordName,
+                    //        code = "en",
+                    //        username = "WooordhuntUs",
+                    //        pathmp3 = "http://wooordhunt.ru/data/sound/word/us/mp3/" + wordName + ".mp3"
+                    //    });
+                    //}
 
                     Console.WriteLine("");
                     Console.WriteLine("delay");
