@@ -53,7 +53,8 @@ namespace EnglishTraining
 
                 if (!File.Exists(audioPath + "/" + wordName + ".mp3")
                     && !File.Exists(audioPath + "/" + wordName + ".wav")
-                    && existDictors <= maxDictorsCount)
+                    && (existDictors < maxDictorsCount)
+                    && (wordName.IndexOf('_') < 0))
                 {
                     string wordRequestUrl = api.Url + wordName + "/language/" + lang;
                     Console.WriteLine(wordRequestUrl);
