@@ -37,11 +37,11 @@ export class TrackListComponent {
     count: number = 0;
     fileToPlay: string;
     wordToShow: string;
-    completedWordsCount: number;
-    progress: number;
-    dailyGoalRepeatCount: number;
     error: string;
     mode: string;
+    progress: number;
+    dailyGoalRepeatCount: number;
+    completedWordsCount: number;
     doneWordsTail: number;
     doneWordsPercent: number;
     sprintFinishPercent: number = 75;
@@ -433,20 +433,30 @@ export class TrackListComponent {
     calculateProgress() {
         this.progress = 0;
 
-        this._words.forEach(word => {
+        if (this._currentWord) {
+            this.progress = this.progress + this._getProgressOfWord(this._currentWord);
+        }
 
-            if (word.dailyReapeatCountForEng < this.minReapeatCountPerDay) {
-                this.progress = this.progress + word.dailyReapeatCountForEng;
-            } else { 
-                this.progress = this.progress + this.minReapeatCountPerDay;                
-            }
-            
-            if (word.dailyReapeatCountForRus < this.minReapeatCountPerDay) {
-                this.progress = this.progress + word.dailyReapeatCountForRus;
-            } else {
-                this.progress = this.progress + this.minReapeatCountPerDay;
-            }
+        this._words.forEach(word => {
+            this.progress = this.progress + this._getProgressOfWord(this._currentWord);
         });
+    }
+
+    _getProgressOfWord(word: VmWordExtended) {
+        let progressOfWord = 0;
+
+        if (word.dailyReapeatCountForEng < this.minReapeatCountPerDay) {
+            progressOfWord = word.dailyReapeatCountForEng;
+        } else {
+            progressOfWord = this.minReapeatCountPerDay;
+        }
+
+        if (word.dailyReapeatCountForRus < this.minReapeatCountPerDay) {
+            progressOfWord = progressOfWord + word.dailyReapeatCountForRus;
+        } else {
+            progressOfWord = progressOfWord + this.minReapeatCountPerDay;
+        }
+        return progressOfWord;
     }
 
     returnWordToList() {
