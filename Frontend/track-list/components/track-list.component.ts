@@ -20,6 +20,7 @@ export class TrackListComponent {
     private _currentLocal: string;
     private _engLocal: string = "en";
     private _rusLocal: string = "en";
+    private defaultAudioPath: string = "default";
     private _currentTime: number;
     private _currentWord: VmWordExtended;
     private _spentTime: number = 0;
@@ -41,6 +42,9 @@ export class TrackListComponent {
     dailyGoalRepeatCount: number;
     error: string;
     mode: string;
+    doneWordsTail: number;
+    doneWordsPercent: number;
+    sprintFinishPercent: number = 75;
 
     constructor(
         // http: ng.IHttpService,
@@ -69,7 +73,9 @@ export class TrackListComponent {
                 this.setNextRepeateDate();
                 this._words.sort(this.compareRandom);
                 this.wordsLoaded = this._words.length;
+                this.doneWordsTail = this._words.length - 1;
                 this.dailyGoalRepeatCount = this.wordsLoaded * 2 * this.minReapeatCountPerDay;
+                this.calculateComplitedWords();
             });
         document.addEventListener("keydown", (e) => this.keyDownTextField(e), false);
         this.autoSaveTimerPrevious = this.getSecondsToday();
@@ -149,8 +155,6 @@ export class TrackListComponent {
             word.nextRepeatDate = dateToday;
         } else {
             if (diffDays < 1) {
-                console.log();
-                console.log();
                 // do nothing
                 // the words are being repeated this day
             } else if (diffDays >= 1) {
@@ -220,6 +224,9 @@ export class TrackListComponent {
         let today = new Date;
         this.calculateSpentTime();
         if (keyCode === this._keyNextWord) {
+            if (this._currentWord) {
+                this.returnWordToList();
+            }
             if (!this._words[0].CurrentRandomLocalization) {
                 this._currentLocal = this.getRandomLocal(
                     this._words[0].dailyReapeatCountForEng,
@@ -232,17 +239,7 @@ export class TrackListComponent {
             if (this.mode === "Dictionary") {
                 this.wordToShow = this._words[0].Name[this._currentLocal];
             }
-
-            if (this._currentWord) {
-                this._words.push(this._currentWord);
-            }
             this._currentWord = this._words[0];
-            // TODO: set repeat count after right answer, not before
-            if (this._currentLocal == "en") {
-                this._currentWord.dailyReapeatCountForEng++;
-            } else {
-                this._currentWord.dailyReapeatCountForRus++;
-            }
 
             this.fileToPlay = this.getFileToPlayPath(this._currentLocal, this._words[0]);
 
@@ -259,7 +256,13 @@ export class TrackListComponent {
             let numberToSplice: number;
             let invertedLang = this.invertLanguage(this._currentLocal);
 
-            let thirdPartOfWordsLenght: number = this._words.length / 3;
+            let thirdPartOfWordsLenght: number;            
+            if (this.doneWordsPercent < this.sprintFinishPercent) { 
+                thirdPartOfWordsLenght = this._words.length / 3;
+            } else {
+                thirdPartOfWordsLenght = this.doneWordsTail / 3;
+            }
+
             if (keyCode === this._highRateLearn) {
                 numberToSplice = this.getRandomNumber(4, 8);
             } else {
@@ -269,7 +272,6 @@ export class TrackListComponent {
             this._currentWord.CurrentRandomLocalization = this._currentLocal;
             
             // TODO: get random dictor
-            
             this.fileToPlay = this.getFileToPlayPath(invertedLang, this._currentWord);
             
             if (keyCode == this._highRateLearn) {
@@ -305,7 +307,6 @@ export class TrackListComponent {
         let fileToPlay: string;
         let randNum = 0;
 
-        // TODO: get random dictor
         if (lang == "en") {
             if (currentWord.dictors_en.length > 1) {
                 randNum = this.getRandomNumber(0, currentWord.dictors_en.length - 1);
@@ -325,8 +326,8 @@ export class TrackListComponent {
                 currentWord.name_ru + "/" + lang + "/" +
                 usernameTemp + "/" + wordTemp + audioTypeTemp;
         } else {
-            fileToPlay = this._audioPath[lang] +
-                currentWord.Name[lang] + audioTypeTemp;
+            fileToPlay = this._audioPath[lang] + this.defaultAudioPath + "/" +
+                lang + "/" + currentWord.Name[lang] + audioTypeTemp;
         }
         return fileToPlay;
     }
@@ -418,8 +419,13 @@ export class TrackListComponent {
 
 
     calculateComplitedWords() {
-        // this.completedWordsCount = this._words.filter(this.isWordDone).length;
-        this.completedWordsCount = this._words
+        let countForCurrentWord = 0;
+        if (this._currentWord
+            && this._currentWord.dailyReapeatCountForEng >= this.minReapeatCountPerDay
+            && this._currentWord.dailyReapeatCountForRus >= this.minReapeatCountPerDay) { 
+            countForCurrentWord = 1;
+        }
+        this.completedWordsCount = countForCurrentWord + this._words
             .filter(p => p.dailyReapeatCountForEng >= this.minReapeatCountPerDay
                 && p.dailyReapeatCountForRus >= this.minReapeatCountPerDay).length;
     }
@@ -441,6 +447,29 @@ export class TrackListComponent {
                 this.progress = this.progress + this.minReapeatCountPerDay;
             }
         });
+    }
+
+    returnWordToList() {
+        if (this._currentLocal == "en") {
+            this._currentWord.dailyReapeatCountForEng++;
+        } else {
+            this._currentWord.dailyReapeatCountForRus++;
+        }
+
+        this.doneWordsPercent = Math.round((this.completedWordsCount/this.wordsLoaded) * 100);
+        
+        if ((this.doneWordsPercent >= this.sprintFinishPercent)
+            && (this.doneWordsTail > 0)) {
+            if ((this._currentWord.dailyReapeatCountForRus >= this.minReapeatCountPerDay)
+                && (this._currentWord.dailyReapeatCountForEng >= this.minReapeatCountPerDay)) {
+                this._words.push(this._currentWord);
+                this.doneWordsTail--;
+            } else {
+                this._words.splice(this.doneWordsTail, 0, this._currentWord);
+            }
+        } else {
+            this._words.push(this._currentWord);
+        }
     }
 
     check() {

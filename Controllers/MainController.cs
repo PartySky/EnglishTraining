@@ -28,7 +28,7 @@ namespace EnglishTraining
 
             using (var db = new WordContext())
             {
-                words = db.Words.Where(p => (p.Name_ru.IndexOf(' ') < 0)
+                words = db.Words.Where(p=> (p.Name_ru.IndexOf(' ') < 0)
                                        && (p.Name_en.IndexOf(' ') < 0)
                                        && (p.NextRepeatDate <= dateToday)).ToArray();
             }
@@ -56,11 +56,11 @@ namespace EnglishTraining
 
                 // TODO: check for mp3 too
                 if (!dictors_ru.Any()){
-                    Console.WriteLine("Word has no ru audio: {0}", word.Name_ru);
+                    Console.WriteLine("Word has no ru dictors: {0}", word.Name_ru);
                 }
                 else if (!dictors_en.Any())
                 {
-                    Console.WriteLine("Word has no en audio: {0}", word.Name_en);
+                    Console.WriteLine("Word has no en dictors: {0}", word.Name_en);
                 }
                 else 
                 {
@@ -73,6 +73,7 @@ namespace EnglishTraining
                         RepeatIterationNum = word.RepeatIterationNum,
                         NextRepeatDate = word.NextRepeatDate,
                         DailyReapeatCountForEng = word.DailyReapeatCountForEng,
+                        DailyReapeatCountForRus = word.DailyReapeatCountForRus,
                         Dictors_en = dictors_en,
                         Dictors_ru = dictors_ru
                     });
@@ -247,6 +248,7 @@ namespace EnglishTraining
 
         public List<VmDictor> GetDictors(string wordPath, string lang, string wordNameInLocal)
         {
+            var defaultAudioPath = Path.Combine(audioPath, "default");
 			List<VmDictor> dictors = new List<VmDictor>();
             try
             {
@@ -255,8 +257,9 @@ namespace EnglishTraining
 
                 if (!Directory.Exists(langPath)) {
                     Console.WriteLine("Directory not found: {0}", langPath);
-                    var wavePath = Path.Combine(audioPath, wordNameInLocal + ".wav");
-                    var mp3Path = Path.Combine(audioPath, wordNameInLocal + ".mp3");
+
+                    var wavePath = Path.Combine(audioPath, defaultAudioPath, lang, wordNameInLocal + ".wav");
+                    var mp3Path = Path.Combine(audioPath, defaultAudioPath, lang, wordNameInLocal + ".mp3");
 
                     if (fileChecker.CheckIfExist(wavePath))
                     {
@@ -285,7 +288,6 @@ namespace EnglishTraining
 
                 List<string> dirs = new List<string>(Directory.EnumerateDirectories(langPath));  
 
-
                 foreach (var dir in dirs)
                 {
                     var mp3Path = Path.Combine(dir, wordNameInLocal + ".mp3");
@@ -295,7 +297,7 @@ namespace EnglishTraining
                     {
                         var dictor = new VmDictor
                         {
-                            username = dir.Substring(dir.LastIndexOf(lang) + 3),
+                            username = dir.Substring(dir.LastIndexOf(lang + "/") + 3),
                             sex = "",
                             country = "",
                             langname = lang,
@@ -307,7 +309,7 @@ namespace EnglishTraining
                     {
                         var dictor = new VmDictor
                         {
-                            username = dir.Substring(dir.LastIndexOf(lang) + 3),
+                            username = dir.Substring(dir.LastIndexOf(lang + "/") + 3),
                             sex = "",
                             country = "",
                             langname = lang,
@@ -315,8 +317,8 @@ namespace EnglishTraining
                         };
                         dictors.Add(dictor);
                     }
-                    Console.WriteLine("{0} dictor(s) found for word {1}.", dirs.Count, wordNameInLocal);
                 }
+                Console.WriteLine("{0} dictor(s) found for word {1}.", dirs.Count, wordNameInLocal);
             }
             catch (PathTooLongException PathEx)
             {
