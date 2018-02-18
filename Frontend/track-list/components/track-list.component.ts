@@ -438,7 +438,7 @@ export class TrackListComponent {
         }
 
         this._words.forEach(word => {
-            this.progress = this.progress + this._getProgressOfWord(this._currentWord);
+            this.progress = this.progress + this._getProgressOfWord(word);
         });
     }
 

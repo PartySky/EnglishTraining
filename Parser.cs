@@ -51,8 +51,11 @@ namespace EnglishTraining
                         .GetDirectories(audioPath + "/" + parserWord.Name_ru + "/" + lang).Length;
                 }
 
-                if (!File.Exists(audioPath + "/" + wordName + ".mp3")
-                    && !File.Exists(audioPath + "/" + wordName + ".wav")
+                var defaultAudioPath = Path.Combine(audioPath, "default", lang);
+
+                if (!File.Exists(defaultAudioPath + "/" + wordName + ".mp3")
+                    && !File.Exists(defaultAudioPath + "/" + wordName + ".wav")
+				    //&& !Directory.Exists(audioPath + "/" + parserWord.Name_ru + "/" + lang)
                     && (existDictors < maxDictorsCount)
                     && (wordName.IndexOf('_') < 0))
                 {
@@ -94,7 +97,7 @@ namespace EnglishTraining
                     foreach (VmResponseWordItem item in wordCollection.items)
                     {
                         dictorLang = item.code;
-                        System.Threading.Thread.Sleep(20);
+                        System.Threading.Thread.Sleep(10);
                         if ((item.pathmp3 != null) && ((dictorLang == "en") || (dictorLang == "ru")))
                         {
                             //GetAndSave(wordName, url);
