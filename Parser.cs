@@ -52,8 +52,8 @@ namespace EnglishTraining
                 }
 
                 Console.WriteLine(audioPath + "/" + parserWord.Name_ru + ".mp3");
+				var maxDictorsCount = 5;
 
-                var maxDictorsCount = 5;
                 var existDictors = 0;
                 if(Directory.Exists(audioPath + "/" + parserWord.Name_ru + "/" + lang)){
                     existDictors = Directory
@@ -65,7 +65,6 @@ namespace EnglishTraining
                 if (parsedWods.IndexOf(wordName) < 0
                     && !File.Exists(defaultAudioPath + "/" + wordName + ".mp3")
                     && !File.Exists(defaultAudioPath + "/" + wordName + ".wav")
-				    //&& !Directory.Exists(audioPath + "/" + parserWord.Name_ru + "/" + lang)
                     && (existDictors < maxDictorsCount)
                     && (wordName.IndexOf('_') < 0))
                 {
@@ -73,34 +72,37 @@ namespace EnglishTraining
                     Console.WriteLine(wordRequestUrl);
 
                     VmResponseWord wordCollection = GetWordColletion(wordRequestUrl);
-                    var x = wordCollection.items;
 
-List<string> unsorted = new List<string>
-{
-    "green",
-    "blue",
-    "red",
-    "yellow",
-    "orange"
-};
+                    var bestDictorsTemp = wordCollection.items.Where(
+                        p => bestDictors.Any(z => z.Equals(p.username))
+                    );
+                    var normalDictorsTemp = wordCollection.items.Where(
+                        p => (!bestDictors.Any(z => z.Equals(p.username))
+                              && !worstDictors.Any(z => z.Equals(p.username)))
+                    );
+                    var worstDictorsTemp = wordCollection.items.Where(
+                        p => worstDictors.Any(z => z.Equals(p.username))
+                    );
 
+                    int dictorCount = wordCollection.items.Count();
+                    VmResponseWordItem[] sortedDictors = new VmResponseWordItem[dictorCount];
 
-List<string> itemsToGetOnTop = new List<string>
-{
-    "orange",
-    "yellow"
-};
-                    unsorted.FirstOrDefault(p =>itemsToGetOnTop.IndexOf(p) >= 0);
+                    int iForDictors = 0;
 
-List<string> sorted = new List<string>
-{
-    "orange",
-    "yellow",
-    "green",
-    "blue",
-    "red"
-};
-
+                    foreach(VmResponseWordItem dictor in bestDictorsTemp) {
+                        sortedDictors[iForDictors] = dictor;
+                        iForDictors++;
+                    }
+                    foreach (VmResponseWordItem dictor in normalDictorsTemp)
+                    {
+                        sortedDictors[iForDictors] = dictor;
+                        iForDictors++;
+                    }
+                    foreach (VmResponseWordItem dictor in worstDictorsTemp)
+                    {
+                        sortedDictors[iForDictors] = dictor;
+                        iForDictors++;
+                    }
 
                     // Adding woordhunt's dictors
                     // TODO: check if mp3 exist
@@ -131,9 +133,7 @@ List<string> sorted = new List<string>
 
 					int i = 0;
 
-                    // TODO: sort dictors List<> in wordCollection.items by best and worst dictors
-                    
-                    foreach (VmResponseWordItem item in wordCollection.items)
+                    foreach (VmResponseWordItem item in sortedDictors)
                     {
                         dictorLang = item.code;
                         System.Threading.Thread.Sleep(10);
