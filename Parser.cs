@@ -73,6 +73,34 @@ namespace EnglishTraining
                     Console.WriteLine(wordRequestUrl);
 
                     VmResponseWord wordCollection = GetWordColletion(wordRequestUrl);
+                    var x = wordCollection.items;
+
+List<string> unsorted = new List<string>
+{
+    "green",
+    "blue",
+    "red",
+    "yellow",
+    "orange"
+};
+
+
+List<string> itemsToGetOnTop = new List<string>
+{
+    "orange",
+    "yellow"
+};
+                    unsorted.FirstOrDefault(p =>itemsToGetOnTop.IndexOf(p) >= 0);
+
+List<string> sorted = new List<string>
+{
+    "orange",
+    "yellow",
+    "green",
+    "blue",
+    "red"
+};
+
 
                     // Adding woordhunt's dictors
                     // TODO: check if mp3 exist
@@ -103,7 +131,7 @@ namespace EnglishTraining
 
 					int i = 0;
 
-                    // TODO: sort dictors in wordCollection.items be best and worst dictors
+                    // TODO: sort dictors List<> in wordCollection.items by best and worst dictors
                     
                     foreach (VmResponseWordItem item in wordCollection.items)
                     {
