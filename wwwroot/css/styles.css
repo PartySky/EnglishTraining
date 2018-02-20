@@ -42,5 +42,9 @@ body {
     background-repeat-y: no-repeat;
     background-position-x: center;
     background-position-y: center;
-    min-height: 400px;
+    min-height: 360px;
+}
+
+.stat {
+    font-size: 30px;
 }
