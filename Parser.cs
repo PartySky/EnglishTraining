@@ -11,16 +11,19 @@ namespace EnglishTraining
     public class Parser
     {
         public static string audioPath = "wwwroot/audio";
+        public string jsonConfigPath = Path.Combine(Directory.GetCurrentDirectory(), "jsons");
         public void Download()
         {
-            var jsonConfigPath = Path.Combine(Directory.GetCurrentDirectory(), "jsons", "api-config.json");
-            VmParserConfig api = JsonConvert.DeserializeObject<VmParserConfig>(File.ReadAllText(jsonConfigPath));
+            var apiPath = Path.Combine(jsonConfigPath, "api-config.json");
+            VmParserConfig api = JsonConvert.DeserializeObject<VmParserConfig>(File.ReadAllText(apiPath));
+
+            var parsedWodListPath = Path.Combine(jsonConfigPath, "parsed-wod-list.json");
+            var parsedWodList = JsonConvert.DeserializeObject<VmParsedWordList>(File.ReadAllText(parsedWodListPath));
 
             VmWord[] words;
 
             using (var db = new WordContext())
             {
-                //words = db.Words.Where(p => (p.Name_en.IndexOf(' ') < 0)).ToArray();
                 words = db.Words.Where(p => p.Name_ru.IndexOf(' ') < 0
                 && (p.Name_en.IndexOf(' ') < 0)).ToArray();
             }
@@ -53,7 +56,8 @@ namespace EnglishTraining
 
                 var defaultAudioPath = Path.Combine(audioPath, "default", lang);
 
-                if (!File.Exists(defaultAudioPath + "/" + wordName + ".mp3")
+                if (parsedWodList.Word.IndexOf(wordName) < 0
+                    && !File.Exists(defaultAudioPath + "/" + wordName + ".mp3")
                     && !File.Exists(defaultAudioPath + "/" + wordName + ".wav")
 				    //&& !Directory.Exists(audioPath + "/" + parserWord.Name_ru + "/" + lang)
                     && (existDictors < maxDictorsCount)
@@ -117,7 +121,16 @@ namespace EnglishTraining
                             Console.WriteLine("Word \"{0}\" hasn't audio", wordName);
                         }
                     }
+
+                    parsedWodList.Word.Add(wordName);
                 }
+            }
+
+            using (StreamWriter file = File.CreateText(parsedWodListPath))
+            {
+                JsonSerializer serializer = new JsonSerializer();
+                //serialize object directly into file stream
+                serializer.Serialize(file, parsedWodList);
             }
         }
 
