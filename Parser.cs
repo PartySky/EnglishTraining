@@ -18,8 +18,14 @@ namespace EnglishTraining
             VmParserConfig api = JsonConvert.DeserializeObject<VmParserConfig>(File.ReadAllText(apiPath));
 
             var parsedWodListPath = Path.Combine(jsonConfigPath, "parsed-wod-list.json");
-            var parsedWodList = JsonConvert.DeserializeObject<VmParsedWordList>(File.ReadAllText(parsedWodListPath));
+            var parsedWods = JsonConvert.DeserializeObject<List<string>>(File.ReadAllText(parsedWodListPath));
 
+            var bestDictorsPath = Path.Combine(jsonConfigPath, "best-dictors.json");
+            var bestDictors = JsonConvert.DeserializeObject<List<string>>(File.ReadAllText(bestDictorsPath));
+
+            var worstDictorsPath = Path.Combine(jsonConfigPath, "worst-dictors.json");
+            var worstDictors = JsonConvert.DeserializeObject<List<string>>(File.ReadAllText(worstDictorsPath));
+            
             VmWord[] words;
 
             using (var db = new WordContext())
@@ -56,7 +62,7 @@ namespace EnglishTraining
 
                 var defaultAudioPath = Path.Combine(audioPath, "default", lang);
 
-                if (parsedWodList.Word.IndexOf(wordName) < 0
+                if (parsedWods.IndexOf(wordName) < 0
                     && !File.Exists(defaultAudioPath + "/" + wordName + ".mp3")
                     && !File.Exists(defaultAudioPath + "/" + wordName + ".wav")
 				    //&& !Directory.Exists(audioPath + "/" + parserWord.Name_ru + "/" + lang)
@@ -96,18 +102,17 @@ namespace EnglishTraining
                     string dictorLang;
 
 					int i = 0;
-                    // TODO: add all not found words to log list
-                    // TODO: don't make request for words in not-found list
+
+                    // TODO: sort dictors in wordCollection.items be best and worst dictors
+                    
                     foreach (VmResponseWordItem item in wordCollection.items)
                     {
                         dictorLang = item.code;
                         System.Threading.Thread.Sleep(10);
                         if ((item.pathmp3 != null) && ((dictorLang == "en") || (dictorLang == "ru")))
                         {
-                            //GetAndSave(wordName, url);
                             // TODO: made lang switcher
-
-                            // TODO: if not default, save to separated folders
+                            
                             if (i <= maxDictorsCount)
                             {
                                 GetAndSave(parserWord.Name_en, parserWord.Name_ru, 
@@ -122,7 +127,7 @@ namespace EnglishTraining
                         }
                     }
 
-                    parsedWodList.Word.Add(wordName);
+                    parsedWods.Add(wordName);
                 }
             }
 
@@ -130,7 +135,7 @@ namespace EnglishTraining
             {
                 JsonSerializer serializer = new JsonSerializer();
                 //serialize object directly into file stream
-                serializer.Serialize(file, parsedWodList);
+                serializer.Serialize(file, parsedWods);
             }
         }
 
