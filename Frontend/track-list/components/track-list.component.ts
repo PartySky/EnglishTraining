@@ -3,7 +3,6 @@ import { VmWordExtended } from "./models/VmWordExtended";
 import { VmAudioPath } from "./models/VmAudioPath";
 import { name } from "../track-list.module";
 import { fail } from "assert";
-// import { ApiService } from "../services/api.service";
 
 export class TrackListComponent {
     // private readonly _http: ng.IHttpService;
@@ -33,7 +32,7 @@ export class TrackListComponent {
     minReapeatCountPerDay: number = 3;
     spentTimeToShow: string;
     wordsLoaded: number;
-    autoSaveTimerPrevious: number;
+    autoSaveTimerPrevious: Date;
     count: number = 0;
     fileToPlay: string;
     wordToShow: string;
@@ -78,7 +77,7 @@ export class TrackListComponent {
                 this.calculateComplitedWords();
             });
         document.addEventListener("keydown", (e) => this.keyDownTextField(e), false);
-        this.autoSaveTimerPrevious = this.getSecondsToday();
+        this.autoSaveTimerPrevious = new Date();
         this.completedWordsCount = 0;
         this.progress = 0;
         // TODO: remove it
@@ -205,16 +204,17 @@ export class TrackListComponent {
     }
 
     autoSave() {
-        // TODO: count progress somewhere
-        // use filter
-        let autoSaveTimer = this.getSecondsToday() - this.autoSaveTimerPrevious;
+        let autoSaveTimer = Math.floor(
+            ((new Date()).getTime() - this.autoSaveTimerPrevious.getTime()) / 1000
+        );
+
         const timerAmmount: number = 15;
         if (autoSaveTimer > timerAmmount) {
             this.calculateProgress();
             this.calculateComplitedWords()
             this.updateWord(this._words);
             console.log("Auto Save!!!");
-            this.autoSaveTimerPrevious = this.getSecondsToday();
+            this.autoSaveTimerPrevious = new Date();
         }
     }
 
@@ -256,8 +256,8 @@ export class TrackListComponent {
             let numberToSplice: number;
             let invertedLang = this.invertLanguage(this._currentLocal);
 
-            let thirdPartOfWordsLenght: number;            
-            if (this.doneWordsPercent < this.sprintFinishPercent) { 
+            let thirdPartOfWordsLenght: number;
+            if (this.doneWordsPercent < this.sprintFinishPercent) {
                 thirdPartOfWordsLenght = this._words.length / 3;
             } else {
                 thirdPartOfWordsLenght = this.doneWordsTail / 3;
@@ -270,18 +270,18 @@ export class TrackListComponent {
                     thirdPartOfWordsLenght * 2);
             }
             this._currentWord.CurrentRandomLocalization = this._currentLocal;
-            
+
             // TODO: get random dictor
             this.fileToPlay = this.getFileToPlayPath(invertedLang, this._currentWord);
-            
+
             if (keyCode == this._highRateLearn) {
                 this.wordToShow = this._currentWord.Name[this._currentLocal]
                     + " - " + this._currentWord.Name[invertedLang];
 
                 // Сделать переключение языка для _highRateLearn
                 // Сделать включение/выключение проигрывания аудио для _highRateLearn
-                this.fileToPlay = this.getFileToPlayPath(this._engLocal, this._currentWord);                
-                    
+                this.fileToPlay = this.getFileToPlayPath(this._engLocal, this._currentWord);
+
             } else {
                 this.wordToShow = this._currentWord.Name[invertedLang];
             }
@@ -315,7 +315,7 @@ export class TrackListComponent {
             usernameTemp = currentWord.dictors_en[randNum].username
         } else {
             if (currentWord.dictors_ru.length > 1) {
-                randNum = this.getRandomNumber(0, currentWord.dictors_ru.length - 1);            
+                randNum = this.getRandomNumber(0, currentWord.dictors_ru.length - 1);
             }
             audioTypeTemp = currentWord.dictors_ru[randNum].audioType;
             usernameTemp = currentWord.dictors_ru[randNum].username
@@ -371,7 +371,7 @@ export class TrackListComponent {
             && (countForRus < this.minReapeatCountPerDay)) {
             return "ru";
         } else if ((countForEng < this.minReapeatCountPerDay)
-            && (countForRus > this.minReapeatCountPerDay)) { 
+            && (countForRus > this.minReapeatCountPerDay)) {
             return "en";
         }
 
@@ -400,13 +400,10 @@ export class TrackListComponent {
         }
     }
 
-    getSecondsToday() {
-        var d = new Date();
-        return d.getHours() * 3600 + d.getMinutes() * 60 + d.getSeconds();
-    };
-
     calculateSpentTime() {
-        let timeDiff = (this.getSecondsToday() - this._currentTime);
+        const timeNow = Math.floor((new Date()).getTime() / 1000);
+        const timeDiff = timeNow - this._currentTime;
+
         if (timeDiff < 15) {
             this._spentTime = this._spentTime + timeDiff;
         }
@@ -414,7 +411,7 @@ export class TrackListComponent {
         let sec = this._spentTime - min * 60;
         this.spentTimeToShow = min + " : " + sec;
         console.log(timeDiff);
-        this._currentTime = this.getSecondsToday();
+        this._currentTime = timeNow;
     }
 
 
@@ -422,7 +419,7 @@ export class TrackListComponent {
         let countForCurrentWord = 0;
         if (this._currentWord
             && this._currentWord.dailyReapeatCountForEng >= this.minReapeatCountPerDay
-            && this._currentWord.dailyReapeatCountForRus >= this.minReapeatCountPerDay) { 
+            && this._currentWord.dailyReapeatCountForRus >= this.minReapeatCountPerDay) {
             countForCurrentWord = 1;
         }
         this.completedWordsCount = countForCurrentWord + this._words
@@ -466,8 +463,8 @@ export class TrackListComponent {
             this._currentWord.dailyReapeatCountForRus++;
         }
 
-        this.doneWordsPercent = Math.round((this.completedWordsCount/this.wordsLoaded) * 100);
-        
+        this.doneWordsPercent = Math.round((this.completedWordsCount / this.wordsLoaded) * 100);
+
         if ((this.doneWordsPercent >= this.sprintFinishPercent)
             && (this.doneWordsTail > 0)) {
             if ((this._currentWord.dailyReapeatCountForRus >= this.minReapeatCountPerDay)
