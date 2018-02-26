@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
@@ -16,7 +17,24 @@ namespace EnglishTraining
         {
 
             Parser parser = new Parser();
-            string runMode = "Host"; 
+            string runMode = "Host";
+
+            const string FILENAME = @"c:\temp\test.txt";
+
+            string input = File.ReadAllText(FILENAME);
+
+            string pattern = @"steam";
+            MatchCollection matches = Regex.Matches(input, pattern, RegexOptions.Singleline);
+            foreach (Match match in matches)
+            {
+                Console.WriteLine(match.Groups["steam"]);
+            }
+            Console.ReadLine();
+
+
+            StringReader reader = new StringReader(input);
+
+            string[] words = reader.ReadToEnd().Split(' ');
 
             switch (runMode)
             {
