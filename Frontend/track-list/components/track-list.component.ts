@@ -29,7 +29,8 @@ export class TrackListComponent {
     private _keyStopAndPlay: number = 16;
     private _highRateLearn: number = 48;
     // TODO: get it from backend
-    minReapeatCountPerDay: number = 3;
+    minReapeatCountPerDayFDPhase: number = 3;
+    minReapeatCountPerDayIteration: number = 1;
     spentTimeToShow: string;
     wordsLoaded: number;
     autoSaveTimerPrevious: Date;
@@ -73,7 +74,17 @@ export class TrackListComponent {
                 this._words.sort(this.compareRandom);
                 this.wordsLoaded = this._words.length;
                 this.doneWordsTail = this._words.length - 1;
-                this.dailyGoalRepeatCount = this.wordsLoaded * 2 * this.minReapeatCountPerDay;
+
+                this.dailyGoalRepeatCount = 0;
+
+                let fourDaysPhaseWordNum = this._words.filter(p => p.fourDaysLearnPhase == true)
+                    .length * 2 * this.minReapeatCountPerDayFDPhase;
+                
+                let noNfourDaysPhaseWordNum = this._words.filter(p => p.fourDaysLearnPhase == false)
+                    .length * 2 * this.minReapeatCountPerDayIteration;
+                
+                this.dailyGoalRepeatCount = fourDaysPhaseWordNum + noNfourDaysPhaseWordNum;  
+
                 this.calculateComplitedWords();
             });
         document.addEventListener("keydown", (e) => this.keyDownTextField(e), false);
@@ -118,8 +129,8 @@ export class TrackListComponent {
                 // нужно передвинуть счетчик графика
                 word = this.updateSchedule(word, dateToday, diffDays);
                 // и обнулить счетчик дневных повторений
-                if ((word.dailyReapeatCountForRus < this.minReapeatCountPerDay)
-                    && (word.dailyReapeatCountForEng < this.minReapeatCountPerDay)) {
+                if ((word.dailyReapeatCountForRus < this.minReapeatCountPerDayFDPhase)
+                    && (word.dailyReapeatCountForEng < this.minReapeatCountPerDayFDPhase)) {
                     if (word.fourDaysLearnPhase
                         && (word.learnDay > 0)) {
                         word.learnDay--;
@@ -230,7 +241,8 @@ export class TrackListComponent {
             if (!this._words[0].CurrentRandomLocalization) {
                 this._currentLocal = this.getRandomLocal(
                     this._words[0].dailyReapeatCountForEng,
-                    this._words[0].dailyReapeatCountForRus);
+                    this._words[0].dailyReapeatCountForRus,
+                    this._words[0].fourDaysLearnPhase);
             } else {
                 this._currentLocal = this._words[0].CurrentRandomLocalization;
                 this._words[0].CurrentRandomLocalization = null;
@@ -364,16 +376,36 @@ export class TrackListComponent {
         return Math.round(Math.random() * (max - min) + min);
     }
 
-    getRandomLocal(countForEng: number, countForRus: number) {
+    getRandomLocal(
+        countForEng: number,
+        countForRus: number,
+        fourDaysLearnPhase: boolean
+    ) {
         var maxDiff = 2;
 
-        if ((countForEng > this.minReapeatCountPerDay)
-            && (countForRus < this.minReapeatCountPerDay)) {
-            return "ru";
-        } else if ((countForEng < this.minReapeatCountPerDay)
-            && (countForRus > this.minReapeatCountPerDay)) {
-            return "en";
+        switch (fourDaysLearnPhase) {
+            case true:
+                if ((countForEng > this.minReapeatCountPerDayFDPhase)
+                    && (countForRus < this.minReapeatCountPerDayFDPhase)) {
+                    return "ru";
+                } else if ((countForEng < this.minReapeatCountPerDayFDPhase)
+                    && (countForRus > this.minReapeatCountPerDayFDPhase)) {
+                    return "en";
+                };
+                break;
+            
+            case false:
+                if ((countForEng >= this.minReapeatCountPerDayIteration)
+                    && (countForRus < this.minReapeatCountPerDayIteration)) {
+                    return "ru";
+                } else if ((countForEng <= this.minReapeatCountPerDayIteration)
+                    && (countForRus > this.minReapeatCountPerDayIteration)) {
+                    return "en";
+                };
+                break;
         }
+
+        
 
         var diff = countForEng - countForRus;
         if (diff >= maxDiff) {
@@ -416,15 +448,45 @@ export class TrackListComponent {
 
 
     calculateComplitedWords() {
+        let countForCurrentWord = this.getCountForWord(this._currentWord);
+
+        const completedfourDaysPhaseWordNum = this._words
+            .filter(p => p.dailyReapeatCountForEng >= this.minReapeatCountPerDayFDPhase
+                && p.dailyReapeatCountForRus >= this.minReapeatCountPerDayFDPhase).length;
+
+        const completednoNfourDaysPhaseWordNum = this._words
+            .filter(p => p.dailyReapeatCountForEng >= this.minReapeatCountPerDayIteration
+                && p.dailyReapeatCountForRus >= this.minReapeatCountPerDayIteration).length;
+
+        this.completedWordsCount = countForCurrentWord
+            + completedfourDaysPhaseWordNum + completednoNfourDaysPhaseWordNum;
+    }
+
+    getCountForWord(word: VmWordExtended) { 
+        if (!word) { 
+            return 0;
+        }
+
         let countForCurrentWord = 0;
-        if (this._currentWord
-            && this._currentWord.dailyReapeatCountForEng >= this.minReapeatCountPerDay
-            && this._currentWord.dailyReapeatCountForRus >= this.minReapeatCountPerDay) {
+        let minRepeatCountForTemp: number;
+
+        switch (word.fourDaysLearnPhase) {
+            case true:
+                minRepeatCountForTemp = this.minReapeatCountPerDayFDPhase;
+                break;
+
+            case false:
+                minRepeatCountForTemp = this.minReapeatCountPerDayIteration;
+                break;
+        }
+
+        if (word
+            && word.dailyReapeatCountForEng >= minRepeatCountForTemp
+            && word.dailyReapeatCountForRus >= minRepeatCountForTemp) {
             countForCurrentWord = 1;
         }
-        this.completedWordsCount = countForCurrentWord + this._words
-            .filter(p => p.dailyReapeatCountForEng >= this.minReapeatCountPerDay
-                && p.dailyReapeatCountForRus >= this.minReapeatCountPerDay).length;
+
+        return countForCurrentWord;
     }
 
     calculateProgress() {
@@ -442,17 +504,36 @@ export class TrackListComponent {
     _getProgressOfWord(word: VmWordExtended) {
         let progressOfWord = 0;
 
-        if (word.dailyReapeatCountForEng < this.minReapeatCountPerDay) {
-            progressOfWord = word.dailyReapeatCountForEng;
-        } else {
-            progressOfWord = this.minReapeatCountPerDay;
+        switch (word.fourDaysLearnPhase) {
+            case true:
+                if (word.dailyReapeatCountForEng < this.minReapeatCountPerDayFDPhase) {
+                    progressOfWord = word.dailyReapeatCountForEng;
+                } else {
+                    progressOfWord = this.minReapeatCountPerDayFDPhase;
+                }
+
+                if (word.dailyReapeatCountForRus < this.minReapeatCountPerDayFDPhase) {
+                    progressOfWord = progressOfWord + word.dailyReapeatCountForRus;
+                } else {
+                    progressOfWord = progressOfWord + this.minReapeatCountPerDayFDPhase;
+                }
+                break;
+
+            case false:
+                if (word.dailyReapeatCountForEng < this.minReapeatCountPerDayIteration) {
+                    progressOfWord = word.dailyReapeatCountForEng;
+                } else {
+                    progressOfWord = this.minReapeatCountPerDayIteration;
+                }
+
+                if (word.dailyReapeatCountForRus < this.minReapeatCountPerDayIteration) {
+                    progressOfWord = progressOfWord + word.dailyReapeatCountForRus;
+                } else {
+                    progressOfWord = progressOfWord + this.minReapeatCountPerDayIteration;
+                }
+                break;
         }
 
-        if (word.dailyReapeatCountForRus < this.minReapeatCountPerDay) {
-            progressOfWord = progressOfWord + word.dailyReapeatCountForRus;
-        } else {
-            progressOfWord = progressOfWord + this.minReapeatCountPerDay;
-        }
         return progressOfWord;
     }
 
@@ -467,13 +548,29 @@ export class TrackListComponent {
 
         if ((this.doneWordsPercent >= this.sprintFinishPercent)
             && (this.doneWordsTail > 0)) {
-            if ((this._currentWord.dailyReapeatCountForRus >= this.minReapeatCountPerDay)
-                && (this._currentWord.dailyReapeatCountForEng >= this.minReapeatCountPerDay)) {
-                this._words.push(this._currentWord);
-                this.doneWordsTail--;
-            } else {
-                this._words.splice(this.doneWordsTail, 0, this._currentWord);
+
+            switch (this._currentWord.fourDaysLearnPhase) {
+                case true:
+                    if ((this._currentWord.dailyReapeatCountForRus >= this.minReapeatCountPerDayFDPhase)
+                        && (this._currentWord.dailyReapeatCountForEng >= this.minReapeatCountPerDayFDPhase)) {
+                        this._words.push(this._currentWord);
+                        this.doneWordsTail--;
+                    } else {
+                        this._words.splice(this.doneWordsTail, 0, this._currentWord);
+                    }
+                    break;
+
+                case false:
+                    if ((this._currentWord.dailyReapeatCountForRus >= this.minReapeatCountPerDayIteration)
+                        && (this._currentWord.dailyReapeatCountForEng >= this.minReapeatCountPerDayIteration)) {
+                        this._words.push(this._currentWord);
+                        this.doneWordsTail--;
+                    } else {
+                        this._words.splice(this.doneWordsTail, 0, this._currentWord);
+                    }
+                    break;
             }
+
         } else {
             this._words.push(this._currentWord);
         }

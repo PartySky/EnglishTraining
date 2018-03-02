@@ -209,10 +209,10 @@ namespace EnglishTraining
                 }
 
                 // Renewing Schedule
-                var minReapeatCountPerDay = 3;
+                var minReapeatCountPerDayIteration = 1;
                 renewingIteration = db.Words.Where(p => (p.NextRepeatDate <= dateToday)
-                                           && (p.DailyReapeatCountForEng >= minReapeatCountPerDay)
-                                           && (p.DailyReapeatCountForRus >= minReapeatCountPerDay)
+                                           && (p.DailyReapeatCountForEng >= minReapeatCountPerDayIteration)
+                                           && (p.DailyReapeatCountForRus >= minReapeatCountPerDayIteration)
                                            && (p.FourDaysLearnPhase == false)).ToArray();
 
                 var iterationIncrement = 7;
