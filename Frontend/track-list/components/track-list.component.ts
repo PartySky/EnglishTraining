@@ -451,15 +451,17 @@ export class TrackListComponent {
         let countForCurrentWord = this.getCountForWord(this._currentWord);
 
         const completedfourDaysPhaseWordNum = this._words
-            .filter(p => p.dailyReapeatCountForEng >= this.minReapeatCountPerDayFDPhase
+            .filter(p => p.fourDaysLearnPhase == true
+                && p.dailyReapeatCountForEng >= this.minReapeatCountPerDayFDPhase
                 && p.dailyReapeatCountForRus >= this.minReapeatCountPerDayFDPhase).length;
 
-        const completednoNfourDaysPhaseWordNum = this._words
-            .filter(p => p.dailyReapeatCountForEng >= this.minReapeatCountPerDayIteration
+        const completedIterationPhaseWordNum = this._words
+            .filter(p => p.fourDaysLearnPhase == false
+                && p.dailyReapeatCountForEng >= this.minReapeatCountPerDayIteration
                 && p.dailyReapeatCountForRus >= this.minReapeatCountPerDayIteration).length;
 
         this.completedWordsCount = countForCurrentWord
-            + completedfourDaysPhaseWordNum + completednoNfourDaysPhaseWordNum;
+            + completedfourDaysPhaseWordNum + completedIterationPhaseWordNum;
     }
 
     getCountForWord(word: VmWordExtended) { 
