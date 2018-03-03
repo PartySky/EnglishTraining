@@ -577,9 +577,4 @@ export class TrackListComponent {
             this._words.push(this._currentWord);
         }
     }
-
-    check() {
-        console.log();
-        console.log();
-    }
 }

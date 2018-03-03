@@ -46,5 +46,8 @@ body {
 }
 
 .stat {
-    font-size: 30px;
+    font-size: 40px;
+    font-family: 'Roboto', sans-serif;
+    color: #ffffff94;
+    font-weight: 100;
 }
