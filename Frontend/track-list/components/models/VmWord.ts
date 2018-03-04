@@ -16,5 +16,10 @@ export interface VmWord {
     dailyReapeatCountForRus: number;
     dictors_en?: VmDictor[];
     dictors_ru?: VmDictor[];
+    colocation: {
+        lang: string;
+        audioUrl: string;
+        notUsedToday: boolean;
+    }[];
 }
 
