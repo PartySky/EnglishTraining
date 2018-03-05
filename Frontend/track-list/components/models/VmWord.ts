@@ -1,4 +1,5 @@
 import { VmDictor } from "./VmDictor";
+import { VmCollocation } from "./VmCollocation";
 
 export interface VmWord {
     Id: number;
@@ -16,10 +17,6 @@ export interface VmWord {
     dailyReapeatCountForRus: number;
     dictors_en?: VmDictor[];
     dictors_ru?: VmDictor[];
-    colocation: {
-        lang: string;
-        audioUrl: string;
-        notUsedToday: boolean;
-    }[];
+    collocation: VmCollocation[];
 }
 

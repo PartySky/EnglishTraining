@@ -36,23 +36,24 @@ namespace EnglishTraining
             List<VmWordWithDictors> wordsWithDictors = new List<VmWordWithDictors>();
 
             FileChecker fileChecker = new FileChecker();
+            var collocationsUrl_en = Directory.GetFiles(Path.Combine(audioPath, "collocations", "en")).ToList();
 
-			foreach (VmWord word in words)
-			{
-				var path = Path.Combine(audioPath, word.Name_ru);
+            foreach (VmWord word in words)
+            {
+                var path = Path.Combine(audioPath, word.Name_ru);
                 var dictors_en = GetDictors(path, "en", word.Name_en);
                 var dictors_ru = GetDictors(path, "ru", word.Name_ru);
 
                 //List<VmDictor> tempDictors_en = (dictors_en.Any()) ? dictors_en : new List<VmDictor>();
                 //List<VmDictor> tempDictors_ru = (dictors_ru.Any()) ? dictors_ru : new List<VmDictor>();
 
-				//var pathTempRu = Path.Combine(audioPath, word.Name_en) + ".wav";
-				// TODO: add english words
-				//if (!tempDictors_en.Any()
-				//   && !fileChecker.ChecIfExist(pathTempEn))
-				//{
-				//    break;
-				//}
+                //var pathTempRu = Path.Combine(audioPath, word.Name_en) + ".wav";
+                // TODO: add english words
+                //if (!tempDictors_en.Any()
+                //   && !fileChecker.ChecIfExist(pathTempEn))
+                //{
+                //    break;
+                //}
 
                 // TODO: check for mp3 too
                 if (!dictors_ru.Any()){
@@ -64,6 +65,19 @@ namespace EnglishTraining
                 }
                 else 
                 {
+                    var availableCollocationsUrls = collocationsUrl_en.Where(p => p.IndexOf(word.Name_en) > 0);
+                    List<VmCollocation> collocationsTemp = new List<VmCollocation>();
+
+                    foreach(string collocation in availableCollocationsUrls) {
+                        var langTemp = "en";
+                        collocationsTemp.Add(new VmCollocation{
+                            Lang = langTemp,
+                            AudioUrl = "/audio/collocations/en/"
+                                + collocation.Substring(collocation.LastIndexOf(langTemp + "/") + 3),
+                            NotUsedToday = true
+                        });
+                    }
+
                     wordsWithDictors.Add(new VmWordWithDictors{
                         Id = word.Id,
                         Name_en = word.Name_en,
@@ -75,10 +89,11 @@ namespace EnglishTraining
                         DailyReapeatCountForEng = word.DailyReapeatCountForEng,
                         DailyReapeatCountForRus = word.DailyReapeatCountForRus,
                         Dictors_en = dictors_en,
-                        Dictors_ru = dictors_ru
+                        Dictors_ru = dictors_ru,
+                        Collocation = collocationsTemp
                     });
-				}
-			}
+                }
+            }
 
             return await Task<List<VmWordWithDictors>>.Factory.StartNew(() =>
             {
@@ -249,7 +264,7 @@ namespace EnglishTraining
         public List<VmDictor> GetDictors(string wordPath, string lang, string wordNameInLocal)
         {
             var defaultAudioPath = Path.Combine(audioPath, "default");
-			List<VmDictor> dictors = new List<VmDictor>();
+            List<VmDictor> dictors = new List<VmDictor>();
             try
             {
                 FileChecker fileChecker = new FileChecker();
