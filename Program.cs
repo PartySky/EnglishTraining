@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore;
@@ -17,6 +19,7 @@ namespace EnglishTraining
         {
 
             Parser parser = new Parser();
+            NewCollocationParser collocationParser = new NewCollocationParser();
             string runMode = "Host";
 
             const string FILENAME = @"c:\temp\test.txt";
@@ -40,11 +43,14 @@ namespace EnglishTraining
             {
                 case "Host":
                     BuildWebHost(args).Run();
-
                     break;
 
                 case "Parser":
                     parser.Download();
+                    break;
+
+                case "CollocationParser":
+                    collocationParser.Download();
                     break;
 
                 case "WordConverter":

@@ -82,6 +82,7 @@ export class TrackListComponent {
                             p.audioUrl == collocation.audioUrl).length == 0) {
                             
                             this._collocations.push({
+                                id: collocation.id,
                                 lang: collocation.lang,
                                 audioUrl: collocation.audioUrl,
                                 notUsedToday: true
@@ -214,7 +215,7 @@ export class TrackListComponent {
         return "good";
     }
 
-    updateWord(words: VmWord[]) {
+    updateWord(words: VmWord[], collocations: VmCollocation[]) {
         let methodUrl: string;
         switch (this.mode) {
             case "Dictionary":
@@ -228,7 +229,7 @@ export class TrackListComponent {
                 return null;
         }
         return this.$http
-            .post<string>(`${this._apiUrl}/${methodUrl}`, words)
+            .post<string>(`${this._apiUrl}/${methodUrl}`, { words, collocations } )
             .then(response => response.data);
     }
 
@@ -250,7 +251,7 @@ export class TrackListComponent {
         if (autoSaveTimer > timerAmmount) {
             this.calculateProgress();
             this.calculateComplitedWords()
-            this.updateWord(this._words);
+            this.updateWord(this._words, this._collocations);
             console.log("Auto Save!!!");
             this.autoSaveTimerPrevious = new Date();
         }
@@ -280,7 +281,7 @@ export class TrackListComponent {
             }
             this._currentWord = this._words[0];
 
-            this.fileToPlay = this.getFileToPlayPath(this._currentLocal, this._words[0]);
+            this.fileToPlay = this.getFileToPlayPath(this._currentLocal, this._words[0], true);
 
             console.log("cureent word: " + this._words[0].Name[this._currentLocal]);
 
@@ -311,7 +312,7 @@ export class TrackListComponent {
             this._currentWord.CurrentRandomLocalization = this._currentLocal;
 
             // TODO: get random dictor
-            this.fileToPlay = this.getFileToPlayPath(invertedLang, this._currentWord);
+            this.fileToPlay = this.getFileToPlayPath(invertedLang, this._currentWord, false);
 
             if (keyCode == this._highRateLearn) {
                 this.wordToShow = this._currentWord.Name[this._currentLocal]
@@ -319,7 +320,7 @@ export class TrackListComponent {
 
                 // Сделать переключение языка для _highRateLearn
                 // Сделать включение/выключение проигрывания аудио для _highRateLearn
-                this.fileToPlay = this.getFileToPlayPath(this._engLocal, this._currentWord);
+                this.fileToPlay = this.getFileToPlayPath(this._engLocal, this._currentWord, false);
 
             } else {
                 this.wordToShow = this._currentWord.Name[invertedLang];
@@ -339,7 +340,7 @@ export class TrackListComponent {
         }
     }
 
-    getFileToPlayPath(lang: string, currentWord: VmWordExtended) {
+    getFileToPlayPath(lang: string, currentWord: VmWordExtended, useCollocation: boolean) {
         let wordTemp = currentWord.Name[lang];
         let audioTypeTemp: string;
         let usernameTemp: string;
@@ -355,7 +356,8 @@ export class TrackListComponent {
             dailyReapeatCountForLangTemp = currentWord.dailyReapeatCountForRus;
         }
         
-        if (currentWord.collocation
+        if (useCollocation
+            && currentWord.collocation
             && this._collocations
             && (currentWord.learnDay > 0 || dailyReapeatCountForLangTemp > 1)) {
             

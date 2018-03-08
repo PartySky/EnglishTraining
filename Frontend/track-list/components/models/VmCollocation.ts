@@ -1,6 +1,7 @@
 export interface VmCollocation {
-        lang: string;
-        audioUrl: string;
-        notUsedToday: boolean;
+    id?: string;
+    lang: string;
+    audioUrl: string;
+    notUsedToday: boolean;
 }
 

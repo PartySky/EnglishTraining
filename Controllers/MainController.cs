@@ -22,21 +22,31 @@ namespace EnglishTraining
         public async Task<List<VmWordWithDictors>> GetWords()
         {
             VmWord[] words;
+            List<VmCollocation> collocations;
             DateTime dateToday = DateTime.Now;
 
             UpdateSchedule();
 
             using (var db = new WordContext())
             {
-                words = db.Words.Where(p=> (p.Name_ru.IndexOf(' ') < 0)
+                words = db.Words.Where(p => (p.Name_ru.IndexOf(' ') < 0)
                                        && (p.Name_en.IndexOf(' ') < 0)
                                        && (p.NextRepeatDate <= dateToday)).ToArray();
+
+                collocations = db.Collocations.Where(p => p.NextRepeatDate <= dateToday).ToList();
             }
 
             List<VmWordWithDictors> wordsWithDictors = new List<VmWordWithDictors>();
 
             FileChecker fileChecker = new FileChecker();
+
             var collocationsUrl_en = Directory.GetFiles(Path.Combine(audioPath, "collocations", "en")).ToList();
+
+            List<VmCollocation> collocationsWithAudio = collocations
+                .Where(p => collocationsUrl_en.FirstOrDefault(z => 
+                z.Substring(z.LastIndexOf("/audio/")) == p.AudioUrl).Any()).ToList();
+            
+            List<VmCollocation> availableCollocations;
 
             foreach (VmWord word in words)
             {
@@ -65,18 +75,10 @@ namespace EnglishTraining
                 }
                 else 
                 {
-                    var availableCollocationsUrls = collocationsUrl_en.Where(p => p.IndexOf(word.Name_en) > 0);
-                    List<VmCollocation> collocationsTemp = new List<VmCollocation>();
-
-                    foreach(string collocation in availableCollocationsUrls) {
-                        var langTemp = "en";
-                        collocationsTemp.Add(new VmCollocation{
-                            Lang = langTemp,
-                            AudioUrl = "/audio/collocations/en/"
-                                + collocation.Substring(collocation.LastIndexOf(langTemp + "/") + 3),
-                            NotUsedToday = true
-                        });
-                    }
+                    //var availableCollocationsUrls = collocationsUrl_en.Where(p => p.IndexOf(word.Name_en) > 0);
+                    //var availableCollocationsUrls = collocations.Where(p => p.AudioUrl.IndexOf(word.Name_en) > 0);
+                    availableCollocations = collocationsWithAudio
+                        .Where(p => p.AudioUrl.IndexOf(word.Name_en) > 0).ToList();
 
                     wordsWithDictors.Add(new VmWordWithDictors{
                         Id = word.Id,
@@ -90,7 +92,7 @@ namespace EnglishTraining
                         DailyReapeatCountForRus = word.DailyReapeatCountForRus,
                         Dictors_en = dictors_en,
                         Dictors_ru = dictors_ru,
-                        Collocation = collocationsTemp
+                        Collocation = availableCollocations
                     });
                 }
             }
@@ -121,11 +123,13 @@ namespace EnglishTraining
         }
 
         [HttpPost("update")]
-        public string Update([FromBody] VmWord[] words)
+        //public string Update([FromBody] VmWord[] words)
+        // TODO: use better name for VmWordAndCollocationUpdating
+        public string Update([FromBody] VmWordAndCollocationUpdating wordAndCollocationUpdating)
         {
             using (var db = new WordContext())
             {
-                foreach (VmWord word in words)
+                foreach (VmWord word in wordAndCollocationUpdating.words)
                 {
                     if (word == null)
                     {
@@ -136,6 +140,25 @@ namespace EnglishTraining
                     {
                         db.Words.Update(word);
                         Console.WriteLine("Updating word \"{0}\" id {1}", word.Name_en, word.Id);
+                    }
+                }
+                DateTime dateToday = DateTime.Now;
+                int collocationDelayPeriod = 4;
+                foreach (VmCollocation collocation in wordAndCollocationUpdating.collocations)
+                {
+                    if (collocation == null)
+                    {
+                        Console.WriteLine("collocation is null");
+                        throw new ArgumentNullException("collocation is null");
+                    }
+                    else
+                    {
+                        if (collocation.NotUsedToday == false){
+                            collocation.NextRepeatDate = dateToday.AddDays(collocationDelayPeriod);
+                            collocation.NotUsedToday = true;
+                            db.Collocations.Update(collocation);
+                            Console.WriteLine("Updating collocation \"{0}\"", collocation.AudioUrl);
+						}
                     }
                 }
                 db.SaveChanges();
