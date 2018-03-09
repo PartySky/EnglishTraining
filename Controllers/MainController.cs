@@ -156,9 +156,9 @@ namespace EnglishTraining
                         if (collocation.NotUsedToday == false){
                             collocation.NextRepeatDate = dateToday.AddDays(collocationDelayPeriod);
                             collocation.NotUsedToday = true;
-                            db.Collocations.Update(collocation);
-                            Console.WriteLine("Updating collocation \"{0}\"", collocation.AudioUrl);
 						}
+                        db.Collocations.Update(collocation);
+                        Console.WriteLine("Updating collocation \"{0}\"", collocation.AudioUrl);
                     }
                 }
                 db.SaveChanges();
