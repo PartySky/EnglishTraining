@@ -42,9 +42,13 @@ namespace EnglishTraining
 
             var collocationsUrl_en = Directory.GetFiles(Path.Combine(audioPath, "collocations", "en")).ToList();
 
+            // Check It
             List<VmCollocation> collocationsWithAudio = collocations
-                .Where(p => collocationsUrl_en.FirstOrDefault(z => 
-                z.Substring(z.LastIndexOf("/audio/")) == p.AudioUrl).Any()).ToList();
+            .Where(p => collocationsUrl_en.FirstOrDefault(z => 
+            z.Substring(z.LastIndexOf("/audio/")) == p.AudioUrl).Any()).ToList();
+
+            // Temp Fix
+            //List<VmCollocation> collocationsWithAudio = collocations;
             
             List<VmCollocation> availableCollocations;
 

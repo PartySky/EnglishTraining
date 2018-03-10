@@ -22,7 +22,7 @@ export class TrackListComponent {
     private _rusLocal: string = "en";
     private defaultAudioPath: string = "default";
     private collocationAudioPath: string = "collocations";
-    private _currentTime: number;
+    private _lastKeyPressedTime: number;
     private _currentWord: VmWordExtended;
     private _collocations: VmCollocation[];
     private _spentTime: number = 0;
@@ -48,7 +48,8 @@ export class TrackListComponent {
     doneWordsTail: number;
     doneWordsPercent: number;
     sprintFinishPercent: number = 75;
-
+    isDelayBeforeWordWithCollocation: boolean;
+    delayBeforeWordWithCollocation: number = 3;
     constructor(
         // http: ng.IHttpService,
         private $http: ng.IHttpService,
@@ -261,8 +262,12 @@ export class TrackListComponent {
         this.autoSave();
         let keyCode = e.keyCode;
         let today = new Date;
-        this.calculateSpentTime();
+
         if (keyCode === this._keyNextWord) {
+            if (this.pauseBeforeCollocation(this._words[0])) { 
+                this.playSignal();
+                return;
+            }
             if (this._currentWord) {
                 this.returnWordToList();
             }
@@ -275,15 +280,16 @@ export class TrackListComponent {
                 this._currentLocal = this._words[0].CurrentRandomLocalization;
                 this._words[0].CurrentRandomLocalization = null;
             }
+
             this.wordToShow = null;
             if (this.mode === "Dictionary") {
                 this.wordToShow = this._words[0].Name[this._currentLocal];
             }
             this._currentWord = this._words[0];
 
-            this.fileToPlay = this.getFileToPlayPath(this._currentLocal, this._words[0], true);
+            this.fileToPlay = this.getFileToPlayPath(this._currentLocal, this._currentWord, true);
 
-            console.log("cureent word: " + this._words[0].Name[this._currentLocal]);
+            console.log("cureent word: " + this._currentWord.Name[this._currentLocal]);
 
             this._words.shift();
             this.play();
@@ -338,6 +344,8 @@ export class TrackListComponent {
             }
             this.logElements();
         }
+        this.calculateSpentTime();
+
     }
 
     getFileToPlayPath(lang: string, currentWord: VmWordExtended, useCollocation: boolean) {
@@ -410,6 +418,11 @@ export class TrackListComponent {
                 console.log("Error while playing " + error);
             });
         console.log(this.fileToPlay);
+    }
+
+    playSignal() { 
+        var audio = new Audio("/signal/info_02_slow.mp3");
+        audio.play()
     }
 
     logElements() {
@@ -485,7 +498,7 @@ export class TrackListComponent {
 
     calculateSpentTime() {
         const timeNow = Math.floor((new Date()).getTime() / 1000);
-        const timeDiff = timeNow - this._currentTime;
+        const timeDiff = timeNow - this._lastKeyPressedTime;
 
         if (timeDiff < 15) {
             this._spentTime = this._spentTime + timeDiff;
@@ -494,7 +507,7 @@ export class TrackListComponent {
         let sec = this._spentTime - min * 60;
         this.spentTimeToShow = min + " : " + sec;
         console.log(timeDiff);
-        this._currentTime = timeNow;
+        this._lastKeyPressedTime = timeNow;
     }
 
 
@@ -609,5 +622,31 @@ export class TrackListComponent {
         } else {
             this._words.push(this._currentWord);
         }
+    }
+
+    pauseBeforeCollocation(word: VmWordExtended) {
+        if (word.collocation.length > 0
+            && word.collocation.filter(p => p.notUsedToday == true).length > 0) {
+            this.isDelayBeforeWordWithCollocation = true;
+        } else {
+            this.isDelayBeforeWordWithCollocation = false;
+        }
+        let timeFromLastKeyPressTillNow = (new Date().getTime() / 1000)
+            - this._lastKeyPressedTime;
+        if (this.isDelayBeforeWordWithCollocation
+            && timeFromLastKeyPressTillNow < this.delayBeforeWordWithCollocation) {
+            if (!word.CurrentRandomLocalization) { 
+                let randTemp = this.getRandomLocal(
+                    word.dailyReapeatCountForEng,
+                    word.dailyReapeatCountForRus,
+                    word.fourDaysLearnPhase);
+                word.CurrentRandomLocalization = randTemp;
+
+                if (randTemp == "en") { 
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
