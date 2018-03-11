@@ -15,7 +15,8 @@ namespace EnglishTraining
         public void FindNewWords()
         {
             VmWord[] wordsDB;
-            string excludedWordsFile = Path.Combine(Directory.GetCurrentDirectory(), "txt", "excluded-words.txt");
+            string excludedWordsFile = File.ReadAllText(
+                Path.Combine(Directory.GetCurrentDirectory(), "txt", "excluded-words.txt"));
 
             List<string> excludedWords = new HashSet<string>(excludedWordsFile
                                                              .Split(new[] { '\r', '\n', ' ' })).ToList();
