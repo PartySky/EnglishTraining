@@ -1,15 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore;
+﻿using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 
 namespace EnglishTraining
 {
@@ -20,24 +10,8 @@ namespace EnglishTraining
 
             Parser parser = new Parser();
             NewCollocationParser collocationParser = new NewCollocationParser();
+            WordFinder wordFinder = new WordFinder();
             string runMode = "Host";
-
-            const string FILENAME = @"c:\temp\test.txt";
-
-            string input = File.ReadAllText(FILENAME);
-
-            string pattern = @"steam";
-            MatchCollection matches = Regex.Matches(input, pattern, RegexOptions.Singleline);
-            foreach (Match match in matches)
-            {
-                Console.WriteLine(match.Groups["steam"]);
-            }
-            Console.ReadLine();
-
-
-            StringReader reader = new StringReader(input);
-
-            string[] words = reader.ReadToEnd().Split(' ');
 
             switch (runMode)
             {
@@ -66,6 +40,9 @@ namespace EnglishTraining
                     parser.UpdateDictionary();
                     break;
 
+                case "Word finder":
+                    wordFinder.FindNewWords();
+                    break;
             }
         }
 
