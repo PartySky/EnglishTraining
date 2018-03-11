@@ -636,13 +636,21 @@ export class TrackListComponent {
         if (this.isDelayBeforeWordWithCollocation
             && timeFromLastKeyPressTillNow < this.delayBeforeWordWithCollocation) {
             if (!word.CurrentRandomLocalization) { 
-                let randTemp = this.getRandomLocal(
+                let randLang = this.getRandomLocal(
                     word.dailyReapeatCountForEng,
                     word.dailyReapeatCountForRus,
                     word.fourDaysLearnPhase);
-                word.CurrentRandomLocalization = randTemp;
+                word.CurrentRandomLocalization = randLang;
 
-                if (randTemp == "en") { 
+                let dailyReapeatCountForLangTemp;
+                if (randLang == "en") {
+                    dailyReapeatCountForLangTemp = word.dailyReapeatCountForEng;
+                } else {
+                    dailyReapeatCountForLangTemp = word.dailyReapeatCountForRus;
+                }
+
+                if (randLang == "en"
+                    && (word.learnDay > 0 || dailyReapeatCountForLangTemp > 1)) { 
                     return true;
                 }
             }
