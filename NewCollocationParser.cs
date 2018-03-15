@@ -8,12 +8,13 @@ namespace EnglishTraining
 {
     public class NewCollocationParser
     {
-        public static string audioPath = "wwwroot/audio";
+        public static string audioPath = Path.Combine("wwwroot", "audio");
         public static string collocationPath = "collocations";
 
         public void Download()
         {
             VmWord[] words;
+            List<VmCollocation> collocations;
 
             using (var db = new WordContext())
             {
@@ -23,7 +24,8 @@ namespace EnglishTraining
 
             string htmlCode;
 
-            foreach (VmWord word in words){
+            foreach (VmWord word in words)
+            {
                 using (WebClient client = new WebClient())
                 {
                     client.Encoding = System.Text.Encoding.UTF8;
@@ -124,6 +126,28 @@ namespace EnglishTraining
                         }
                     }
                 }
+            }
+
+            using (var db = new WordContext())
+            {
+                // TODO: check for dublicates
+                collocations = db.Collocations.ToList();
+                var collocationsTemp = Directory.GetFiles(Path.Combine(audioPath, collocationPath)).ToList();
+                
+                var collocationsForExclude = collocationsTemp
+                    .Where(p => collocations.All(z => z.AudioUrl == p)).ToList();
+                
+                var collocationsNew = collocationsTemp.Except(collocationsForExclude);
+
+                foreach (string collocation in collocationsNew) {
+                    collocations.Add(new VmCollocation {
+                        Lang = "en",
+                        AudioUrl = collocation,
+                        NotUsedToday = true,
+                    });
+                }
+
+                db.SaveChanges();
             }
         }
 
