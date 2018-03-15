@@ -81,6 +81,8 @@ namespace EnglishTraining
                 {
                     //var availableCollocationsUrls = collocationsUrl_en.Where(p => p.IndexOf(word.Name_en) > 0);
                     //var availableCollocationsUrls = collocations.Where(p => p.AudioUrl.IndexOf(word.Name_en) > 0);
+                    
+                    // TODO: check if audio exists
                     availableCollocations = collocationsWithAudio
                         .Where(p => p.AudioUrl.IndexOf(word.Name_en) > 0).ToList();
 
