@@ -131,6 +131,18 @@ namespace EnglishTraining
             using (var db = new WordContext())
             {
                 // TODO: check for dublicates
+                var allCollocations = db.Collocations.ToList();
+                var duplicates = db.Collocations.Where(p => allCollocations
+                                                    .Count(z => z.AudioUrl == p.AudioUrl) > 0)
+                                                    .GroupBy(j => j.AudioUrl)
+                                                    .Select(p => p.LastOrDefault()).ToList();
+
+                foreach (VmCollocation collocation in duplicates)
+                {
+                    db.Collocations.Remove(collocation);
+                    Console.WriteLine("Removing duplicate \"{0}\" id {1}", collocation.AudioUrl, collocation.Id);
+                }
+
                 collocations = db.Collocations.ToList();
                 var collocationsTemp = Directory.GetFiles(Path.Combine(audioPath, collocationPath)).ToList();
                 
