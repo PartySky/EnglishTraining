@@ -9,7 +9,7 @@ namespace EnglishTraining.models
     {
         public int Id { get; set; }
         public string LearningLanguage { get; set; }
-        public int? DailyWordsAmount { get; set; }
+        public int? DailyRepeatAmount { get; set; }
         public int? DailyTimeAmount { get; set; }
     }
 }

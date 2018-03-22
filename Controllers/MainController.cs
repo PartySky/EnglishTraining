@@ -13,6 +13,9 @@ namespace EnglishTraining
     {
         string audioPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "audio");
 
+        int minReapeatCountPerDayIteration = 1;
+        int minReapeatCountPerDayFourDayPhase = 3;
+
         public IActionResult Index()
         {
             return View();
@@ -24,14 +27,19 @@ namespace EnglishTraining
             VmWord[] words;
             List<VmCollocation> collocations;
             DateTime dateToday = DateTime.Now;
+            int? dailyRepeatAmount = 0;
 
             UpdateSchedule();
 
             using (var db = new WordContext())
             {
+                if (db.Settings.DailyRepeatAmount != null) {
+                    dailyRepeatAmount = db.Settings.DailyRepeatAmount;
+                }
                 words = db.Words.Where(p => (p.Name_ru.IndexOf(' ') < 0)
-                                       && (p.Name_en.IndexOf(' ') < 0)
-                                       && (p.NextRepeatDate <= dateToday)).ToArray();
+                                     && (p.Name_en.IndexOf(' ') < 0)
+                                     && (p.NextRepeatDate <= dateToday))
+                                     .OrderBy(p => p.RepeatIterationNum).ToArray();
 
                 collocations = db.Collocations.Where(p => p.NextRepeatDate <= dateToday).ToList();
             }
@@ -51,9 +59,17 @@ namespace EnglishTraining
             //List<VmCollocation> collocationsWithAudio = collocations;
             
             List<VmCollocation> availableCollocations;
+            int repeatCount = 0;
 
             foreach (VmWord word in words)
             {
+                if (dailyRepeatAmount != 0
+                && repeatCount >= dailyRepeatAmount)
+                {
+                    break;
+
+                }
+                
                 var path = Path.Combine(audioPath, word.Name_ru);
                 var dictors_en = GetDictors(path, "en", word.Name_en);
                 var dictors_ru = GetDictors(path, "ru", word.Name_ru);
@@ -100,6 +116,18 @@ namespace EnglishTraining
                         Dictors_ru = dictors_ru,
                         Collocation = availableCollocations
                     });
+
+                    if (dailyRepeatAmount != 0)
+                    {
+                        if (word.FourDaysLearnPhase)
+                        {
+                            repeatCount = repeatCount + 2 * minReapeatCountPerDayFourDayPhase;
+                        }
+                        else
+                        {
+                            repeatCount = repeatCount + 2 * minReapeatCountPerDayIteration;
+                        }
+                    }
                 }
             }
 
@@ -253,7 +281,6 @@ namespace EnglishTraining
                 }
 
                 // Renewing Schedule
-                var minReapeatCountPerDayIteration = 1;
                 renewingIteration = db.Words.Where(p => (p.NextRepeatDate <= dateToday)
                                            && (p.DailyReapeatCountForEng >= minReapeatCountPerDayIteration)
                                            && (p.DailyReapeatCountForRus >= minReapeatCountPerDayIteration)
