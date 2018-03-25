@@ -4,18 +4,34 @@ using System.Collections.Generic;
 
 namespace EnglishTraining.Migrations
 {
-    public partial class AddSettings : Migration
+    public partial class Add_Collocations_And_Settigns : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "Collocations",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    AudioUrl = table.Column<string>(nullable: true),
+                    Lang = table.Column<string>(nullable: true),
+                    NextRepeatDate = table.Column<DateTime>(nullable: false),
+                    NotUsedToday = table.Column<bool>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Collocations", x => x.Id);
+                });
+
             migrationBuilder.CreateTable(
                 name: "Settings",
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
+                    DailyRepeatAmount = table.Column<int>(nullable: true),
                     DailyTimeAmount = table.Column<int>(nullable: true),
-                    DailyWordsAmount = table.Column<int>(nullable: true),
                     LearningLanguage = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
@@ -26,6 +42,9 @@ namespace EnglishTraining.Migrations
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "Collocations");
+
             migrationBuilder.DropTable(
                 name: "Settings");
         }

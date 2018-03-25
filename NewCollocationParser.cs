@@ -23,6 +23,7 @@ namespace EnglishTraining
             }
 
             string htmlCode;
+            string tempURL;
 
             foreach (VmWord word in words)
             {
@@ -120,10 +121,27 @@ namespace EnglishTraining
                         fileName = nameParts[0] + nameParts[1];
                         urlIndex = urlSubstrEnd;
                         Console.WriteLine(fileName);
-                        if (fileName != "")
+
+                        using (var db = new WordContext())
                         {
-                            GetAndSave(sourcePath + url, fileName, lang);
-                        }
+                            tempURL = Path.Combine("/" + "audio", collocationPath, lang, fileName + ".mp3");
+
+                            if (fileName != "")
+                            {
+                                GetAndSave(sourcePath + url, fileName, lang);
+                                var isCollocationExist = db.Collocations.Any(p => p.AudioUrl == tempURL);
+
+                                if (!isCollocationExist){
+                                    db.Collocations.Add(new VmCollocation
+                                    {
+                                        Lang = "en",
+                                        AudioUrl = tempURL,
+                                        NotUsedToday = true
+                                    });
+                                }
+                                db.SaveChanges();
+                            }
+						}
                     }
                 }
             }
@@ -132,8 +150,8 @@ namespace EnglishTraining
             {
                 // TODO: check for dublicates
                 var allCollocations = db.Collocations.ToList();
-                var duplicates = db.Collocations.Where(p => allCollocations
-                                                    .Count(z => z.AudioUrl == p.AudioUrl) > 0)
+                var duplicates = allCollocations.Where(p => allCollocations
+                                                    .Count(z => z.AudioUrl == p.AudioUrl) > 1)
                                                     .GroupBy(j => j.AudioUrl)
                                                     .Select(p => p.LastOrDefault()).ToList();
 

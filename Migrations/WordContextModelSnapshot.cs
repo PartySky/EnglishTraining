@@ -24,9 +24,9 @@ namespace EnglishTraining.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<int?>("DailyTimeAmount");
+                    b.Property<int?>("DailyRepeatAmount");
 
-                    b.Property<int?>("DailyWordsAmount");
+                    b.Property<int?>("DailyTimeAmount");
 
                     b.Property<string>("LearningLanguage");
 

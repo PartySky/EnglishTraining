@@ -33,8 +33,8 @@ namespace EnglishTraining
 
             using (var db = new WordContext())
             {
-                if (db.Settings.DailyRepeatAmount != null) {
-                    dailyRepeatAmount = db.Settings.DailyRepeatAmount;
+                if (db.Settings.First().DailyRepeatAmount != null) {
+                    dailyRepeatAmount = db.Settings.First().DailyRepeatAmount;
                 }
                 words = db.Words.Where(p => (p.Name_ru.IndexOf(' ') < 0)
                                      && (p.Name_en.IndexOf(' ') < 0)

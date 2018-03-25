@@ -11,8 +11,8 @@ using System;
 namespace EnglishTraining.Migrations
 {
     [DbContext(typeof(WordContext))]
-    [Migration("20180308140443_AddCollocations")]
-    partial class AddCollocations
+    [Migration("20180324094359_Add_Collocations_And_Settigns")]
+    partial class Add_Collocations_And_Settigns
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -25,9 +25,9 @@ namespace EnglishTraining.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<int?>("DailyTimeAmount");
+                    b.Property<int?>("DailyRepeatAmount");
 
-                    b.Property<int?>("DailyWordsAmount");
+                    b.Property<int?>("DailyTimeAmount");
 
                     b.Property<string>("LearningLanguage");
 
