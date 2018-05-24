@@ -33,7 +33,8 @@ namespace EnglishTraining
 
             using (var db = new WordContext())
             {
-                if (db.Settings.First().DailyRepeatAmount != null) {
+                if (db.Settings.First().DailyRepeatAmount != null)
+                {
                     dailyRepeatAmount = db.Settings.First().DailyRepeatAmount;
                 }
                 words = db.Words.Where(p => (p.Name_ru.IndexOf(' ') < 0)
@@ -51,13 +52,13 @@ namespace EnglishTraining
             var collocationsUrl_en = Directory.GetFiles(Path.Combine(audioPath, "collocations", "en")).ToList();
 
             // Check It
-            List<VmCollocation> collocationsWithAudio = collocations
-            .Where(p => collocationsUrl_en.FirstOrDefault(z => 
-            z.Substring(z.LastIndexOf("/audio/")) == p.AudioUrl).Any()).ToList();
+            //List<VmCollocation> collocationsWithAudio = collocations
+            //.Where(p => collocationsUrl_en.FirstOrDefault(z => 
+            //z.Substring(z.LastIndexOf("/audio/")) == p.AudioUrl).Any()).ToList();
 
             // Temp Fix
-            //List<VmCollocation> collocationsWithAudio = collocations;
-            
+            List<VmCollocation> collocationsWithAudio = collocations;
+
             List<VmCollocation> availableCollocations;
             int repeatCount = 0;
 
@@ -69,7 +70,7 @@ namespace EnglishTraining
                     break;
 
                 }
-                
+
                 var path = Path.Combine(audioPath, word.Name_ru);
                 var dictors_en = GetDictors(path, "en", word.Name_en);
                 var dictors_ru = GetDictors(path, "ru", word.Name_ru);
@@ -86,23 +87,25 @@ namespace EnglishTraining
                 //}
 
                 // TODO: check for mp3 too
-                if (!dictors_ru.Any()){
+                if (!dictors_ru.Any())
+                {
                     Console.WriteLine("Word has no ru dictors: {0}", word.Name_ru);
                 }
                 else if (!dictors_en.Any())
                 {
                     Console.WriteLine("Word has no en dictors: {0}", word.Name_en);
                 }
-                else 
+                else
                 {
                     //var availableCollocationsUrls = collocationsUrl_en.Where(p => p.IndexOf(word.Name_en) > 0);
                     //var availableCollocationsUrls = collocations.Where(p => p.AudioUrl.IndexOf(word.Name_en) > 0);
-                    
+
                     // TODO: check if audio exists
                     availableCollocations = collocationsWithAudio
-                        .Where(p => CheckIfContainsPattern(word.Name_en, p.AudioUrl)).ToList();
+                       .Where(p => CheckIfContainsPattern(word.Name_en, p.AudioUrl)).ToList();
 
-                    wordsWithDictors.Add(new VmWordWithDictors{
+                    wordsWithDictors.Add(new VmWordWithDictors
+                    {
                         Id = word.Id,
                         Name_en = word.Name_en,
                         Name_ru = word.Name_ru,
@@ -187,10 +190,11 @@ namespace EnglishTraining
                     }
                     else
                     {
-                        if (collocation.NotUsedToday == false){
+                        if (collocation.NotUsedToday == false)
+                        {
                             collocation.NextRepeatDate = dateToday.AddDays(collocationDelayPeriod);
                             collocation.NotUsedToday = true;
-						}
+                        }
                         db.Collocations.Update(collocation);
                         Console.WriteLine("Updating collocation \"{0}\"", collocation.AudioUrl);
                     }
@@ -313,7 +317,7 @@ namespace EnglishTraining
             }
             else
             {
-                return 2 *  getIterationLenght(i - 1);
+                return 2 * getIterationLenght(i - 1);
             }
         }
 
@@ -326,7 +330,8 @@ namespace EnglishTraining
                 FileChecker fileChecker = new FileChecker();
                 var langPath = Path.Combine(wordPath, lang);
 
-                if (!Directory.Exists(langPath)) {
+                if (!Directory.Exists(langPath))
+                {
                     Console.WriteLine("Directory not found: {0}", langPath);
 
                     var wavePath = Path.Combine(audioPath, defaultAudioPath, lang, wordNameInLocal + ".wav");
@@ -357,7 +362,7 @@ namespace EnglishTraining
                     return dictors;
                 }
 
-                List<string> dirs = new List<string>(Directory.EnumerateDirectories(langPath));  
+                List<string> dirs = new List<string>(Directory.EnumerateDirectories(langPath));
 
                 foreach (var dir in dirs)
                 {
@@ -410,7 +415,7 @@ namespace EnglishTraining
             }
             return false;
         }
-
+        
         #endregion
     }
 }
