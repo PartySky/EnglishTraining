@@ -34,7 +34,9 @@ namespace EnglishTraining
 
 
 
-            List<string> wordsToCheck = new HashSet<string>(input.Split(new[] { '\r', '\n', ' ' })).ToList();
+            List<string> wordsToCheck = new HashSet<string>(input
+                                                            .Split(new[] { '\r', '\n', ' ', '.', ',', '!', '?', '(', ')', '[', ']', ':', ';'}))
+                .ToList();
             List<string> wordsInSimpleFormToCheck = new List<string> { };
 
             string wordTemp;
@@ -55,8 +57,9 @@ namespace EnglishTraining
                 }
             }
 
-            var newWords = wordsInSimpleFormToCheck.Where(p => !wordsDB.Any(z => z.Name_en == p)
-                                         && !excludedWords.Any(z => z == p)).ToList();
+            var newWords = new HashSet<string>(wordsInSimpleFormToCheck
+                                               .Where(p => !wordsDB.Any(z => z.Name_en == p)
+                                                && !excludedWords.Any(z => z == p)).ToList());
 
             using (StreamWriter file = File.CreateText(newWordsPath))
             {
