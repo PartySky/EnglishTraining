@@ -100,7 +100,7 @@ namespace EnglishTraining
                     
                     // TODO: check if audio exists
                     availableCollocations = collocationsWithAudio
-                        .Where(p => p.AudioUrl.IndexOf(word.Name_en) > 0).ToList();
+                        .Where(p => CheckIfContainsPattern(word.Name_en, p.AudioUrl)).ToList();
 
                     wordsWithDictors.Add(new VmWordWithDictors{
                         Id = word.Id,
@@ -397,6 +397,20 @@ namespace EnglishTraining
             }
             return dictors;
         }
+
+        private static Boolean CheckIfContainsPattern(string pattern, string sentence)
+        {
+            var punctuation = sentence.Where(Char.IsPunctuation).Distinct().ToArray();
+            var words = sentence.Split().Select(x => x.Trim(punctuation));
+            var containsHi = words.Contains(pattern, StringComparer.OrdinalIgnoreCase);
+            if (containsHi)
+            {
+                Console.WriteLine("{0}: {1}", containsHi, sentence);
+                return true;
+            }
+            return false;
+        }
+
         #endregion
     }
 }
