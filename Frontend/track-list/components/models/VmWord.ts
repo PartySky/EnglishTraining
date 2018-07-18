@@ -1,4 +1,5 @@
 import { VmDictor } from "./VmDictor";
+import { VmCollocation } from "./VmCollocation";
 
 export interface VmWord {
     Id: number;
@@ -14,8 +15,8 @@ export interface VmWord {
     // HACK returned in lover case
     dailyReapeatCountForEng: number;
     dailyReapeatCountForRus: number;
-    Dictors_en?: VmDictor[];
-    Dictors_ru?: any;
-    // Dictors_ru?: VmDictor[];
+    dictors_en?: VmDictor[];
+    dictors_ru?: VmDictor[];
+    collocation: VmCollocation[];
 }
 

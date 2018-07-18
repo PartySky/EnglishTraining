@@ -3,10 +3,21 @@
     <span ng-if="$ctrl.error" ng-bind="$ctrl.error" class="error"></span>
 </div>
 <div class="keys-manual"></div>
-<div ng-click="$ctrl.check()">check()</div>
-<div>
-    Spent time: <span ng-bind="$ctrl.spentTimeToShow"></span>
+<div class="stat">
+    Spent time:
+    <span ng-bind="$ctrl.spentTimeToShow"></span>
 </div>
-<div>
-    Words loaded: <span ng-bind="$ctrl.wordsLoaded"></span>
+<div class="stat">
+    Words loaded:
+    <span ng-bind="$ctrl.wordsLoaded"></span>
+</div>
+<div class="stat">
+    Words done:
+    <span ng-bind="$ctrl.completedWordsCount"></span>
+</div>
+<div class="stat">
+    Daily repeat count:
+    <span ng-bind="$ctrl.progress"></span>
+    <span> /</span>
+    <span ng-bind="$ctrl.dailyGoalRepeatCount"></span>
 </div>

@@ -4,7 +4,7 @@ namespace EnglishTraining
 {
     public class FileChecker
     {
-        public bool ChecIfkExist(string filePath) {
+        public bool CheckIfExist(string filePath) {
             if (File.Exists(filePath))
             {
                 return true;

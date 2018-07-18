@@ -2,14 +2,15 @@ import { VmWord } from "./models/VmWord";
 import { VmWordExtended } from "./models/VmWordExtended";
 import { VmAudioPath } from "./models/VmAudioPath";
 import { name } from "../track-list.module";
-// import { ApiService } from "../services/api.service";
+import { fail } from "assert";
+import { VmCollocation } from "./models/VmCollocation";
 
 export class TrackListComponent {
     // private readonly _http: ng.IHttpService;
     private readonly _apiUrl: string;
     // private readonly _apiSrv: ApiService;
     private _audioPath: VmAudioPath = {
-        "en": "http://wooordhunt.ru/data/sound/word/uk/mp3/",
+        "en": "./audio/",
         "ru": "./audio/"
     }
     private _audioFormat: any = {
@@ -19,23 +20,36 @@ export class TrackListComponent {
     private _currentLocal: string;
     private _engLocal: string = "en";
     private _rusLocal: string = "en";
-    private _currentTime: number;
+    private defaultAudioPath: string = "default";
+    private collocationAudioPath: string = "collocations";
+    private _lastKeyPressedTime: number;
     private _currentWord: VmWordExtended;
+    private _collocations: VmCollocation[];
     private _spentTime: number = 0;
     private _words: VmWordExtended[];
     private _keyNextWord: number = 32;
     private _keyStop: number = 13;
     private _keyStopAndPlay: number = 16;
     private _highRateLearn: number = 48;
+    // TODO: get it from backend
+    minReapeatCountPerDayFDPhase: number = 3;
+    minReapeatCountPerDayIteration: number = 1;
     spentTimeToShow: string;
     wordsLoaded: number;
-    autoSaveTimerPrevious: number;
+    autoSaveTimerPrevious: Date;
     count: number = 0;
     fileToPlay: string;
     wordToShow: string;
     error: string;
     mode: string;
-
+    progress: number;
+    dailyGoalRepeatCount: number;
+    completedWordsCount: number;
+    doneWordsTail: number;
+    doneWordsPercent: number;
+    sprintFinishPercent: number = 75;
+    isDelayBeforeWordWithCollocation: boolean;
+    delayBeforeWordWithCollocation: number = 3;
     constructor(
         // http: ng.IHttpService,
         private $http: ng.IHttpService,
@@ -60,13 +74,54 @@ export class TrackListComponent {
                             ru: word.name_ru
                         }
                     }));
+                
+                // Add collocations into object
+                this._collocations = [];
+                this._words.forEach(word => {
+                    word.collocation.forEach(collocation => {
+                        if (this._collocations.filter(p =>
+                            p.audioUrl == collocation.audioUrl).length == 0) {
+                            
+                            this._collocations.push({
+                                id: collocation.id,
+                                lang: collocation.lang,
+                                audioUrl: collocation.audioUrl,
+                                notUsedToday: true
+                            });
+                        }
+                    });
+                });
+
+                this._words.forEach(word => {
+                    for (let i = 0; i < word.collocation.length; i++) {
+                        word.collocation[i] = this._collocations.filter(z =>
+                            z.audioUrl == word.collocation[i].audioUrl)[0];
+                    }
+                });
+                
                 this.setNextRepeateDate();
                 this._words.sort(this.compareRandom);
                 this.wordsLoaded = this._words.length;
+                this.doneWordsTail = this._words.length - 1;
+
+                this.dailyGoalRepeatCount = 0;
+
+                let fourDaysPhaseWordNum = this._words.filter(p => p.fourDaysLearnPhase == true)
+                    .length * 2 * this.minReapeatCountPerDayFDPhase;
+                
+                let noNfourDaysPhaseWordNum = this._words.filter(p => p.fourDaysLearnPhase == false)
+                    .length * 2 * this.minReapeatCountPerDayIteration;
+                
+                this.dailyGoalRepeatCount = fourDaysPhaseWordNum + noNfourDaysPhaseWordNum;  
+
+                this.calculateComplitedWords();
             });
         document.addEventListener("keydown", (e) => this.keyDownTextField(e), false);
-        this.autoSaveTimerPrevious = this.getSecondsToday();
-        if (this.mode === "Words") { 
+        this.autoSaveTimerPrevious = new Date();
+        this.completedWordsCount = 0;
+        this.progress = 0;
+        // TODO: remove it
+        if (this.mode === "Words") {
             this.checkAudio();
         }
     }
@@ -74,7 +129,7 @@ export class TrackListComponent {
     getWords() {
         let methodUrl: string;
         // TODO: move to services
-        switch (this.mode) { 
+        switch (this.mode) {
             case "Dictionary":
                 methodUrl = "dictionary";
                 break
@@ -82,8 +137,8 @@ export class TrackListComponent {
                 methodUrl = "";
                 break
             default:
-                console.log("Mode should be setted");    
-            return null;
+                console.log("Mode should be setted");
+                return null;
         }
         return this.$http
             .get<VmWord[]>(`${this._apiUrl}/${methodUrl}`)
@@ -98,19 +153,18 @@ export class TrackListComponent {
             const diffDays = Math.floor(timeDiff / (1000 * 3600 * 24));
             if (diffDays < 1) {
                 // do nothing
-            } else if (diffDays >= 1) { 
+            } else if (diffDays >= 1) {
                 // начинается новый день повторения,
                 // нужно передвинуть счетчик графика
                 word = this.updateSchedule(word, dateToday, diffDays);
                 // и обнулить счетчик дневных повторений
-                const minReapeatCountPerDay: number = 5;
-                if ((word.dailyReapeatCountForRus < minReapeatCountPerDay)
-                    && (word.dailyReapeatCountForEng < minReapeatCountPerDay)) {
+                if ((word.dailyReapeatCountForRus < this.minReapeatCountPerDayFDPhase)
+                    && (word.dailyReapeatCountForEng < this.minReapeatCountPerDayFDPhase)) {
                     if (word.fourDaysLearnPhase
                         && (word.learnDay > 0)) {
                         word.learnDay--;
-                    }   
-                } else { 
+                    }
+                } else {
                     word.dailyReapeatCountForRus = 0;
                     word.dailyReapeatCountForEng = 0;
                 }
@@ -134,14 +188,12 @@ export class TrackListComponent {
                 case "bad":
                     if (word.learnDay > 0) {
                         word.learnDay--;
-                    }    
+                    }
                     break;
-                }
+            }
             word.nextRepeatDate = dateToday;
         } else {
             if (diffDays < 1) {
-                console.log();
-                console.log();
                 // do nothing
                 // the words are being repeated this day
             } else if (diffDays >= 1) {
@@ -156,7 +208,7 @@ export class TrackListComponent {
     getLastRepeatingQuality(diffDays: number) {
         if (diffDays == 1) {
             return "good";
-        } else if ((diffDays > 1) && (diffDays <= 3)) { 
+        } else if ((diffDays > 1) && (diffDays <= 3)) {
             return "neutral"
         } else if ((diffDays > 3)) {
             return "bad"
@@ -164,7 +216,7 @@ export class TrackListComponent {
         return "good";
     }
 
-    updateWord(words: VmWord[]) {
+    updateWord(words: VmWord[], collocations: VmCollocation[]) {
         let methodUrl: string;
         switch (this.mode) {
             case "Dictionary":
@@ -178,7 +230,7 @@ export class TrackListComponent {
                 return null;
         }
         return this.$http
-            .post<string>(`${this._apiUrl}/${methodUrl}`, words)
+            .post<string>(`${this._apiUrl}/${methodUrl}`, { words, collocations } )
             .then(response => response.data);
     }
 
@@ -192,12 +244,17 @@ export class TrackListComponent {
     }
 
     autoSave() {
-        let autoSaveTimer = this.getSecondsToday() - this.autoSaveTimerPrevious;
+        let autoSaveTimer = Math.floor(
+            ((new Date()).getTime() - this.autoSaveTimerPrevious.getTime()) / 1000
+        );
+
         const timerAmmount: number = 15;
         if (autoSaveTimer > timerAmmount) {
-            this.updateWord(this._words);
+            this.calculateProgress();
+            this.calculateComplitedWords()
+            this.updateWord(this._words, this._collocations);
             console.log("Auto Save!!!");
-            this.autoSaveTimerPrevious = this.getSecondsToday();
+            this.autoSaveTimerPrevious = new Date();
         }
     }
 
@@ -205,36 +262,34 @@ export class TrackListComponent {
         this.autoSave();
         let keyCode = e.keyCode;
         let today = new Date;
-        this.calculateSpentTime();
+
         if (keyCode === this._keyNextWord) {
+            if (this.pauseBeforeCollocation(this._words[0])) { 
+                this.playSignal();
+                return;
+            }
+            if (this._currentWord) {
+                this.returnWordToList();
+            }
             if (!this._words[0].CurrentRandomLocalization) {
                 this._currentLocal = this.getRandomLocal(
                     this._words[0].dailyReapeatCountForEng,
-                    this._words[0].dailyReapeatCountForRus);
+                    this._words[0].dailyReapeatCountForRus,
+                    this._words[0].fourDaysLearnPhase);
             } else {
                 this._currentLocal = this._words[0].CurrentRandomLocalization;
                 this._words[0].CurrentRandomLocalization = null;
             }
+
             this.wordToShow = null;
             if (this.mode === "Dictionary") {
                 this.wordToShow = this._words[0].Name[this._currentLocal];
             }
-
-            if (this._currentWord) {
-                this._words.push(this._currentWord);
-            }
             this._currentWord = this._words[0];
-            // TODO: set repeat count after right answer, not before
-            if (this._currentLocal == "en") {
-                this._currentWord.dailyReapeatCountForEng++;
-            } else {
-                this._currentWord.dailyReapeatCountForRus++;
-            }
 
-            this.fileToPlay = this._audioPath[this._currentLocal] +
-                this._words[0].Name[this._currentLocal] + this._audioFormat[this._currentLocal];
+            this.fileToPlay = this.getFileToPlayPath(this._currentLocal, this._currentWord, true);
 
-            console.log("cureent word: " + this._words[0].Name[this._currentLocal]);
+            console.log("cureent word: " + this._currentWord.Name[this._currentLocal]);
 
             this._words.shift();
             this.play();
@@ -247,7 +302,13 @@ export class TrackListComponent {
             let numberToSplice: number;
             let invertedLang = this.invertLanguage(this._currentLocal);
 
-            let thirdPartOfWordsLenght: number = this._words.length / 3;
+            let thirdPartOfWordsLenght: number;
+            if (this.doneWordsPercent < this.sprintFinishPercent) {
+                thirdPartOfWordsLenght = this._words.length / 3;
+            } else {
+                thirdPartOfWordsLenght = this.doneWordsTail / 3;
+            }
+
             if (keyCode === this._highRateLearn) {
                 numberToSplice = this.getRandomNumber(4, 8);
             } else {
@@ -256,18 +317,17 @@ export class TrackListComponent {
             }
             this._currentWord.CurrentRandomLocalization = this._currentLocal;
 
-            this.fileToPlay = this._audioPath[invertedLang] +
-                this._currentWord.Name[invertedLang] + this._audioFormat[invertedLang];
+            // TODO: get random dictor
+            this.fileToPlay = this.getFileToPlayPath(invertedLang, this._currentWord, false);
 
             if (keyCode == this._highRateLearn) {
                 this.wordToShow = this._currentWord.Name[this._currentLocal]
                     + " - " + this._currentWord.Name[invertedLang];
-                
+
                 // Сделать переключение языка для _highRateLearn
                 // Сделать включение/выключение проигрывания аудио для _highRateLearn
-                this.fileToPlay = this._audioPath[this._engLocal] +
-                    this._currentWord.Name[this._engLocal] + this._audioFormat[this._engLocal];
-                
+                this.fileToPlay = this.getFileToPlayPath(this._engLocal, this._currentWord, false);
+
             } else {
                 this.wordToShow = this._currentWord.Name[invertedLang];
             }
@@ -284,13 +344,72 @@ export class TrackListComponent {
             }
             this.logElements();
         }
+        this.calculateSpentTime();
+
+    }
+
+    getFileToPlayPath(lang: string, currentWord: VmWordExtended, useCollocation: boolean) {
+        let wordTemp = currentWord.Name[lang];
+        let audioTypeTemp: string;
+        let usernameTemp: string;
+        let fileToPlay: string;
+        let randNum = 0;
+
+        // Pass collocation playing when word is new 
+        // and with daily repeat count < 1
+        let dailyReapeatCountForLangTemp;
+        if (lang == "en") {
+            dailyReapeatCountForLangTemp = currentWord.dailyReapeatCountForEng;
+        } else {
+            dailyReapeatCountForLangTemp = currentWord.dailyReapeatCountForRus;
+        }
+        
+        if (useCollocation
+            && currentWord.collocation
+            && this._collocations
+            && (currentWord.learnDay > 0 || dailyReapeatCountForLangTemp > 1)) {
+            
+            let availableColocations = currentWord.collocation
+                .filter(p => p.lang == lang
+                    && p.notUsedToday == true);
+
+            if (availableColocations.length > 0) { 
+                fileToPlay = availableColocations[0].audioUrl;
+                availableColocations[0].notUsedToday = false;
+                return fileToPlay;
+            }
+        }
+
+        if (lang == "en") {
+            if (currentWord.dictors_en.length > 1) {
+                randNum = this.getRandomNumber(0, currentWord.dictors_en.length - 1);
+            }
+            audioTypeTemp = currentWord.dictors_en[randNum].audioType;
+            usernameTemp = currentWord.dictors_en[randNum].username
+        } else {
+            if (currentWord.dictors_ru.length > 1) {
+                randNum = this.getRandomNumber(0, currentWord.dictors_ru.length - 1);
+            }
+            audioTypeTemp = currentWord.dictors_ru[randNum].audioType;
+            usernameTemp = currentWord.dictors_ru[randNum].username
+        }
+
+        if (usernameTemp != "default") {
+            fileToPlay = this._audioPath[lang] +
+                currentWord.name_ru + "/" + lang + "/" +
+                usernameTemp + "/" + wordTemp + audioTypeTemp;
+        } else {
+            fileToPlay = this._audioPath[lang] + this.defaultAudioPath + "/" +
+                lang + "/" + currentWord.Name[lang] + audioTypeTemp;
+        }
+        return fileToPlay;
     }
 
     play() {
-        if (this.mode != "Words") { 
+        if (this.mode != "Words") {
             return;
         }
-        this.error = null;        
+        this.error = null;
         var audio = new Audio(this.fileToPlay);
         audio.play()
             .catch((error) => {
@@ -299,6 +418,11 @@ export class TrackListComponent {
                 console.log("Error while playing " + error);
             });
         console.log(this.fileToPlay);
+    }
+
+    playSignal() { 
+        var audio = new Audio("/signal/info_02_slow.mp3");
+        audio.play()
     }
 
     logElements() {
@@ -315,20 +439,47 @@ export class TrackListComponent {
     }
 
     getRandomNumber(min: number, max: number) {
-        return Math.random() * (max - min) + min;
+        return Math.floor(Math.random() * (max - min + 1)) + min;
     }
 
-    getRandomLocal(countForEng: number, countForRus: number) {
-        var maxDiff = 3;
+    getRandomLocal(
+        countForEng: number,
+        countForRus: number,
+        fourDaysLearnPhase: boolean
+    ) {
+        var maxDiff = 2;
+
+        switch (fourDaysLearnPhase) {
+            case true:
+                if ((countForEng > this.minReapeatCountPerDayFDPhase)
+                    && (countForRus < this.minReapeatCountPerDayFDPhase)) {
+                    return "ru";
+                } else if ((countForEng < this.minReapeatCountPerDayFDPhase)
+                    && (countForRus > this.minReapeatCountPerDayFDPhase)) {
+                    return "en";
+                };
+                break;
+            
+            case false:
+                if ((countForEng >= this.minReapeatCountPerDayIteration)
+                    && (countForRus < this.minReapeatCountPerDayIteration)) {
+                    return "ru";
+                } else if ((countForEng <= this.minReapeatCountPerDayIteration)
+                    && (countForRus > this.minReapeatCountPerDayIteration)) {
+                    return "en";
+                };
+                break;
+        }
+
         var diff = countForEng - countForRus;
-        if (diff > maxDiff) { 
+        if (diff >= maxDiff) {
             return "ru";
         }
-        if (diff < -maxDiff) { 
+        else if (diff <= -maxDiff) {
             return "en";
         }
 
-        let num = Math.round(this.getRandomNumber(0, 1));
+        let num = this.getRandomNumber(0, 1);
         switch (num) {
             case 0:
                 return "en";
@@ -345,13 +496,10 @@ export class TrackListComponent {
         }
     }
 
-    getSecondsToday() {
-        var d = new Date();
-        return d.getHours() * 3600 + d.getMinutes() * 60 + d.getSeconds();
-    };
-
     calculateSpentTime() {
-        let timeDiff = (this.getSecondsToday() - this._currentTime);
+        const timeNow = Math.floor((new Date()).getTime() / 1000);
+        const timeDiff = timeNow - this._lastKeyPressedTime;
+
         if (timeDiff < 15) {
             this._spentTime = this._spentTime + timeDiff;
         }
@@ -359,11 +507,154 @@ export class TrackListComponent {
         let sec = this._spentTime - min * 60;
         this.spentTimeToShow = min + " : " + sec;
         console.log(timeDiff);
-        this._currentTime = this.getSecondsToday();
+        this._lastKeyPressedTime = timeNow;
     }
 
-    check() {
-        console.log();
-        console.log();
+
+    calculateComplitedWords() {
+        let countForCurrentWord = this.getCountForWord(this._currentWord);
+
+        const completedfourDaysPhaseWordNum = this._words
+            .filter(p => p.fourDaysLearnPhase == true
+                && p.dailyReapeatCountForEng >= this.minReapeatCountPerDayFDPhase
+                && p.dailyReapeatCountForRus >= this.minReapeatCountPerDayFDPhase).length;
+
+        const completedIterationPhaseWordNum = this._words
+            .filter(p => p.fourDaysLearnPhase == false
+                && p.dailyReapeatCountForEng >= this.minReapeatCountPerDayIteration
+                && p.dailyReapeatCountForRus >= this.minReapeatCountPerDayIteration).length;
+
+        this.completedWordsCount = countForCurrentWord
+            + completedfourDaysPhaseWordNum + completedIterationPhaseWordNum;
+    }
+
+    getCountForWord(word: VmWordExtended) { 
+        if (!word) { 
+            return 0;
+        }
+
+        let countForCurrentWord = 0;
+        let minRepeatCountForTemp: number;
+
+        switch (word.fourDaysLearnPhase) {
+            case true:
+                minRepeatCountForTemp = this.minReapeatCountPerDayFDPhase;
+                break;
+
+            case false:
+                minRepeatCountForTemp = this.minReapeatCountPerDayIteration;
+                break;
+        }
+
+        if (word
+            && word.dailyReapeatCountForEng >= minRepeatCountForTemp
+            && word.dailyReapeatCountForRus >= minRepeatCountForTemp) {
+            countForCurrentWord = 1;
+        }
+
+        return countForCurrentWord;
+    }
+
+    calculateProgress() {
+        this.progress = 0;
+
+        if (this._currentWord) {
+            this.progress = this.progress + this._getProgressOfWord(this._currentWord);
+        }
+
+        this._words.forEach(word => {
+            this.progress = this.progress + this._getProgressOfWord(word);
+        });
+    }
+
+    _getProgressOfWord(word: VmWordExtended) {
+        let progressOfWord = 0;
+        let minReapeatCountTemp;
+
+        if (word.fourDaysLearnPhase) {
+            minReapeatCountTemp = this.minReapeatCountPerDayFDPhase;
+        } else { 
+            minReapeatCountTemp = this.minReapeatCountPerDayIteration;
+        }
+            
+        if (word.dailyReapeatCountForEng < minReapeatCountTemp) {
+            progressOfWord = word.dailyReapeatCountForEng;
+        } else {
+            progressOfWord = minReapeatCountTemp;
+        }
+
+        if (word.dailyReapeatCountForRus < minReapeatCountTemp) {
+            progressOfWord = progressOfWord + word.dailyReapeatCountForRus;
+        } else {
+            progressOfWord = progressOfWord + minReapeatCountTemp;
+        }
+
+        return progressOfWord;
+    }
+
+    returnWordToList() {
+        let minReapeatCountTemp;
+
+        if (this._currentLocal == "en") {
+            this._currentWord.dailyReapeatCountForEng++;
+        } else {
+            this._currentWord.dailyReapeatCountForRus++;
+        }
+
+        this.doneWordsPercent = Math.round((this.completedWordsCount / this.wordsLoaded) * 100);
+
+        if ((this.doneWordsPercent >= this.sprintFinishPercent)
+            && (this.doneWordsTail > 0)) {
+            
+            if (this._currentWord.fourDaysLearnPhase) { 
+                minReapeatCountTemp = this.minReapeatCountPerDayFDPhase;
+            } else {
+                minReapeatCountTemp = this.minReapeatCountPerDayIteration;
+            }
+
+            if ((this._currentWord.dailyReapeatCountForRus >= minReapeatCountTemp)
+                && (this._currentWord.dailyReapeatCountForEng >= minReapeatCountTemp)) {
+                this._words.push(this._currentWord);
+                this.doneWordsTail--;
+            } else {
+                this._words.splice(this.doneWordsTail, 0, this._currentWord);
+            }
+        } else {
+            this._words.push(this._currentWord);
+        }
+    }
+
+    pauseBeforeCollocation(word: VmWordExtended) {
+        if (word.collocation.length > 0
+            && word.collocation.filter(p => p.notUsedToday == true).length > 0) {
+            this.isDelayBeforeWordWithCollocation = true;
+        } else {
+            this.isDelayBeforeWordWithCollocation = false;
+        }
+        let timeFromLastKeyPressTillNow = (new Date().getTime() / 1000)
+            - this._lastKeyPressedTime;
+        if (this.isDelayBeforeWordWithCollocation
+            && timeFromLastKeyPressTillNow < this.delayBeforeWordWithCollocation) {
+            if (!word.CurrentRandomLocalization) { 
+                let randLang = this.getRandomLocal(
+                    word.dailyReapeatCountForEng,
+                    word.dailyReapeatCountForRus,
+                    word.fourDaysLearnPhase);
+                word.CurrentRandomLocalization = randLang;
+
+                let dailyReapeatCountForLangTemp;
+                if (randLang == "en") {
+                    dailyReapeatCountForLangTemp = word.dailyReapeatCountForEng;
+                } else {
+                    dailyReapeatCountForLangTemp = word.dailyReapeatCountForRus;
+                }
+
+                if (randLang == "en"
+                    && (word.learnDay > 0 || dailyReapeatCountForLangTemp > 1)) { 
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

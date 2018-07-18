@@ -1,12 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore;
+﻿using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 
 namespace EnglishTraining
 {
@@ -16,17 +9,22 @@ namespace EnglishTraining
         {
 
             Parser parser = new Parser();
-            string runMode = "Host"; 
+            NewCollocationParser collocationParser = new NewCollocationParser();
+            WordFinder wordFinder = new WordFinder();
+            string runMode = "Host";
 
             switch (runMode)
             {
                 case "Host":
                     BuildWebHost(args).Run();
-
                     break;
 
                 case "Parser":
                     parser.Download();
+                    break;
+
+                case "CollocationParser":
+                    collocationParser.Download();
                     break;
 
                 case "WordConverter":
@@ -42,6 +40,9 @@ namespace EnglishTraining
                     parser.UpdateDictionary();
                     break;
 
+                case "Word finder":
+                    wordFinder.FindNewWords();
+                    break;
             }
         }
 

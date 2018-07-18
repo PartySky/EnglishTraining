@@ -288,3 +288,9 @@ wwwroot/Frontend/*
 wwwroot/webpack.config.js
 wwwroot/webpack.config.js.map
 Dictionary.db
+jsons/parsed-wod-list.json
+jsons/best-dictors.json
+jsons/parsed-wod-list.json
+txt/text-for-word-finding.txt
+txt/excluded-words.txt
+txt/new-words.txt

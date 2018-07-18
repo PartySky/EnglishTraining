@@ -6,5 +6,6 @@
         public string sex { get; set; }
         public string country { get; set; }
         public string langname { get; set; }
+        public string AudioType { get; set; }
     }
 }
