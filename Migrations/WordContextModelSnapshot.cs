@@ -24,15 +24,33 @@ namespace EnglishTraining.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<int?>("DailyTimeAmount");
+                    b.Property<int?>("DailyRepeatAmount");
 
-                    b.Property<int?>("DailyWordsAmount");
+                    b.Property<int?>("DailyTimeAmount");
 
                     b.Property<string>("LearningLanguage");
 
                     b.HasKey("Id");
 
                     b.ToTable("Settings");
+                });
+
+            modelBuilder.Entity("EnglishTraining.VmCollocation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("AudioUrl");
+
+                    b.Property<string>("Lang");
+
+                    b.Property<DateTime>("NextRepeatDate");
+
+                    b.Property<bool>("NotUsedToday");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Collocations");
                 });
 
             modelBuilder.Entity("EnglishTraining.VmWord", b =>
