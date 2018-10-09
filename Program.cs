@@ -27,6 +27,10 @@ namespace EnglishTraining
                     collocationParser.Download();
                     break;
 
+                case "WriteExistingCollocationFromFolderToDB":
+                    collocationParser.WriteExistingCollocationFromFolderToDB();
+                    break;
+
                 case "WordConverter":
                     WordConverter wordConverter = new WordConverter();
                     wordConverter.Convert();

@@ -405,8 +405,14 @@ namespace EnglishTraining
 
         private static Boolean CheckIfContainsPattern(string pattern, string sentence)
         {
+            if (pattern == "doctor" && sentence.Contains("doctor")){
+                Console.WriteLine(sentence);
+            }
+
             var punctuation = sentence.Where(Char.IsPunctuation).Distinct().ToArray();
-            var words = sentence.Split().Select(x => x.Trim(punctuation));
+            var words = sentence.Replace("_"," ").Split().Select(x => x.Trim(punctuation));
+
+            // TODO: words should be used in simple form before comparing
             var containsHi = words.Contains(pattern, StringComparer.OrdinalIgnoreCase);
             if (containsHi)
             {

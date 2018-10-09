@@ -207,6 +207,35 @@ namespace EnglishTraining
                 Console.WriteLine("some error happend");
 			}
         }
+
+        public void WriteExistingCollocationFromFolderToDB() {
+            string lang = "en";
+            string audioPathLocal = "audio";
+            List<string> newCollocations = null;
+            List<string> listToExclude = null;
+
+            using(var db = new WordContext()) {
+                listToExclude = db.Collocations.Select(p => p.AudioUrl).ToList();
+            }
+            var files = Directory.GetFiles(
+                Path.Combine(Directory.GetCurrentDirectory(),audioPath, collocationPath, lang))
+                .Select(p => Path.Combine("/", audioPathLocal, collocationPath, lang, Path.GetFileName(p)))
+                                 .ToList();
+
+            files.Remove(files.Find(p => p.Contains("DS_Store")));
+
+            newCollocations = files.Except(listToExclude).ToList();
+            using(var db = new WordContext()) {
+                foreach(var collocationAudio in newCollocations) {
+                    db.Collocations.Add(new VmCollocation {
+                        Lang = lang,
+                        AudioUrl = collocationAudio,
+                        NotUsedToday = true
+                    });
+                }
+                db.SaveChanges();
+            }
+        }
     }
 }
 
