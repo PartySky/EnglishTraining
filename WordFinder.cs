@@ -32,42 +32,58 @@ namespace EnglishTraining
                                          && (p.Name_en.IndexOf(' ') < 0)).ToArray();
             }
 
-
-
-            List<string> wordsToCheck = new HashSet<string>(input
-                                                            .Split(new[] { '\r', '\n', ' ', '.', ',', '!', '?', '(', ')', '[', ']', ':', ';'}))
+            List<string> wordsToCheck = new HashSet<string>((GetWordsFromCollocations().ToLower() + input.ToLower())
+                                                            .Replace("'", " ")
+                                                            .Split(new[] { '\r', '\n', ' ', '’', '-', '_', '.', ',', '!', '?', '(', ')', '[', ']', ':', ';', '“',
+                                                                            '0','1','2','3','4','5','6','7','8','9', '/','|','=',' ', }))
                 .ToList();
+
             List<string> wordsInSimpleFormToCheck = new List<string> { };
 
             string wordTemp;
 
-            // Test
-            wordsToCheck.Add("dogs");
-            wordsToCheck.Add("kats");
-            wordsToCheck.Add("cars");
-            wordsToCheck.Add("women");
-
-            foreach (string word in wordsToCheck){
-                if (word.IndexOf("/") >= 0) {
+            foreach (string word in wordsToCheck)
+            {
+                if (word.IndexOf("/") >= 0)
+                {
                     wordTemp = null;
                     Console.WriteLine(word + " passed word");
-                } else {
-					wordTemp = GetWordSimpleForm(word);
+                }
+                else
+                {
+                    wordTemp = GetWordSimpleForm(word);
                     wordsInSimpleFormToCheck.Add(wordTemp);
                 }
             }
 
             var newWords = new HashSet<string>(wordsInSimpleFormToCheck
-                                               .Where(p => !wordsDB.Any(z => z.Name_en == p)
-                                                && !excludedWords.Any(z => z == p)).ToList());
+                                               .Where(p => !wordsDB.Any(z => z.Name_en.ToLower() == p)
+                                                && !excludedWords.Any(z => z.ToLower() == p)).ToList());
 
             using (StreamWriter file = File.CreateText(newWordsPath))
             {
-                foreach(string word in newWords){
+                foreach (string word in newWords)
+                {
                     file.WriteLine(word);
                     Console.Write(word);
                 }
             }
+        }
+
+        public string GetWordsFromCollocations()
+        {
+            //Test
+            return "";
+
+            string collocationPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "audio", "collocations", "en");
+            var filesNames = Directory.GetFiles(collocationPath).ToList();
+            string result = String.Empty;
+
+            foreach (var fileName in filesNames)
+            {
+                result = result + fileName + ' ';
+            }
+            return result;
         }
 
         public string GetWordSimpleForm(string word)
@@ -76,11 +92,14 @@ namespace EnglishTraining
             using (WebClient client = new WebClient())
             {
                 client.Encoding = System.Text.Encoding.UTF8;
-                if (word.IndexOf("ing", 0) > 0) {
+                if (word.IndexOf("ing", 0) > 0)
+                {
                     htmlCode = client.DownloadString("http://wooordhunt.ru/word/" + word);
-                } else {
+                }
+                else
+                {
                     // TODO: make it more simle if ldoce will not used
-					//htmlCode = client.DownloadString("https://www.ldoceonline.com/dictionary/" + word);
+                    //htmlCode = client.DownloadString("https://www.ldoceonline.com/dictionary/" + word);
                     htmlCode = client.DownloadString("http://wooordhunt.ru/word/" + word);
                 }
             }
@@ -181,7 +200,7 @@ namespace EnglishTraining
                 Console.WriteLine(word + " - " + wordInSimpleForm + " - " + "Plural");
             }
 
-			// Verb 3d form
+            // Verb 3d form
             if (word.IndexOf("ing", 0) > 0
                 && htmlCode.IndexOf("\"word_forms\"", 0) > 0)
             {
@@ -200,11 +219,12 @@ namespace EnglishTraining
 
             }
 
-            if (wordInSimpleForm == word){
+            if (wordInSimpleForm == word)
+            {
                 Console.WriteLine(word + " - unrecognuzed case");
             }
 
             return wordInSimpleForm;
         }
-	}
+    }
 }
