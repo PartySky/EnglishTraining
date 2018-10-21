@@ -23,12 +23,12 @@ namespace EnglishTraining
                 {
                     Name_en = inWords.Word[i].Items[0].word,
                     Name_ru = currentWords?.FirstOrDefault(p => p.Name_ru == inWords.Word[i].Items[0].word).Name_en,
-                    FourDaysLearnPhase = false,
-                    LearnDay = 0,
-                    RepeatIterationNum = 0,
-                    NextRepeatDate = DateTime.Today,
-                    DailyReapeatCountForEng = 0,
-                    DailyReapeatCountForRus = 0
+                    FourDaysLearnPhaseOld = false,
+                    LearnDayOld = 0,
+                    RepeatIterationNumOld = 0,
+                    NextRepeatDateOld = DateTime.Today,
+                    DailyReapeatCountForEngOld = 0,
+                    DailyReapeatCountForRusOld = 0
                     //Dictors_en = null,
 					//Dictors_ru = new VmDictor[getDictors.lenght]
                 };

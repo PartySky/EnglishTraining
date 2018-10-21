@@ -181,12 +181,12 @@ namespace EnglishTraining
                         {
                             Name_ru = word.Name_ru,
                             Name_en = word.Name_en,
-                            FourDaysLearnPhase = true,
-                            LearnDay = 0,
-                            RepeatIterationNum = 0,
-                            NextRepeatDate = DateTime.Today,
-                            DailyReapeatCountForEng = 0,
-                            DailyReapeatCountForRus = 0
+                            FourDaysLearnPhaseOld = true,
+                            LearnDayOld = 0,
+                            RepeatIterationNumOld = 0,
+                            NextRepeatDateOld = DateTime.Today,
+                            DailyReapeatCountForEngOld = 0,
+                            DailyReapeatCountForRusOld = 0
                         });
                         Console.WriteLine("Updating word \"{0}\"", word.Name_en);
                     }
