@@ -14,10 +14,9 @@ namespace EnglishTraining
     {
         string audioPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "audio");
 
-        int minReapeatCountPerDayIteration = 1;
-        int minReapeatCountPerDayFourDayPhase = 3;
+        short minReapeatCountPerDayIteration = 1;
+        short minReapeatCountPerDayFourDayPhase = 3;
         string langForWordStoring = "ru";
-        //string targetLang = "pl";
         string targetLang = "en";
         List<string> langList = new List<string> { "pl", "en", "ru" };
         public IActionResult Index()
@@ -28,12 +27,6 @@ namespace EnglishTraining
         [HttpGet("test")]
         public async Task<Word> Test()
         {
-            //Dictionary<string, string> dict = new Dictionary<string, string>
-            //{
-            //    {"en","dog"},
-            //    {"ru","собака"},
-            //};
-
             Word word = new Word { 
                 Langs = new Dictionary<string, string>
                 {
@@ -60,9 +53,7 @@ namespace EnglishTraining
             DateTime dateToday = DateTime.Now;
             int? dailyRepeatAmount = 0;
 
-            // TODO: uncomment it
-            // Skip for test
-            //UpdateSchedule();
+            UpdateSchedule();
 
             using (var db = new WordContext())
             {
@@ -73,7 +64,6 @@ namespace EnglishTraining
                 // ' ' is check for collocations, but now they should be included if
                 // it has audio
 
-                // Should I use Include() there?
                 words_Temp = db.Words
                                 .Include(p => p.Localization)
                                 .Include(p => p.LearnDay)
@@ -82,15 +72,9 @@ namespace EnglishTraining
                                 .Include(p => p.NextRepeatDate)
                                 .Include(p => p.DailyReapeatCount)
                                 .ToList();
+
                 List<WordWithLandDictionary> wordWithLandDictionaryList = new List<WordWithLandDictionary>();
 
-                // Test
-                //wordWithLandDictionaryList.Add(new WordWithLandDictionary{
-                //    LangDictionary = new Dictionary<string, string>
-                //    {
-                //        {"fucktng key! heah baby!", "there comes value DETKA!"}
-                //    }
-                //});
 
                 foreach (VmWord word in words_Temp)
                 {
@@ -114,7 +98,6 @@ namespace EnglishTraining
                 }
 
                 word_new = wordWithLandDictionaryList
-                        //.Where(p => langList.All(lang => p.LangDictionary[lang]?.IndexOf(' ') < 0))
                         .Where(p => langList.All(lang => p.NextRepeatDate?
                                                  .FirstOrDefault(z => z.Key == lang)?.Value <= dateToday))
                         .OrderBy(p => p.RepeatIterationNum?.FirstOrDefault(z => z.Key == targetLang)?.Value)
@@ -140,7 +123,7 @@ namespace EnglishTraining
             List<VmCollocation> collocationsWithAudio = collocations;
 
             List<VmCollocation> availableCollocations;
-            int repeatCount = 0;
+            short repeatCount = 0;
 
             List<WordWithLandDictionaryOutput> wordsOutputList = new List<WordWithLandDictionaryOutput>();
 
@@ -161,9 +144,9 @@ namespace EnglishTraining
                     dictors.Add(lang, GetDictors(path, lang, word.LangDictionary[lang]));
                 }
 
-                int validDictorsCount = 0;
+                short validDictorsCount = 0;
 
-                // If all variables not null
+                // Checking if all variables not null
                 foreach (string lang in langList)
                 {
                     if (!dictors[lang].Any())
@@ -176,14 +159,8 @@ namespace EnglishTraining
                     }
                 }
 
-                //var x = dictors.All(p => langList.All(lang => p.Key == lang));
-                //var x = dictors.All(p => p.Key != "");
-
                 if (dictors[targetLang].Any() && validDictorsCount >= 2)
                 {
-                    //var availableCollocationsUrls = collocationsUrl_en.Where(p => p.IndexOf(word.Name_en) > 0);
-                    //var availableCollocationsUrls = collocations.Where(p => p.AudioUrl.IndexOf(word.Name_en) > 0);
-
                     // TODO: check if audio exists
                     // TODO: update collocations
                     availableCollocations = collocationsWithAudio
@@ -201,13 +178,12 @@ namespace EnglishTraining
                         Collocation = collocations
                     });
 
-                    // TODO: fix it
-                    //if (dailyRepeatAmount != 0)
-                    //{
-                    //    repeatCount = word.FourDaysLearnPhaseOld
-                    //        ? repeatCount + 2 * minReapeatCountPerDayFourDayPhase
-                    //        : repeatCount + 2 * minReapeatCountPerDayIteration;
-                    //}
+                    if (dailyRepeatAmount != 0)
+                    {
+                        repeatCount = word.FourDaysLearnPhase.FirstOrDefault(p => p.Key == targetLang).Value
+                            ? repeatCount + 2 * minReapeatCountPerDayFourDayPhase
+                            : repeatCount + 2 * minReapeatCountPerDayIteration;
+                    }
                 }
             }
 
@@ -227,7 +203,8 @@ namespace EnglishTraining
 
             using (var db = new DictionaryContext())
             {
-                words = db.Words.Where(p => p.NextRepeatDateOld <= dateToday).ToArray();
+                words = db.Words.Where(p => p.NextRepeatDate
+                    .FirstOrDefault(z => z.Key == targetLang).Value <= dateToday).ToArray();
             }
 
             return await Task<VmWord[]>.Factory.StartNew(() =>
@@ -241,56 +218,46 @@ namespace EnglishTraining
         // TODO: use better name for VmWordAndCollocationUpdating
         public string Update([FromBody] VmWordAndCollocationUpdating wordAndCollocationUpdating)
         {
-            // Test
-            // Uncomend code belowe 
-            return null;
-
-
-
-            //using (var db = new WordContext())
-            //{
-            //    foreach (VmWord word in wordAndCollocationUpdating.words)
-            //    {
-            //        if (word == null)
-            //        {
-            //            Console.WriteLine("Word is null");
-            //            throw new ArgumentNullException("Word is null");
-            //        }
-            //        else
-            //        {
-            //            db.Words.Update(word);
-            //            Console.WriteLine("Updating word \"{0}\" id {1}", word.Name_en, word.Id);
-            //        }
-            //    }
-            //    DateTime dateToday = DateTime.Now;
-            //    int collocationDelayPeriod = 4;
-            //    foreach (VmCollocation collocation in wordAndCollocationUpdating.collocations)
-            //    {
-            //        if (collocation == null)
-            //        {
-            //            Console.WriteLine("collocation is null");
-            //            throw new ArgumentNullException("collocation is null");
-            //        }
-            //        else
-            //        {
-            //            if (collocation.NotUsedToday == false)
-            //            {
-            //                collocation.NextRepeatDate = dateToday.AddDays(collocationDelayPeriod);
-            //                collocation.NotUsedToday = true;
-            //            }
-            //            db.Collocations.Update(collocation);
-            //            Console.WriteLine("Updating collocation \"{0}\"", collocation.AudioUrl);
-            //        }
-            //    }
-            //    db.SaveChanges();
-            //}
-            //return "succes";
+            using (var db = new WordContext())
+            {
+                foreach (VmWord word in wordAndCollocationUpdating.words)
+                {
+                    if (word == null)
+                    {
+                        Console.WriteLine("Word is null");
+                        throw new ArgumentNullException("Word is null");
+                    }
+                    db.Words.Update(word);
+                    Console.WriteLine("Updating word \"{0}\" id {1}", word.Localization.Name_en, word.Id);
+                }
+                DateTime dateToday = DateTime.Now;
+                short collocationDelayPeriod = 4;
+                foreach (VmCollocation collocation in wordAndCollocationUpdating.collocations)
+                {
+                    if (collocation == null)
+                    {
+                        Console.WriteLine("collocation is null");
+                        throw new ArgumentNullException("collocation is null");
+                    }
+                    else
+                    {
+                        if (collocation.NotUsedToday == false)
+                        {
+                            collocation.NextRepeatDate = dateToday.AddDays(collocationDelayPeriod);
+                            collocation.NotUsedToday = true;
+                        }
+                        db.Collocations.Update(collocation);
+                        Console.WriteLine("Updating collocation \"{0}\"", collocation.AudioUrl);
+                    }
+                }
+                db.SaveChanges();
+            }
+            return "succes";
         }
 
         [HttpPost("updatedictionary")]
         public string UpdateDictionary([FromBody] VmWord[] words)
         {
-
             // Test
             // Uncomend code belowe 
             return null;
@@ -314,96 +281,119 @@ namespace EnglishTraining
         [HttpPost("checkaudio")]
         public string CheckAudio()
         {
-            // Test
-            // Uncomend code belowe 
+            VmWord[] words;
+
+            using (var db = new WordContext())
+            {
+                words = db.Words.Where(p => p.Localization.Name_ru.IndexOf(' ') < 0).ToArray();
+            }
+
+            FileChecker fileChecker = new FileChecker();
+
+            foreach (VmWord word in words)
+            {
+                var path = Path.Combine(audioPath, word.Localization.Name_ru) + ".wav";
+                if (!fileChecker.CheckIfExist(path))
+                {
+                    Console.WriteLine("File doesn't exist, path: {0}", path);
+                    //throw new ArgumentNullException("missed audio file");
+                }
+            }
             return null;
-
-            //VmWord[] words;
-
-            //using (var db = new WordContext())
-            //{
-            //    words = db.Words.Where(p => p.Name_ru.IndexOf(' ') < 0).ToArray();
-            //}
-
-            //FileChecker fileChecker = new FileChecker();
-
-            //foreach (VmWord word in words)
-            //{
-            //    var path = Path.Combine(audioPath, word.Name_ru) + ".wav";
-            //    if (!fileChecker.CheckIfExist(path))
-            //    {
-            //        Console.WriteLine("File doesn't exist, path: {0}", path);
-            //        //throw new ArgumentNullException("missed audio file");
-            //    }
-            //}
-            //return null;
         }
 
         #region Helpers
         public void UpdateSchedule()
         {
+            DateTime dateToday = DateTime.Now;
+            VmWord[] renewingIteration;
+            using (var db = new WordContext())
+            {
+                // TODO: move it to separated methods
+                // TODO: remove duplicates
+                // Auto-removing duplicates
+                var allWords = db.Words.ToArray();
+                //var duplicates = db.Words.Where(x => allWords
+                //.Count(n => ((n.Name_ru == x.Name_ru)
+                //          && (n.Name_en == x.Name_en))) > 1)
+                //.GroupBy(p => p.Name_ru)
+                //.Select(p => p.LastOrDefault());
 
-            // Test
-            // Uncomend code belowe 
+                //List<WordWithLandDictionary> wordsTemp = new List<WordWithLandDictionary>();
 
+                //foreach (VmWord word in allWords)
+                //{
+                //    wordsTemp.Add(new WordWithLandDictionary
+                //    {
+                //        Id = word.Id,
+                //        LangDictionary = new Dictionary<string, string>
+                //        {
+                //            {"pl", word.Localization.Name_pl},
+                //            {"en", word.Localization.Name_en},
+                //            {"ru", word.Localization.Name_ru},
+                //        },
+                //        LearnDay = word.LearnDay,
+                //        FourDaysLearnPhase = word.FourDaysLearnPhase,
+                //        RepeatIterationNum = word.RepeatIterationNum,
+                //        NextRepeatDate = word.NextRepeatDate,
+                //        DailyReapeatCount = word.DailyReapeatCount,
+                //        Dictors = null
+                //    });
+                //}
 
-            //DateTime dateToday = DateTime.Now;
-            //VmWord[] renewingIteration;
-            //using (var db = new WordContext())
-            //{
-            //    // TODO: move it to separated methods
-            //    // Auto-removing duplicates
-            //    var allWords = db.Words.ToArray();
-            //    var duplicates = db.Words.Where(x => allWords
-            //                                .Count(n => ((n.Name_ru == x.Name_ru)
-            //                                          && (n.Name_en == x.Name_en))) > 1)
-            //                                .GroupBy(p => p.Name_ru)
-            //                                .Select(p => p.LastOrDefault());
+                //var duplicates = wordsTemp.Where(p => wordsTemp
+                                               //.Count(n => langList.All(lang => n.LangDictionary[lang] = p. )));
 
-            //    // TODO: dell all duplicates in one time,
-            //    // now p.Skip(1) doesn't make it works
+                // TODO: dell all duplicates in one time,
+                // now p.Skip(1) doesn't make it works
 
-            //    foreach (VmWord word in duplicates)
-            //    {
-            //        db.Words.Remove(word);
-            //        Console.WriteLine("Removing duplicate \"{0}\" id {1}", word.Name_en, word.Id);
-            //    }
+                //foreach (VmWord word in duplicates)
+                //{
+                //    db.Words.Remove(word);
+                //    Console.WriteLine("Removing duplicate \"{0}\" id {1}", word.Name_en, word.Id);
+                //}
 
-            //    // Manually-removing duplicates
-            //    var duplicatesToResolve = db.Words.Where(x => allWords
-            //       .Count(n => ((n.Name_ru != x.Name_ru) && (n.Name_en == x.Name_en))
-            //                || ((n.Name_ru == x.Name_ru) && (n.Name_en != x.Name_en))) > 1)
-            //                                       .GroupBy(p => p.Name_ru)
-            //                                       .Select(p => p.LastOrDefault());
+                //// Manually-removing duplicates
+                //var duplicatesToResolve = db.Words.Where(x => allWords
+                   //.Count(n => ((n.Name_ru != x.Name_ru) && (n.Name_en == x.Name_en))
+                            //|| ((n.Name_ru == x.Name_ru) && (n.Name_en != x.Name_en))) > 1)
+                                                   //.GroupBy(p => p.Name_ru)
+                                                   //.Select(p => p.LastOrDefault());
 
-            //    if (duplicatesToResolve.Count() > 0)
-            //    {
-            //        throw new Exception("There are duplicates thet should be resolved");
-            //    }
+                //if (duplicatesToResolve.Count() > 0)
+                //{
+                //    throw new Exception("There are duplicates thet should be resolved");
+                //}
 
-            //    // Renewing Schedule
-            //    renewingIteration = db.Words.Where(p => (p.NextRepeatDateOld <= dateToday)
-            //                               && (p.DailyReapeatCountForEngOld >= minReapeatCountPerDayIteration)
-            //                               && (p.DailyReapeatCountForRusOld >= minReapeatCountPerDayIteration)
-            //                               && (p.FourDaysLearnPhaseOld == false)).ToArray();
+                // Renewing Schedule
+                renewingIteration = db.Words.Where(p => 
+                    (p.NextRepeatDate.FirstOrDefault(date => date.Key == targetLang).Value <= dateToday) &&
+                    (p.DailyReapeatCount.Where(count => count.Key != targetLang)
+                                          .Sum(count => count.Value) >= minReapeatCountPerDayIteration) &&
+                    (p.FourDaysLearnPhase
+                               .FirstOrDefault(phase => phase.Key == targetLang).Value == false)).ToArray();
 
-            //    var iterationIncrement = 7;
-            //    foreach (VmWord word in renewingIteration)
-            //    {
-            //        var iteration = iterationIncrement * getIterationLenght(word.RepeatIterationNumOld);
+                var iterationIncrement = 7;
+                foreach (VmWord word in renewingIteration)
+                {
+                    var iteration = iterationIncrement * getIterationLenght(word
+                                        .RepeatIterationNum.FirstOrDefault(p => p.Key == targetLang).Value);
 
-            //        word.NextRepeatDateOld = dateToday.AddDays(iteration);
-            //        word.DailyReapeatCountForEngOld = 0;
-            //        word.DailyReapeatCountForRusOld = 0;
+                    word.NextRepeatDate.FirstOrDefault(p => p.Key == targetLang).Value = dateToday.AddDays(iteration);
 
-            //        word.RepeatIterationNumOld++;
+                    foreach(DailyReapeatCount count in word.DailyReapeatCount)
+                    {
+                        count.Value = 0;
+                    }
 
-            //        db.Words.Update(word);
-            //        Console.WriteLine("Set new day for repeating word \"{0}\" iterations {1} id {2}",
-            //                          word.Name_en, word.RepeatIterationNumOld, word.Id);
-            //    }
-            //    db.SaveChanges();
-            //}
+                    word.RepeatIterationNum.FirstOrDefault(p => p.Key == targetLang);
+
+                    db.Words.Update(word);
+                    //Console.WriteLine("Set new day for repeating word \"{0}\" iterations {1} id {2}",
+                                      //word.Name_en, word.RepeatIterationNumOld, word.Id);
+                }
+                db.SaveChanges();
+            }
         }
 
         static int getIterationLenght(int i)
