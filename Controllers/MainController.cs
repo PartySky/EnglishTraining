@@ -3,7 +3,6 @@ using System.IO;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using EnglishTraining.models.Commonmodels;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,6 +11,13 @@ namespace EnglishTraining
     [Route("main/[controller]")]
     public class WordController : Controller
     {
+        private readonly IWordWithLandDictionaryMapper _wordWithLandDictionaryMapperService;
+        WordController(
+            IWordWithLandDictionaryMapper wordWithLandDictionaryMapperService
+        )
+        {
+            _wordWithLandDictionaryMapperService = wordWithLandDictionaryMapperService;
+        }
         string audioPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "audio");
 
         short minReapeatCountPerDayIteration = 1;
@@ -78,23 +84,7 @@ namespace EnglishTraining
 
                 foreach (VmWord word in words_Temp)
                 {
-
-                    wordWithLandDictionaryList.Add(new WordWithLandDictionary
-                    {
-                        Id = word.Id,
-                        LangDictionary = new Dictionary<string, string>
-                        {
-                            {"pl", word.Localization.Name_pl},
-                            {"en", word.Localization.Name_en},
-                            {"ru", word.Localization.Name_ru},
-                        },
-                        LearnDay = word.LearnDay,
-                        FourDaysLearnPhase = word.FourDaysLearnPhase,
-                        RepeatIterationNum = word.RepeatIterationNum,
-                        NextRepeatDate = word.NextRepeatDate,
-                        DailyReapeatCount = word.DailyReapeatCount,
-                        Dictors = null
-                    });
+                    wordWithLandDictionaryList.Add(_wordWithLandDictionaryMapperService.MapToWordWithLandDictionary(word));
                 }
 
                 word_new = wordWithLandDictionaryList
@@ -180,9 +170,9 @@ namespace EnglishTraining
 
                     if (dailyRepeatAmount != 0)
                     {
-                        repeatCount = word.FourDaysLearnPhase.FirstOrDefault(p => p.Key == targetLang).Value
+                        repeatCount = (short)(word.FourDaysLearnPhase.FirstOrDefault(p => p.Key == targetLang).Value
                             ? repeatCount + 2 * minReapeatCountPerDayFourDayPhase
-                            : repeatCount + 2 * minReapeatCountPerDayIteration;
+                            : repeatCount + 2 * minReapeatCountPerDayIteration);
                     }
                 }
             }

@@ -4,14 +4,25 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 
 namespace EnglishTraining
 {
     public class Parser
     {
+        private readonly IWordWithLandDictionaryMapper _wordWithLandDictionaryMapperService;
         public static string audioPath = "wwwroot/audio";
         public string jsonConfigPath = Path.Combine(Directory.GetCurrentDirectory(), "jsons");
+        string langForWordStoring = "ru";
+        string targetLang = "pl";
+        List<string> langList = new List<string> { "pl", "en", "ru" };
+        public Parser(
+            IWordWithLandDictionaryMapper wordWithLandDictionaryMapperService
+        )
+        {
+            _wordWithLandDictionaryMapperService = wordWithLandDictionaryMapperService;
+        }
         public void Download()
         {
             var apiPath = Path.Combine(jsonConfigPath, "api-config.json");
@@ -26,41 +37,58 @@ namespace EnglishTraining
             var worstDictorsPath = Path.Combine(jsonConfigPath, "worst-dictors.json");
             var worstDictors = JsonConvert.DeserializeObject<List<string>>(File.ReadAllText(worstDictorsPath));
             
-            VmWord[] words;
+            VmWord[] wordsTemp;
 
             using (var db = new WordContext())
             {
-                words = db.Words.Where(p => p.Name_ru.IndexOf(' ') < 0
-                && (p.Name_en.IndexOf(' ') < 0)).ToArray();
+                wordsTemp = db.Words
+                               .Include(p => p.Localization)
+                               .Include(p => p.LearnDay)
+                               .Include(p => p.FourDaysLearnPhase)
+                               .Include(p => p.RepeatIterationNum)
+                               .Include(p => p.NextRepeatDate)
+                               .Include(p => p.DailyReapeatCount)
+                               .ToArray();
             }
 
-            foreach (VmWord parserWord in words)
-            {
-                var lang = "en";
-                string wordName;
+            // TODO: map it there
+            List<WordWithLandDictionary> words = new List<WordWithLandDictionary>();
+            var removeList = words.Where(p => langList.Any(lang => p.LangDictionary[lang].Contains("")));
 
-                switch (lang)
+            words.RemoveAll(p => removeList.Any(z => z == p));
+            
+            foreach (VmWord word in wordsTemp)
+            {
+                words.Add(_wordWithLandDictionaryMapperService.MapToWordWithLandDictionary(word));
+            }
+
+            foreach (WordWithLandDictionary parserWord in words)
+            {
+                string wordNameInlangToStoreInFolder = parserWord.LangDictionary
+                                                .FirstOrDefault(p => p.Key == langForWordStoring).Value;
+
+                string wordName = parserWord.LangDictionary
+                                                .FirstOrDefault(p => p.Key == targetLang).Value;
+
+                if (wordName == null)
                 {
-                    case "ru":
-						wordName = parserWord.Name_ru.ToLower();
-                        break;
-                    case "en":
-                        wordName = parserWord.Name_en.ToLower();
-                        break;
-                    default:
-                        throw new Exception("lang should be setted");
+                    Console.WriteLine("Word {0} doesn't contain target localization {1}", 
+                                      wordNameInlangToStoreInFolder, targetLang);
+                    continue;
                 }
 
-                Console.WriteLine(audioPath + "/" + parserWord.Name_ru + ".mp3");
+                Console.WriteLine(audioPath + "/" + parserWord.LangDictionary
+                                  .FirstOrDefault(p => p.Key == targetLang).Value + ".mp3");
+
 				var maxDictorsCount = 5;
 
                 var existDictors = 0;
-                if(Directory.Exists(audioPath + "/" + parserWord.Name_ru + "/" + lang)){
+                if(Directory.Exists(audioPath + "/" + wordNameInlangToStoreInFolder + "/" + targetLang)){
                     existDictors = Directory
-                        .GetDirectories(audioPath + "/" + parserWord.Name_ru + "/" + lang).Length;
+                        .GetDirectories(audioPath + "/" + wordNameInlangToStoreInFolder + "/" + targetLang).Length;
                 }
 
-                var defaultAudioPath = Path.Combine(audioPath, "default", lang);
+                var defaultAudioPath = Path.Combine(audioPath, "default", targetLang);
 
                 if (parsedWods.IndexOf(wordName) < 0
                     && !File.Exists(defaultAudioPath + "/" + wordName + ".mp3")
@@ -68,7 +96,7 @@ namespace EnglishTraining
                     && (existDictors < maxDictorsCount)
                     && (wordName.IndexOf('_') < 0))
                 {
-                    string wordRequestUrl = api.Url + wordName + "/language/" + lang;
+                    string wordRequestUrl = api.Url + wordName + "/language/" + targetLang;
                     Console.WriteLine(wordRequestUrl);
 
                     VmResponseWord wordCollection = GetWordColletion(wordRequestUrl);
@@ -137,14 +165,16 @@ namespace EnglishTraining
                     {
                         dictorLang = item.code;
                         System.Threading.Thread.Sleep(10);
-                        if ((item.pathmp3 != null) && ((dictorLang == "en") || (dictorLang == "ru")))
+                        if ((item.pathmp3 != null) && langList.Any(lang => lang == dictorLang))
                         {
-                            // TODO: made lang switcher
-                            
                             if (i <= maxDictorsCount)
                             {
-                                GetAndSave(parserWord.Name_en, parserWord.Name_ru, 
-                                           wordName, dictorLang, item.pathmp3, item.username);
+                                GetAndSave(parserWord.LangDictionary,
+                                           targetLang,
+                                           parserWord.LangDictionary.FirstOrDefault(p => p.Key == targetLang).Value,
+                                            wordNameInlangToStoreInFolder, 
+                                            item.pathmp3,
+                                            item.username);
                             }
                             i++;
                         }
@@ -169,35 +199,73 @@ namespace EnglishTraining
 
         public void UpdateDictionary()
         {
-            VmCurrentWord[] words = GetWordsCollectionFromJson();
+            // Test
+            // TODO: uncomment it
+
+            //VmCurrentWord[] words = GetWordsCollectionFromJson();
+            //using (var db = new WordContext())
+            //{
+            //    var existedWords = db.Words.ToArray();
+            //    foreach (VmCurrentWord word in words)
+            //    {
+            //        if (!Array.Exists(existedWords, element => element.Name_en == word.Name_en))
+            //        {
+            //            db.Words.Update(new VmWord
+            //            {
+            //                Name_ru = word.Name_ru,
+            //                Name_en = word.Name_en,
+            //                FourDaysLearnPhaseOld = true,
+            //                LearnDayOld = 0,
+            //                RepeatIterationNumOld = 0,
+            //                NextRepeatDateOld = DateTime.Today,
+            //                DailyReapeatCountForEngOld = 0,
+            //                DailyReapeatCountForRusOld = 0
+            //            });
+            //            Console.WriteLine("Updating word \"{0}\"", word.Name_en);
+            //        }
+            //        else
+            //        {
+            //            Console.WriteLine("Skipped word \"{0}\"", word.Name_en);
+            //        }
+            //    }
+            //    var count = db.SaveChanges();
+            //    Console.WriteLine("{0} records saved to database", count);
+            //}
+        }
+
+
+        public void AddWordsToDb()
+        {
+            // TODO: refactor it
+            List<VmWord> wordsToSave = new List<VmWord>();
+            VmCurrentWord[] imported_words = GetWordsCollectionFromJson();
             using (var db = new WordContext())
             {
-                var existedWords = db.Words.ToArray();
-                foreach (VmCurrentWord word in words)
+                var words = db.Words
+                                .Include(p => p.Localization)
+                                .Include(p => p.LearnDay)
+                                .Include(p => p.FourDaysLearnPhase)
+                                .Include(p => p.RepeatIterationNum)
+                                .Include(p => p.NextRepeatDate)
+                                .Include(p => p.DailyReapeatCount)
+                                .Where(p => p.Localization.Name_pl == null)
+                              // ?
+                              //.Where(z => imported_words.Any(i => i.Name_en == z.Localization.Name_en))
+                              .ToList();
+
+                foreach (VmWord word in words)
                 {
-                    if (!Array.Exists(existedWords, element => element.Name_en == word.Name_en))
+                    var word_Temp = imported_words.FirstOrDefault(p => p.Name_en == word.Localization.Name_en);
+
+                    if(word_Temp.Name_en != null)
                     {
-                        db.Words.Update(new VmWord
-                        {
-                            Name_ru = word.Name_ru,
-                            Name_en = word.Name_en,
-                            FourDaysLearnPhaseOld = true,
-                            LearnDayOld = 0,
-                            RepeatIterationNumOld = 0,
-                            NextRepeatDateOld = DateTime.Today,
-                            DailyReapeatCountForEngOld = 0,
-                            DailyReapeatCountForRusOld = 0
-                        });
-                        Console.WriteLine("Updating word \"{0}\"", word.Name_en);
-                    }
-                    else
-                    {
-                        Console.WriteLine("Skipped word \"{0}\"", word.Name_en);
+                        word.Localization.Name_pl = word_Temp.Name_pl;
                     }
                 }
-                var count = db.SaveChanges();
-                Console.WriteLine("{0} records saved to database", count);
+                db.SaveChanges();
             }
+
+
         }
 
         static VmCurrentWord[] GetWordsCollectionFromJson()
@@ -222,11 +290,17 @@ namespace EnglishTraining
             return words;
         }
 
-        static void GetAndSave(string wordName_en, string wordName_ru, string wordNameInLang, 
-                               string lang, string url, string dictor)
+        //static void GetAndSave(string wordName_en, string wordName_ru, string wordNameInLang, 
+        //string lang, string url, string dictor)
+
+        static void GetAndSave(
+            Dictionary<string, string> langDictionary,
+            string targetLang, string wordNameInLang, 
+            string wordNameInlangToStoreInFolder,
+            string url, string dictor)
         {
             var folderPath = Path.Combine(Directory.GetCurrentDirectory(),
-                                          audioPath, wordName_ru, lang, dictor);
+                                          audioPath, wordNameInlangToStoreInFolder, targetLang, dictor);
             var filePath = Path.Combine(folderPath, wordNameInLang + ".mp3");
 
             if (File.Exists(filePath)) {
