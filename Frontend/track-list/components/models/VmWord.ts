@@ -1,18 +1,15 @@
-import { VmDictor } from "./VmDictor";
+// import { VmDictor } from "./VmDictor";
 import { VmCollocation } from "./VmCollocation";
+import { Dictionary } from "../../../interfaces/Index";
 
 export interface VmWord {
     Id: number;
-    // HACK returned in lover case
     // name_en_Old: string;
-    // HACK returned in lover case
     // name_ru_Old: string;
-    // FourDaysLearnPhase: boolean;
     // fourDaysLearnPhase_Old: boolean;
     // learnDay_Old: number;
     // repeatIterationNum_Old: number;
     // nextRepeatDate_Old: Date;
-    // HACK returned in lover case
     // dailyReapeatCountForEng_Old: number;
     // dailyReapeatCountForRus_Old: number;
     // dictors_en_Old?: VmDictor[];
@@ -22,9 +19,9 @@ export interface VmWord {
     // New
 
     LearnDay: Dictionary<number>;
-    FourDaysLearnPhase: Dictionary<number>;
+    FourDaysLearnPhase: Dictionary<boolean>;
     RepeatIterationNum: Dictionary<number>;
-    NextRepeatDate: Dictionary<number>;
+    NextRepeatDate: Dictionary<Date>;
     DailyReapeatCount: Dictionary<number>;
     LangDictionary: Dictionary<string>;
     Dictors: Dictionary<VmDictor[]>;
@@ -33,9 +30,6 @@ export interface VmWord {
 
 ////
 
-interface Dictionary<T> {
-    [Key: string]: T;
-}
 
 // export class VmLearnDay {
 //     Id: number;
