@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace EnglishTraining
 {
-    public class VmWord
+    public class Word
     {
         public int Id { get; set; }
         public string Name_en { get; set; }
@@ -27,7 +27,7 @@ namespace EnglishTraining
 
     // Lets map it
     //public class WordWithLandDictionary : VmWord
-    public class WordWithLandDictionary
+    public class WordWithLangDictionary
     {
         public int Id { get; set; }
         // is it needed?
@@ -40,11 +40,10 @@ namespace EnglishTraining
         public IList<DailyReapeatCount> DailyReapeatCount { get; set; }
 
         public Dictionary<string, string> LangDictionary { get; set; }
-        public Dictionary<string, IList<VmDictor>> Dictors { get; set; }
         public IList<VmCollocation> Collocation { get; set; }
     }
 
-    public class VmWordWithDictors : VmWord
+    public class VmWordWithDictors : Word
     {
         public IList<VmDictor> Dictors_en { get; set; }
         public IList<VmDictor> Dictors_ru { get; set; }
@@ -55,85 +54,94 @@ namespace EnglishTraining
         public int Id { get; set; }
         public string Key { get; set; }
         public int Value { get; set; }
-        public VmWord Word { get; set; }
+        public Word Word { get; set; }
     }
     public class FourDaysLearnPhase
     {
         public int Id { get; set; }
         public string Key { get; set; }
         public bool Value { get; set; }
-        public VmWord Word { get; set; }
+        public Word Word { get; set; }
     }
     public class RepeatIterationNum
     {
         public int Id { get; set; }
         public string Key { get; set; }
         public int Value { get; set; }
-        public VmWord Word { get; set; }
+        public Word Word { get; set; }
     }
     public class NextRepeatDate
     {
         public int Id { get; set; }
         public string Key { get; set; }
         public DateTime Value { get; set; }
-        public VmWord Word { get; set; }
+        public Word Word { get; set; }
     }
     public class DailyReapeatCount
     {
         public int Id { get; set; }
         public string Key { get; set; }
         public int Value { get; set; }
-        public VmWord Word { get; set; }
+        public Word Word { get; set; }
     }
 
-    public class Word
+    public class WordTest
     {
         public Dictionary<string, string> Langs { get; set; }
     }
 
-    public class WordWithLandDictionaryOutput
+    public class VmWord
     {
         public int Id { get; set; }
-
-        public IList<LearnDayOutput> LearnDay { get; set; }
-        public IList<FourDaysLearnPhaseOutput> FourDaysLearnPhase { get; set; }
-        public IList<RepeatIterationNumOutput> RepeatIterationNum { get; set; }
-        public IList<NextRepeatDateOutput> NextRepeatDate { get; set; }
-        public IList<DailyReapeatCountOutput> DailyReapeatCount { get; set; }
-
+        public Dictionary<string, int> LearnDay { get; set; }
+        // public IList<VmFourDaysLearnPhase> FourDaysLearnPhase { get; set; }
+        public Dictionary<string, bool> FourDaysLearnPhase { get; set; }
+        // public IList<VmRepeatIterationNum> RepeatIterationNum { get; set; }
+        public Dictionary<string, int> RepeatIterationNum { get; set; }
+        // public IList<VmNextRepeatDate> NextRepeatDate { get; set; }
+        public Dictionary<string, DateTime> NextRepeatDate { get; set; }
+        // public IList<VmDailyReapeatCount> DailyReapeatCount { get; set; }
+        public Dictionary<string, int> DailyReapeatCount { get; set; }
         public Dictionary<string, string> LangDictionary { get; set; }
         public Dictionary<string, IList<VmDictor>> Dictors { get; set; }
+        // TODO: find out should I use dictionary there?
         public IList<VmCollocation> Collocation { get; set; }
+        // public Dictionary<string, IList<VmCollocation>> Collocation { get; set; }
     }
 
-    public class LearnDayOutput
-    {
-        public int Id { get; set; }
-        public string Key { get; set; }
-        public int Value { get; set; }
-    }
-    public class FourDaysLearnPhaseOutput
-    {
-        public int Id { get; set; }
-        public string Key { get; set; }
-        public bool Value { get; set; }
-    }
-    public class RepeatIterationNumOutput
-    {
-        public int Id { get; set; }
-        public string Key { get; set; }
-        public int Value { get; set; }
-    }
-    public class NextRepeatDateOutput
-    {
-        public int Id { get; set; }
-        public string Key { get; set; }
-        public DateTime Value { get; set; }
-    }
-    public class DailyReapeatCountOutput
-    {
-        public int Id { get; set; }
-        public string Key { get; set; }
-        public int Value { get; set; }
-    }
+    // class depricated, to dell
+    // public class VmLearnDay
+    // {
+    //     public int Id { get; set; }
+    //     public string Key { get; set; }
+    //     public int Value { get; set; }
+    // }
+    // class depricated, to dell
+    // public class VmFourDaysLearnPhase
+    // {
+    //     public int Id { get; set; }
+    //     public string Key { get; set; }
+    //     public bool Value { get; set; }
+    // }
+    // class depricated, to dell
+    // public class VmRepeatIterationNum
+    // {
+    //     public int Id { get; set; }
+    //     public string Key { get; set; }
+    //     public int Value { get; set; }
+    // }
+    // class depricated, to dell
+    // public class VmNextRepeatDate
+    // {
+    //     public int Id { get; set; }
+    //     public string Key { get; set; }
+    //     public DateTime Value { get; set; }
+    // }
+    // class depricated, to dell
+    // public class VmDailyReapeatCount
+    // {
+    //     public int Id { get; set; }
+    //     public string Key { get; set; }
+    //     public int Value { get; set; }
+    // }
 }

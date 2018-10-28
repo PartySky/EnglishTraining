@@ -15,7 +15,7 @@ namespace EnglishTraining
         public string newWordsPath = Path.Combine(Directory.GetCurrentDirectory(), "txt", "new-words.txt");
         public void FindNewWords()
         {
-            VmWord[] wordsDB;
+            Word[] wordsDB;
             string excludedWordsFile = File.ReadAllText(
                 Path.Combine(Directory.GetCurrentDirectory(), "txt", "excluded-words.txt"));
 

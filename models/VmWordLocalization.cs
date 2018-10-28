@@ -13,6 +13,6 @@ namespace EnglishTraining
         //public string Name_es { get; set; }
 
 
-        public VmWord word { get; set; }
+        public Word word { get; set; }
     }
 }

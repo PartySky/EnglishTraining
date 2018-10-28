@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
+
 namespace EnglishTraining
 {
-    public interface IWordWithLandDictionaryMapper
+    public interface IVmWordMapper
     {
-		WordWithLandDictionary MapToWordWithLandDictionary(VmWord word);
+        WordWithLangDictionary MapToSomething(Word word);
+        VmWord MapToVmWord(WordWithLangDictionary word, Dictionary<string, IList<VmDictor>> dictors);
     }
 }

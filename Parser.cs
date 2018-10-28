@@ -11,14 +11,14 @@ namespace EnglishTraining
 {
     public class Parser
     {
-        private readonly IWordWithLandDictionaryMapper _wordWithLandDictionaryMapperService;
-        public static string audioPath = "wwwroot/audio";
-        public string jsonConfigPath = Path.Combine(Directory.GetCurrentDirectory(), "jsons");
-        string langForWordStoring = "ru";
-        string targetLang = "pl";
-        List<string> langList = new List<string> { "pl", "en", "ru" };
+        private readonly IVmWordMapper _wordWithLandDictionaryMapperService;
+        readonly public static string audioPath = "wwwroot/audio";
+        readonly public string jsonConfigPath = Path.Combine(Directory.GetCurrentDirectory(), "jsons");
+        readonly string langForWordStoring = "ru";
+        readonly string targetLang = "pl";
+        readonly List<string> langList = new List<string> { "pl", "en", "ru" };
         public Parser(
-            IWordWithLandDictionaryMapper wordWithLandDictionaryMapperService
+            IVmWordMapper wordWithLandDictionaryMapperService
         )
         {
             _wordWithLandDictionaryMapperService = wordWithLandDictionaryMapperService;
@@ -36,8 +36,8 @@ namespace EnglishTraining
 
             var worstDictorsPath = Path.Combine(jsonConfigPath, "worst-dictors.json");
             var worstDictors = JsonConvert.DeserializeObject<List<string>>(File.ReadAllText(worstDictorsPath));
-            
-            VmWord[] wordsTemp;
+
+            Word[] wordsTemp;
 
             using (var db = new WordContext())
             {
@@ -52,17 +52,17 @@ namespace EnglishTraining
             }
 
             // TODO: map it there
-            List<WordWithLandDictionary> words = new List<WordWithLandDictionary>();
+            List<WordWithLangDictionary> words = new List<WordWithLangDictionary>();
             var removeList = words.Where(p => langList.Any(lang => p.LangDictionary[lang].Contains("")));
 
             words.RemoveAll(p => removeList.Any(z => z == p));
-            
-            foreach (VmWord word in wordsTemp)
+
+            foreach (Word word in wordsTemp)
             {
-                words.Add(_wordWithLandDictionaryMapperService.MapToWordWithLandDictionary(word));
+                words.Add(_wordWithLandDictionaryMapperService.MapToSomething(word));
             }
 
-            foreach (WordWithLandDictionary parserWord in words)
+            foreach (WordWithLangDictionary parserWord in words)
             {
                 string wordNameInlangToStoreInFolder = parserWord.LangDictionary
                                                 .FirstOrDefault(p => p.Key == langForWordStoring).Value;
@@ -72,7 +72,7 @@ namespace EnglishTraining
 
                 if (wordName == null)
                 {
-                    Console.WriteLine("Word {0} doesn't contain target localization {1}", 
+                    Console.WriteLine("Word {0} doesn't contain target localization {1}",
                                       wordNameInlangToStoreInFolder, targetLang);
                     continue;
                 }
@@ -80,10 +80,11 @@ namespace EnglishTraining
                 Console.WriteLine(audioPath + "/" + parserWord.LangDictionary
                                   .FirstOrDefault(p => p.Key == targetLang).Value + ".mp3");
 
-				var maxDictorsCount = 5;
+                var maxDictorsCount = 5;
 
                 var existDictors = 0;
-                if(Directory.Exists(audioPath + "/" + wordNameInlangToStoreInFolder + "/" + targetLang)){
+                if (Directory.Exists(audioPath + "/" + wordNameInlangToStoreInFolder + "/" + targetLang))
+                {
                     existDictors = Directory
                         .GetDirectories(audioPath + "/" + wordNameInlangToStoreInFolder + "/" + targetLang).Length;
                 }
@@ -117,7 +118,8 @@ namespace EnglishTraining
 
                     int iForDictors = 0;
 
-                    foreach(VmResponseWordItem dictor in bestDictorsTemp) {
+                    foreach (VmResponseWordItem dictor in bestDictorsTemp)
+                    {
                         sortedDictors[iForDictors] = dictor;
                         iForDictors++;
                     }
@@ -159,7 +161,7 @@ namespace EnglishTraining
 
                     string dictorLang;
 
-					int i = 0;
+                    int i = 0;
 
                     foreach (VmResponseWordItem item in sortedDictors)
                     {
@@ -172,7 +174,7 @@ namespace EnglishTraining
                                 GetAndSave(parserWord.LangDictionary,
                                            targetLang,
                                            parserWord.LangDictionary.FirstOrDefault(p => p.Key == targetLang).Value,
-                                            wordNameInlangToStoreInFolder, 
+                                            wordNameInlangToStoreInFolder,
                                             item.pathmp3,
                                             item.username);
                             }
@@ -237,7 +239,7 @@ namespace EnglishTraining
         public void AddWordsToDb()
         {
             // TODO: refactor it
-            List<VmWord> wordsToSave = new List<VmWord>();
+            List<Word> wordsToSave = new List<Word>();
             VmCurrentWord[] imported_words = GetWordsCollectionFromJson();
             using (var db = new WordContext())
             {
@@ -253,11 +255,11 @@ namespace EnglishTraining
                               //.Where(z => imported_words.Any(i => i.Name_en == z.Localization.Name_en))
                               .ToList();
 
-                foreach (VmWord word in words)
+                foreach (Word word in words)
                 {
                     var word_Temp = imported_words.FirstOrDefault(p => p.Name_en == word.Localization.Name_en);
 
-                    if(word_Temp.Name_en != null)
+                    if (word_Temp.Name_en != null)
                     {
                         word.Localization.Name_pl = word_Temp.Name_pl;
                     }
@@ -295,7 +297,7 @@ namespace EnglishTraining
 
         static void GetAndSave(
             Dictionary<string, string> langDictionary,
-            string targetLang, string wordNameInLang, 
+            string targetLang, string wordNameInLang,
             string wordNameInlangToStoreInFolder,
             string url, string dictor)
         {
@@ -303,7 +305,8 @@ namespace EnglishTraining
                                           audioPath, wordNameInlangToStoreInFolder, targetLang, dictor);
             var filePath = Path.Combine(folderPath, wordNameInLang + ".mp3");
 
-            if (File.Exists(filePath)) {
+            if (File.Exists(filePath))
+            {
                 return;
             }
 
@@ -341,7 +344,7 @@ namespace EnglishTraining
             ////  //                 (dictor == "Skvodo") ||
             ////  //                 (dictor == "1640max"))
             ////  //              {
-			return JsonConvert.DeserializeObject<VmResponseWord>(responseText);
+            return JsonConvert.DeserializeObject<VmResponseWord>(responseText);
         }
 
         static void GetAndSavePng()
@@ -349,7 +352,7 @@ namespace EnglishTraining
             var filepath = Path.Combine(audioPath, "hello9.png");
 
             WebRequest request = WebRequest.Create("https://www.google.ru/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png");
-			WebResponse response = request.GetResponseAsync().Result;
+            WebResponse response = request.GetResponseAsync().Result;
 
             var responseStream = response.GetResponseStream();
             using (FileStream fileStream = new FileStream(filepath, FileMode.Create))

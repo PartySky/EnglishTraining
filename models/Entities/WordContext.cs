@@ -5,7 +5,7 @@ namespace EnglishTraining
 {
     public class WordContext : DbContext
     {
-        public DbSet<VmWord> Words { get; set; }
+        public DbSet<Word> Words { get; set; }
         public DbSet<VmWordLocalization> WordLocalization { get; set; }
         public DbSet<LearnDay> LearnDay { get; set; }
         public DbSet<FourDaysLearnPhase> FourDaysLearnPhase { get; set; }

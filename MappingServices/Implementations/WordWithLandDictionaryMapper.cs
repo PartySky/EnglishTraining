@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace EnglishTraining
 {
-    public class WordWithLandDictionaryMapper : IWordWithLandDictionaryMapper
+    public class VmWordMapper : IVmWordMapper
     {
-        public WordWithLandDictionary MapToWordWithLandDictionary(VmWord word)
+        public WordWithLangDictionary MapToSomething(Word word)
         {
-            return new WordWithLandDictionary
+            return new WordWithLangDictionary
             {
                 Id = word.Id,
                 LangDictionary = new Dictionary<string, string>
@@ -21,12 +22,24 @@ namespace EnglishTraining
                 RepeatIterationNum = word.RepeatIterationNum,
                 NextRepeatDate = word.NextRepeatDate,
                 DailyReapeatCount = word.DailyReapeatCount,
-                // ?
-                Dictors = null
+            };
+        }
 
-                // ?
-                //    public Dictionary<string, IList<VmDictor>> Dictors { get; set; }
-                //    public IList<VmCollocation> Collocation { get; set; }
+        public VmWord MapToVmWord(WordWithLangDictionary word, Dictionary<string, IList<VmDictor>> dictors)
+        {
+            var x = word.LearnDay.ToDictionary(p => p.Key);
+
+            return new VmWord
+            {
+                Id = word.Id,
+                LearnDay = word.LearnDay?.ToDictionary(p => p.Key, v => v.Value),
+                FourDaysLearnPhase = word.FourDaysLearnPhase?.ToDictionary(p => p.Key, v => v.Value),
+                RepeatIterationNum = word.RepeatIterationNum?.ToDictionary(p => p.Key, v => v.Value),
+                NextRepeatDate = word.NextRepeatDate?.ToDictionary(p => p.Key, v => v.Value),
+                DailyReapeatCount = word.DailyReapeatCount?.ToDictionary(p => p.Key, v => v.Value),
+                LangDictionary = word.LangDictionary?.ToDictionary(p => p.Key, v => v.Value),
+                Dictors = dictors,
+                Collocation = word.Collocation
             };
         }
     }

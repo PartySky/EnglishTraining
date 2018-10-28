@@ -13,7 +13,7 @@ namespace EnglishTraining
 
         public void Download()
         {
-            VmWord[] words;
+            Word[] words;
             List<VmCollocation> collocations;
 
             using (var db = new WordContext())
@@ -25,7 +25,7 @@ namespace EnglishTraining
             string htmlCode;
             string tempURL;
 
-            foreach (VmWord word in words)
+            foreach (Word word in words)
             {
                 using (WebClient client = new WebClient())
                 {
@@ -131,7 +131,8 @@ namespace EnglishTraining
                                 GetAndSave(sourcePath + url, fileName, lang);
                                 var isCollocationExist = db.Collocations.Any(p => p.AudioUrl == tempURL);
 
-                                if (!isCollocationExist){
+                                if (!isCollocationExist)
+                                {
                                     db.Collocations.Add(new VmCollocation
                                     {
                                         Lang = "en",
@@ -141,7 +142,7 @@ namespace EnglishTraining
                                 }
                                 db.SaveChanges();
                             }
-						}
+                        }
                     }
                 }
             }
@@ -163,14 +164,16 @@ namespace EnglishTraining
 
                 collocations = db.Collocations.ToList();
                 var collocationsTemp = Directory.GetFiles(Path.Combine(audioPath, collocationPath)).ToList();
-                
+
                 var collocationsForExclude = collocationsTemp
                     .Where(p => collocations.All(z => z.AudioUrl == p)).ToList();
-                
+
                 var collocationsNew = collocationsTemp.Except(collocationsForExclude);
 
-                foreach (string collocation in collocationsNew) {
-                    collocations.Add(new VmCollocation {
+                foreach (string collocation in collocationsNew)
+                {
+                    collocations.Add(new VmCollocation
+                    {
                         Lang = "en",
                         AudioUrl = collocation,
                         NotUsedToday = true,
@@ -193,8 +196,9 @@ namespace EnglishTraining
             }
 
             WebRequest request = WebRequest.Create(url);
-            try {
-				WebResponse response = request.GetResponseAsync().Result;
+            try
+            {
+                WebResponse response = request.GetResponseAsync().Result;
                 var responseStream = response.GetResponseStream();
 
                 Directory.CreateDirectory(folderPath);
@@ -202,32 +206,39 @@ namespace EnglishTraining
                 {
                     responseStream.CopyTo(fileStream);
                 }
-				System.Threading.Thread.Sleep(2);
-			} catch {
+                System.Threading.Thread.Sleep(2);
+            }
+            catch
+            {
                 Console.WriteLine("some error happend");
-			}
+            }
         }
 
-        public void WriteExistingCollocationFromFolderToDB() {
+        public void WriteExistingCollocationFromFolderToDB()
+        {
             string lang = "en";
             string audioPathLocal = "audio";
             List<string> newCollocations = null;
             List<string> listToExclude = null;
 
-            using(var db = new WordContext()) {
+            using (var db = new WordContext())
+            {
                 listToExclude = db.Collocations.Select(p => p.AudioUrl).ToList();
             }
             var files = Directory.GetFiles(
-                Path.Combine(Directory.GetCurrentDirectory(),audioPath, collocationPath, lang))
+                Path.Combine(Directory.GetCurrentDirectory(), audioPath, collocationPath, lang))
                 .Select(p => Path.Combine("/", audioPathLocal, collocationPath, lang, Path.GetFileName(p)))
                                  .ToList();
 
             files.Remove(files.Find(p => p.Contains("DS_Store")));
 
             newCollocations = files.Except(listToExclude).ToList();
-            using(var db = new WordContext()) {
-                foreach(var collocationAudio in newCollocations) {
-                    db.Collocations.Add(new VmCollocation {
+            using (var db = new WordContext())
+            {
+                foreach (var collocationAudio in newCollocations)
+                {
+                    db.Collocations.Add(new VmCollocation
+                    {
                         Lang = lang,
                         AudioUrl = collocationAudio,
                         NotUsedToday = true
