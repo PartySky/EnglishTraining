@@ -1,6 +1,7 @@
 // import { VmDictor } from "./VmDictor";
 import { VmCollocation } from "./VmCollocation";
 import { Dictionary } from "../../../interfaces/Index";
+import { VmDictor } from "./VmDictor";
 
 export interface VmWord {
     Id: number;
@@ -18,14 +19,14 @@ export interface VmWord {
 
     // New
 
-    LearnDay: Dictionary<number>;
-    FourDaysLearnPhase: Dictionary<boolean>;
-    RepeatIterationNum: Dictionary<number>;
-    NextRepeatDate: Dictionary<Date>;
-    DailyReapeatCount: Dictionary<number>;
-    LangDictionary: Dictionary<string>;
-    Dictors: Dictionary<VmDictor[]>;
-    Collocation: Dictionary<VmCollocation[]>;
+    learnDay: Dictionary<number>;
+    fourDaysLearnPhase: Dictionary<boolean>;
+    repeatIterationNum: Dictionary<number>;
+    nextRepeatDate: Dictionary<Date>;
+    dailyReapeatCount: Dictionary<number>;
+    langDictionary: Dictionary<string>;
+    dictors: Dictionary<VmDictor[]>;
+    collocation: Dictionary<VmCollocation[]>;
 }
 
 ////
