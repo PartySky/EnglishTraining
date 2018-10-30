@@ -26,7 +26,9 @@ export interface VmWord {
     dailyReapeatCount: Dictionary<number>;
     langDictionary: Dictionary<string>;
     dictors: Dictionary<VmDictor[]>;
-    collocation: Dictionary<VmCollocation[]>;
+    // TODO: find out if it should be Dictionary
+    // collocation: Dictionary<VmCollocation[]>;
+    collocation: VmCollocation[];
 }
 
 ////

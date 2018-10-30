@@ -6,7 +6,9 @@ namespace EnglishTraining
     public class Word
     {
         public int Id { get; set; }
+        // TODO: remove it
         public string Name_en { get; set; }
+        // TODO: find out is it needed there
         public string Name_ru { get; set; }
         public VmWordLocalization Localization { get; set; }
 

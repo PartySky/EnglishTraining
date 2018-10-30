@@ -211,43 +211,66 @@ namespace EnglishTraining
         }
 
         [HttpPost("update")]
-        //public string Update([FromBody] VmWord[] words)
-        // TODO: use better name for VmWordAndCollocationUpdating
         public string Update([FromBody] VmWordAndCollocationUpdating wordAndCollocationUpdating)
         {
             using (var db = new WordContext())
             {
-                foreach (Word word in wordAndCollocationUpdating.words)
+                try
                 {
-                    if (word == null)
+                    foreach (VmWord word in wordAndCollocationUpdating.words)
                     {
-                        Console.WriteLine("Word is null");
-                        throw new ArgumentNullException("Word is null");
-                    }
-                    db.Words.Update(word);
-                    Console.WriteLine("Updating word \"{0}\" id {1}", word.Localization.Name_en, word.Id);
-                }
-                DateTime dateToday = DateTime.Now;
-                short collocationDelayPeriod = 4;
-                foreach (VmCollocation collocation in wordAndCollocationUpdating.collocations)
-                {
-                    if (collocation == null)
-                    {
-                        Console.WriteLine("collocation is null");
-                        throw new ArgumentNullException("collocation is null");
-                    }
-                    else
-                    {
-                        if (collocation.NotUsedToday == false)
+                        if (word == null)
                         {
-                            collocation.NextRepeatDate = dateToday.AddDays(collocationDelayPeriod);
-                            collocation.NotUsedToday = true;
+                            Console.WriteLine("Word is null");
+                            throw new ArgumentNullException("Word is null");
                         }
-                        db.Collocations.Update(collocation);
-                        Console.WriteLine("Updating collocation \"{0}\"", collocation.AudioUrl);
+                        var updatingWord = db.Words
+                               .Include(p => p.Localization)
+                               .Include(p => p.LearnDay)
+                               .Include(p => p.FourDaysLearnPhase)
+                               .Include(p => p.RepeatIterationNum)
+                               .Include(p => p.NextRepeatDate)
+                               .Include(p => p.DailyReapeatCount)
+                               .FirstOrDefault(p => p.Id == word.Id);
+
+                        foreach (string lang in langList)
+                        {
+                            updatingWord.LearnDay.FirstOrDefault(p => p.Key == lang).Value = word.LearnDay[lang];
+                            updatingWord.FourDaysLearnPhase.FirstOrDefault(p => p.Key == lang).Value = word.FourDaysLearnPhase[lang];
+                            updatingWord.RepeatIterationNum.FirstOrDefault(p => p.Key == lang).Value = word.RepeatIterationNum[lang];
+                            updatingWord.NextRepeatDate.FirstOrDefault(p => p.Key == lang).Value = word.NextRepeatDate[lang];
+                            updatingWord.DailyReapeatCount.FirstOrDefault(p => p.Key == lang).Value = word.DailyReapeatCount[lang];
+
+                        }
+                        db.Words.Update(updatingWord);
+                        Console.WriteLine("Updating word \"{0}\" id {1}", updatingWord.Localization.Name_en, updatingWord.Id);
                     }
+                    DateTime dateToday = DateTime.Now;
+                    short collocationDelayPeriod = 4;
+                    foreach (VmCollocation collocation in wordAndCollocationUpdating.collocations)
+                    {
+                        if (collocation == null)
+                        {
+                            Console.WriteLine("collocation is null");
+                            throw new ArgumentNullException("collocation is null");
+                        }
+                        else
+                        {
+                            if (collocation.NotUsedToday == false)
+                            {
+                                collocation.NextRepeatDate = dateToday.AddDays(collocationDelayPeriod);
+                                collocation.NotUsedToday = true;
+                            }
+                            db.Collocations.Update(collocation);
+                            Console.WriteLine("Updating collocation \"{0}\"", collocation.AudioUrl);
+                        }
+                    }
+                    db.SaveChanges();
                 }
-                db.SaveChanges();
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
             }
             return "succes";
         }

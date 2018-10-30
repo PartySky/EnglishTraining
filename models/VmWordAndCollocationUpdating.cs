@@ -1,9 +1,8 @@
-﻿using System;
-namespace EnglishTraining
+﻿namespace EnglishTraining
 {
     public struct VmWordAndCollocationUpdating
     {
-        public Word[] words { get; set; }
+        public VmWord[] words { get; set; }
         public VmCollocation[] collocations { get; set; }
     }
 }

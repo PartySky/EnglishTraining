@@ -60,6 +60,7 @@ export class TrackListComponent {
     ) {
         this._apiUrl = "/main/word";
         this.mode = "Words";
+
         this.getTargetLang()
             .then(lang => {
                 if (!lang) {
@@ -79,35 +80,36 @@ export class TrackListComponent {
                             }));
 
                         // Add collocations into object
+                        // Collocations should be separated array
                         this._collocations = [];
                         this._words.forEach(word => {
-                            this.langList.forEach(lang => {
-                                if (word.collocation && word.collocation[this.targetLang]) {
-                                    word.collocation[this.targetLang].forEach(collocation => {
-                                        if (this._collocations.filter(p =>
-                                            p.audioUrl == collocation.audioUrl).length == 0) {
-                                            this._collocations.push({
-                                                id: collocation.id,
-                                                lang: collocation.lang,
-                                                audioUrl: collocation.audioUrl,
-                                                notUsedToday: true
-                                            });
-                                        }
-                                    });
-                                } else {
-                                    word.collocation = {};
-                                }
-                            });
-                        });
-
-                        this._words.forEach(word => {
-                            if (word.collocation && word.collocation[this.targetLang]) {
-                                for (let i = 0; i < word.collocation[this.targetLang].length; i++) {
-                                    word.collocation[this.targetLang][i] = this._collocations.filter(z =>
-                                        z.audioUrl == word.collocation[this.targetLang][i].audioUrl)[0];
-                                }
+                            if (word.collocation && word.collocation.length) {
+                                word.collocation.forEach(collocation => {
+                                    if (this._collocations.filter(p =>
+                                        p.audioUrl == collocation.audioUrl).length == 0) {
+                                        this._collocations.push({
+                                            id: collocation.id,
+                                            lang: collocation.lang,
+                                            audioUrl: collocation.audioUrl,
+                                            notUsedToday: true
+                                        });
+                                    }
+                                });
+                            } else {
+                                word.collocation = [];
                             }
                         });
+
+                        // TODO: findOut is it needed
+                        // this._words.forEach(word => {
+                        //     if (word.collocation && word.collocation[this.targetLang]) {
+                        //         // what is this?
+                        //         for (let i = 0; i < word.collocation[this.targetLang].length; i++) {
+                        //             word.collocation[this.targetLang][i] = this._collocations.filter(z =>
+                        //                 z.audioUrl == word.collocation[this.targetLang][i].audioUrl)[0];
+                        //         }
+                        //     }
+                        // });
 
                         this.setNextRepeateDate();
                         this._words.sort(this.compareRandom);
@@ -386,12 +388,14 @@ export class TrackListComponent {
         const dailyReapeatCountForLangTemp = currentWord.dailyReapeatCount[lang];
 
         if (useCollocation
-            && currentWord.collocation[this.targetLang]
+            && lang === this.targetLang
+            && currentWord.collocation
+            && currentWord.collocation.length
             && this._collocations
             && (currentWord.learnDay[this.targetLang] > 0 || dailyReapeatCountForLangTemp > 1)) {
 
-            let availableColocations = currentWord.collocation[this.targetLang]
-                .filter(p => p.lang == lang
+            let availableColocations = currentWord.collocation
+                .filter(p => p.lang === lang
                     && p.notUsedToday == true);
 
             if (availableColocations.length > 0) {
@@ -655,11 +659,13 @@ export class TrackListComponent {
 
     pauseBeforeCollocation(word: VmWordExtended) {
         if (word.collocation
-            && word.collocation[this.targetLang]
-            && word.collocation[this.targetLang].length > 0
-            && word.collocation[this.targetLang].filter(p => p.notUsedToday == true).length > 0) {
+            && word.collocation.length
+            && word.collocation
+                .filter(p => p.lang === this.targetLang)
+                .filter(p => p.notUsedToday == true).length > 0) {
             this.isDelayBeforeWordWithCollocation = true;
-        } else {
+        }
+        else {
             this.isDelayBeforeWordWithCollocation = false;
         }
         let timeFromLastKeyPressTillNow = (new Date().getTime() / 1000)
