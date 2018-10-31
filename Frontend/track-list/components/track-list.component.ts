@@ -51,6 +51,7 @@ export class TrackListComponent {
     targetLang = '';
     langList: string[] = ['pl', 'en', 'ru'];
     langForAudioPath = 'ru';
+    isSavedOnAllWordsCompleted = false;
     constructor(
         private $http: ng.IHttpService,
 
@@ -320,6 +321,7 @@ export class TrackListComponent {
             this._words.shift();
             this.play();
             this.logElements();
+            this.firstSaveIfAllWordsCompleted();
         }
         if ((keyCode === this._keyStop && this._currentWord) ||
             (keyCode === this._keyStopAndPlay && this._currentWord) ||
@@ -557,6 +559,14 @@ export class TrackListComponent {
 
         this.completedWordsCount = countForCurrentWord
             + completedfourDaysPhaseWordNum + completedIterationPhaseWordNum;
+    }
+
+    firstSaveIfAllWordsCompleted() {
+        if (!this.isSavedOnAllWordsCompleted &&
+            this.completedWordsCount >= this.wordsLoaded) {
+            this.updateWord(this._words, this._collocations);
+            this.isSavedOnAllWordsCompleted = true;
+        }
     }
 
     getCountForWord(word: VmWordExtended) {
