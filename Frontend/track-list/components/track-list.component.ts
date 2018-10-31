@@ -18,8 +18,6 @@ export class TrackListComponent {
         "ru": ".wav"
     }
     private _currentLocal: string;
-    private _engLocal: string = "en";
-    private _rusLocal: string = "en";
     private defaultAudioPath: string = "default";
     private collocationAudioPath: string = "collocations";
     private _lastKeyPressedTime: number;
@@ -354,7 +352,7 @@ export class TrackListComponent {
 
                 // Сделать переключение языка для _highRateLearn
                 // Сделать включение/выключение проигрывания аудио для _highRateLearn
-                this.fileToPlay = this.getFileToPlayPath(this._engLocal, this._currentWord, false);
+                this.fileToPlay = this.getFileToPlayPath(this.targetLang, this._currentWord, false);
 
             } else {
                 this.wordToShow = this._currentWord.langDictionary[invertedLang];
