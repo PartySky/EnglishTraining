@@ -15,6 +15,7 @@ namespace EnglishTraining
         readonly public static string audioPath = "wwwroot/audio";
         readonly public string jsonConfigPath = Path.Combine(Directory.GetCurrentDirectory(), "jsons");
         readonly string langForWordStoring = "ru";
+        // TODO: get it from db
         readonly string targetLang = "pl";
         readonly List<string> langList = new List<string> { "pl", "en", "ru" };
         public Parser(
@@ -182,6 +183,10 @@ namespace EnglishTraining
                         }
                         else
                         {
+                            // TODO: try to check if word exist checking website first
+
+                            // TODO: create table with words without audio,
+                            // it should contain source field
                             // TODO: write log with words without audio
                             Console.WriteLine("Word \"{0}\" hasn't audio", wordName);
                         }
