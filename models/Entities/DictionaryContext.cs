@@ -4,7 +4,7 @@ namespace EnglishTraining
 {
     public class DictionaryContext : DbContext
     {
-        public DbSet<VmWord> Words { get; set; }
+        public DbSet<Word> Words { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

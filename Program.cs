@@ -7,11 +7,14 @@ namespace EnglishTraining
     {
         public static void Main(string[] args)
         {
-
-            Parser parser = new Parser();
+            IVmWordMapper wordWithLandDictionaryMapper = new VmWordMapper();
+            // TODO: find out how to inject it properly
+            Parser parser = new Parser(wordWithLandDictionaryMapper);
             NewCollocationParser collocationParser = new NewCollocationParser();
             WordFinder wordFinder = new WordFinder();
+            //string runMode = "Parser_Add_Words_List_Into_Db";
             string runMode = "Host";
+
 
             switch (runMode)
             {
@@ -23,17 +26,21 @@ namespace EnglishTraining
                     parser.Download();
                     break;
 
+                case "Parser_Add_Words_List_Into_Db":
+                    parser.AddWordsToDb();
+                    break;
+
                 case "CollocationParser":
                     collocationParser.Download();
                     break;
 
-                case "WriteExistingCollocationFromFolderToDB":
+                case "Write_Existing_Collocation_From_Folder_To_DB":
                     collocationParser.WriteExistingCollocationFromFolderToDB();
                     break;
 
                 case "WordConverter":
-                    WordConverter wordConverter = new WordConverter();
-                    wordConverter.Convert();
+                    //WordConverter wordConverter = new WordConverter();
+                    //wordConverter.Convert();
                     break;
 
                 case "Tests":

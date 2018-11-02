@@ -16,6 +16,9 @@ namespace EnglishTraining
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
+
+            /* DI */
+            new StartupDi().ConfigureServices(services);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

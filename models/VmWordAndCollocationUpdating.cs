@@ -1,5 +1,4 @@
-﻿using System;
-namespace EnglishTraining
+﻿namespace EnglishTraining
 {
     public struct VmWordAndCollocationUpdating
     {

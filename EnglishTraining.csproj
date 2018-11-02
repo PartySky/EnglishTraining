@@ -10,6 +10,9 @@
     <Folder Include="models\Entities\" />
     <Folder Include="Controllers\" />
     <Folder Include="models\Common models\" />
+    <Folder Include="MappingServices\" />
+    <Folder Include="MappingServices\Interfaces\" />
+    <Folder Include="MappingServices\Implementations\" />
   </ItemGroup>
 
   <ItemGroup>

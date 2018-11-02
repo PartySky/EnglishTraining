@@ -15,22 +15,22 @@ namespace EnglishTraining
         {
             VmWordCollection inWords = GetWordsCollection(inWordsJsonPath);
             VmCurrentWord[] currentWords = GetCurrentWords(curentWordsJsonPath);
-            VmWord[] outWords = new VmWord[inWords.Word.Length];
+            Word[] outWords = new Word[inWords.Word.Length];
 
             for (int i = 0; i < outWords.Length; i++)
             {
-                outWords[i] = new VmWord
+                outWords[i] = new Word
                 {
-                    Name_en = inWords.Word[i].Items[0].word,
-                    Name_ru = currentWords?.FirstOrDefault(p => p.Name_ru == inWords.Word[i].Items[0].word).Name_en,
-                    FourDaysLearnPhase = false,
-                    LearnDay = 0,
-                    RepeatIterationNum = 0,
-                    NextRepeatDate = DateTime.Today,
-                    DailyReapeatCountForEng = 0,
-                    DailyReapeatCountForRus = 0
+                    //Name_en = inWords.Word[i].Items[0].word,
+                    //Name_ru = currentWords?.FirstOrDefault(p => p.Name_ru == inWords.Word[i].Items[0].word).Name_en,
+                    //FourDaysLearnPhaseOld = false,
+                    //LearnDayOld = 0,
+                    //RepeatIterationNumOld = 0,
+                    //NextRepeatDateOld = DateTime.Today,
+                    //DailyReapeatCountForEngOld = 0,
+                    //DailyReapeatCountForRusOld = 0
                     //Dictors_en = null,
-					//Dictors_ru = new VmDictor[getDictors.lenght]
+                    //Dictors_ru = new VmDictor[getDictors.lenght]
                 };
             }
 
@@ -75,7 +75,7 @@ namespace EnglishTraining
             return words;
         }
 
-        static void SaveOutWords(VmWord[] words, string path)
+        static void SaveOutWords(Word[] words, string path)
         {
             using (StreamWriter file = File.CreateText(path))
             {
