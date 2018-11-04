@@ -8,8 +8,9 @@ namespace EnglishTraining
         public static void Main(string[] args)
         {
             IVmWordMapper wordWithLandDictionaryMapper = new VmWordMapper();
+            IWordLocalizationMapper wordLocalizationMapper = new WordLocalizationMapper();
             // TODO: find out how to inject it properly
-            Parser parser = new Parser(wordWithLandDictionaryMapper);
+            Parser parser = new Parser(wordLocalizationMapper, wordWithLandDictionaryMapper);
             NewCollocationParser collocationParser = new NewCollocationParser();
             WordFinder wordFinder = new WordFinder();
             //string runMode = "Parser_Add_Words_List_Into_Db";
@@ -24,6 +25,18 @@ namespace EnglishTraining
 
                 case "Parser":
                     parser.Download();
+                    break;
+
+                case "PlainDownloadingFromMowicpopolsku":
+                    parser.PlainDownloadingFromMowicpopolsku();
+                    break;
+
+                case "PlainDownloadingFromPolishpod101":
+                    parser.PlainDownloadingFromPolishpod101();
+                    break;
+
+                case "DownloadFrowWikibooks":
+                    parser.DownloadFrowWikibooks();
                     break;
 
                 case "Parser_Add_Words_List_Into_Db":
