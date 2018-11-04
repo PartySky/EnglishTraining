@@ -54,7 +54,6 @@ namespace EnglishTraining
                                .Include(p => p.NextRepeatDate)
                                .Include(p => p.DailyReapeatCount)
                                .ToArray();
-
                 wordWithoutAudioList = db.WordsWithoutAudio.ToList();
                 parsedWordList = db.ParsedWords.ToList();
             }
@@ -77,7 +76,6 @@ namespace EnglishTraining
 
                 string wordName = parserWord.LangDictionary
                                                 .FirstOrDefault(p => p.Key == targetLang).Value;
-
                 if (wordName == null)
                 {
                     Console.WriteLine("Word {0} doesn't contain target localization {1}",
@@ -630,6 +628,7 @@ namespace EnglishTraining
             var folderPath = Path.Combine(Directory.GetCurrentDirectory(),
                                           audioPath,
                                           defaultFolder, targetLang);
+
             var filePath = Path.Combine(folderPath, wordNameInLang + ".mp3");
 
             if (File.Exists(filePath))

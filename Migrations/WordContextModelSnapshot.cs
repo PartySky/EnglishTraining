@@ -122,7 +122,6 @@ namespace EnglishTraining.Migrations
 
                     b.ToTable("ParsedWords");
                 });
-
             modelBuilder.Entity("EnglishTraining.RepeatIterationNum", b =>
                 {
                     b.Property<int>("Id")

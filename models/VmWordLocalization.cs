@@ -8,7 +8,6 @@ namespace EnglishTraining
         [ForeignKey("Word")]
         public int Id { get; set; }
         public Dictionary<string, string> LangDictionary { get; set; }
-
         public Word word { get; set; }
     }
 }
