@@ -412,6 +412,12 @@ namespace EnglishTraining
 
             foreach (var word in wordList)
             {
+
+                if (string.IsNullOrEmpty(word.LangDictionary[targetLang]))
+                {
+                    continue;
+                }
+
                 string langAndCountryCodes = "";
                 langAndCountryCodes = targetLang == "pl" ? "pl" : "";
                 langAndCountryCodes = targetLang == "ru" ? "ru" : "";
