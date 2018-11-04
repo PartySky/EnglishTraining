@@ -612,11 +612,14 @@ namespace EnglishTraining
 
             var folderPath = Path.Combine(Directory.GetCurrentDirectory(),
                                           audioPath, wordNameInlangToStoreInFolder, targetLang, dictor);
-            // Hack
-            //var filePath = Path.Combine(folderPath, wordNameInLang + ".mp3");
-            var filePath = Path.Combine(folderPath, wordNameInLang + ".ogg");
+            var filePathMp3 = Path.Combine(folderPath, wordNameInLang + ".mp3");
+            var filePathOgg = Path.Combine(folderPath, wordNameInLang + ".ogg");
+            var filePathWav = Path.Combine(folderPath, wordNameInLang + ".wav");
 
-            return File.Exists(filePath) || result;
+            return File.Exists(filePathMp3) ||
+                File.Exists(filePathOgg) ||
+                File.Exists(filePathWav) ||
+                result;
         }
 
         static void GetAndSaveDefault(
