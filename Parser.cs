@@ -11,26 +11,28 @@ namespace EnglishTraining
 {
     public class Parser
     {
+        private readonly IWordLocalizationMapper _wordLocalizationMapper;
         private readonly IVmWordMapper _wordWithLandDictionaryMapperService;
         readonly public static string audioPath = "wwwroot/audio";
         readonly public string jsonConfigPath = Path.Combine(Directory.GetCurrentDirectory(), "jsons");
         readonly string langForWordStoring = "ru";
         // TODO: get it from db
-        readonly string targetLang = "pl";
+        // readonly string targetLang = "pl";
+        readonly string targetLang = "en";
         readonly List<string> langList = new List<string> { "pl", "en", "ru" };
         public Parser(
+            IWordLocalizationMapper wordLocalizationMapper,
+
             IVmWordMapper wordWithLandDictionaryMapperService
         )
         {
+            _wordLocalizationMapper = wordLocalizationMapper;
             _wordWithLandDictionaryMapperService = wordWithLandDictionaryMapperService;
         }
         public void Download()
         {
             var apiPath = Path.Combine(jsonConfigPath, "api-config.json");
             VmParserConfig api = JsonConvert.DeserializeObject<VmParserConfig>(File.ReadAllText(apiPath));
-
-            var parsedWodListPath = Path.Combine(jsonConfigPath, "parsed-wod-list.json");
-            var parsedWods = JsonConvert.DeserializeObject<List<string>>(File.ReadAllText(parsedWodListPath));
 
             var bestDictorsPath = Path.Combine(jsonConfigPath, "best-dictors.json");
             var bestDictors = JsonConvert.DeserializeObject<List<string>>(File.ReadAllText(bestDictorsPath));
@@ -39,6 +41,8 @@ namespace EnglishTraining
             var worstDictors = JsonConvert.DeserializeObject<List<string>>(File.ReadAllText(worstDictorsPath));
 
             Word[] wordsTemp;
+            List<WordWithoutAudio> wordWithoutAudioList;
+            List<ParsedWord> parsedWordList;
 
             using (var db = new WordContext())
             {
@@ -50,18 +54,20 @@ namespace EnglishTraining
                                .Include(p => p.NextRepeatDate)
                                .Include(p => p.DailyReapeatCount)
                                .ToArray();
+                wordWithoutAudioList = db.WordsWithoutAudio.ToList();
+                parsedWordList = db.ParsedWords.ToList();
             }
 
             // TODO: map it there
             List<WordWithLangDictionary> words = new List<WordWithLangDictionary>();
-            var removeList = words.Where(p => langList.Any(lang => p.LangDictionary[lang].Contains("")));
 
-            words.RemoveAll(p => removeList.Any(z => z == p));
 
             foreach (Word word in wordsTemp)
             {
                 words.Add(_wordWithLandDictionaryMapperService.MapToSomething(word));
             }
+            words.RemoveAll(p => wordWithoutAudioList.Any(z => z.Lang == targetLang && z.Name == p.LangDictionary[targetLang]));
+            words.RemoveAll(p => parsedWordList.Any(z => z.Lang == targetLang && z.Name == p.LangDictionary[targetLang]));
 
             foreach (WordWithLangDictionary parserWord in words)
             {
@@ -70,7 +76,6 @@ namespace EnglishTraining
 
                 string wordName = parserWord.LangDictionary
                                                 .FirstOrDefault(p => p.Key == targetLang).Value;
-
                 if (wordName == null)
                 {
                     Console.WriteLine("Word {0} doesn't contain target localization {1}",
@@ -92,14 +97,29 @@ namespace EnglishTraining
 
                 var defaultAudioPath = Path.Combine(audioPath, "default", targetLang);
 
-                if (parsedWods.IndexOf(wordName) < 0
-                    && !File.Exists(defaultAudioPath + "/" + wordName + ".mp3")
-                    && !File.Exists(defaultAudioPath + "/" + wordName + ".wav")
-                    && (existDictors < maxDictorsCount)
-                    && (wordName.IndexOf('_') < 0))
+                if (!File.Exists(defaultAudioPath + "/" + wordName + ".mp3") &&
+                    !File.Exists(defaultAudioPath + "/" + wordName + ".wav") &&
+                    (existDictors < maxDictorsCount) &&
+                    (wordName.IndexOf('_') < 0))
                 {
                     string wordRequestUrl = api.Url + wordName + "/language/" + targetLang;
                     Console.WriteLine(wordRequestUrl);
+
+                    bool ifAudioExist = checkIfAudioExist(parserWord.LangDictionary[targetLang], targetLang);
+                    if (!ifAudioExist)
+                    {
+                        using (var db = new WordContext())
+                        {
+                            db.WordsWithoutAudio.Add(new WordWithoutAudio
+                            {
+                                Name = parserWord.LangDictionary[targetLang],
+                                Lang = targetLang,
+                                Source = "forvo"
+                            });
+                            db.SaveChanges();
+                        }
+                        continue;
+                    }
 
                     VmResponseWord wordCollection = GetWordColletion(wordRequestUrl);
 
@@ -163,6 +183,20 @@ namespace EnglishTraining
                     string dictorLang;
 
                     int i = 0;
+                    if (sortedDictors.Length == 0)
+                    {
+                        using (var db = new WordContext())
+                        {
+                            db.WordsWithoutAudio.Add(new WordWithoutAudio
+                            {
+                                Name = parserWord.LangDictionary[targetLang],
+                                Lang = targetLang,
+                                Source = "forvo"
+                            });
+                            db.SaveChanges();
+                        }
+                        continue;
+                    }
 
                     foreach (VmResponseWordItem item in sortedDictors)
                     {
@@ -191,16 +225,236 @@ namespace EnglishTraining
                             Console.WriteLine("Word \"{0}\" hasn't audio", wordName);
                         }
                     }
-
-                    parsedWods.Add(wordName);
+                    using (var db = new WordContext())
+                    {
+                        db.ParsedWords.Add(new ParsedWord
+                        {
+                            Name = parserWord.LangDictionary[targetLang],
+                            Lang = targetLang,
+                            Source = "forvo"
+                        });
+                        db.SaveChanges();
+                    }
                 }
             }
+        }
 
-            using (StreamWriter file = File.CreateText(parsedWodListPath))
+        public void PlainDownloadingFromPolishpod101()
+        {
+            List<string> pageUrlList = new List<string>
             {
-                JsonSerializer serializer = new JsonSerializer();
-                //serialize object directly into file stream
-                serializer.Serialize(file, parsedWods);
+                "",
+            };
+            var patternForWordStart = "js-wlv-word\" lang=\"pl\">";
+            var patternForWordEnd = "</span>";
+            var patternForUrlStart = "wlv-item__word-container";
+            int patternForUrlStartOffset = 378;
+            var patternForUrlEnd = ".mp3\"";
+
+            PlainDownloadingFromWebsites(
+                pageUrlList,
+                patternForWordStart,
+                patternForWordEnd,
+                patternForUrlStart,
+                patternForUrlStartOffset,
+                patternForUrlEnd,
+                false);
+        }
+        public void PlainDownloadingFromMowicpopolsku()
+        {
+            List<string> pageUrlList = new List<string>
+            {
+                "",
+            };
+            var patternForWordStart = "title=\"Listen to Pronunciation: ";
+            var patternForWordEnd = "\" href=\"";
+            var patternForUrlStart = patternForWordEnd;
+            int patternForUrlStartOffset = 00;
+            var patternForUrlEnd = ".mp3\"";
+
+            PlainDownloadingFromWebsites(
+                pageUrlList,
+                patternForWordStart,
+                patternForWordEnd,
+                patternForUrlStart,
+                patternForUrlStartOffset,
+                patternForUrlEnd,
+                true);
+        }
+
+        public void PlainDownloadingFromWebsites(
+            List<string> pageUrlList,
+            string patternForWordStart,
+            string patternForWordEnd,
+            string patternForUrlStart,
+            int patternForUrlStartOffset,
+            string patternForUrlEnd,
+            bool isWordBeforeAudio)
+        {
+            foreach (var page in pageUrlList)
+            {
+                List<WordWithLangDictionary> wordsWithLangDict = new List<WordWithLangDictionary>();
+                List<Word> words = new List<Word>();
+
+                using (var db = new WordContext())
+                {
+                    words = db.Words.ToList();
+                }
+                foreach (var word in words)
+                {
+                    wordsWithLangDict.Add(_wordWithLandDictionaryMapperService.MapToSomething(word));
+                }
+
+
+                var htmlResponse = getWebHtmlResponse(page);
+                int i = htmlResponse.IndexOf(patternForWordStart, 0);
+                try
+                {
+                    while (i < htmlResponse.Length)
+                    {
+                        string word = "";
+                        string audioUrl = "";
+                        if (isWordBeforeAudio)
+                        {
+                            word = htmlResponse.Substring(
+                                htmlResponse.IndexOf(patternForWordStart, i) + patternForWordStart.Length,
+                                htmlResponse.IndexOf(patternForWordEnd, i) -
+                                (htmlResponse.IndexOf(patternForWordStart, i) + patternForWordStart.Length));
+
+                            audioUrl = htmlResponse.Substring(
+                                htmlResponse.IndexOf(patternForWordEnd, i) + patternForWordEnd.Length,
+                                htmlResponse.IndexOf(patternForUrlEnd, i) -
+                                (htmlResponse.IndexOf(patternForWordEnd, i) + patternForWordEnd.Length)
+                            ) + ".mp3";
+                        }
+                        else
+                        {
+                            audioUrl = htmlResponse.Substring(
+                                htmlResponse.IndexOf(patternForUrlStart, i) + patternForUrlStart.Length + patternForUrlStartOffset,
+                                htmlResponse.IndexOf(patternForUrlEnd, i) -
+                                (htmlResponse.IndexOf(patternForUrlStart, i) + patternForUrlStart.Length + patternForUrlStartOffset))
+                                + ".mp3";
+
+                            word = htmlResponse.Substring(
+                               htmlResponse.IndexOf(patternForWordStart, i) + patternForWordStart.Length,
+                               htmlResponse.IndexOf(patternForWordEnd, i) -
+                               (htmlResponse.IndexOf(patternForWordStart, i) + patternForWordStart.Length));
+                        }
+
+
+
+                        Console.WriteLine("word {0}, audioUrl {1}", word, audioUrl);
+                        i = htmlResponse.IndexOf(patternForUrlEnd, i) + patternForUrlEnd.Length;
+
+                        //List <LearnDay> learnDayTemp = new List<LearnDay>();
+                        //foreach(var lang in langList)
+                        //{
+                        //    learnDayTemp.Add(new LearnDay
+                        //    {
+                        //        Key = lang,
+                        //        Value = 0
+                        //    });
+                        //}
+
+                        using (var db = new WordContext())
+                        {
+                            // TODO: don't use name_pl there
+                            var x = db.Words.Any(p => p.Localization.Name_pl.ToLower() == word.ToLower());
+                            if (!x)
+                            {
+                                db.Words.Add(new Word
+                                {
+                                    Name_en = "",
+                                    Name_ru = "",
+                                    Localization = new WordLocalization
+                                    {
+                                        Name_en = "",
+                                        Name_ru = "",
+                                        Name_pl = word
+                                    }
+                                });
+                                db.SaveChanges();
+                            }
+                            GetAndSaveDefault(targetLang, word, audioUrl);
+                        }
+
+                        if (htmlResponse.IndexOf(patternForUrlEnd, i) + patternForUrlEnd.Length > htmlResponse.Length)
+                        {
+                            continue;
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
+            }
+        }
+
+        public void DownloadFrowWikibooks()
+        {
+            string url = "";
+            string page = "";
+            string dictor = "wikibooks";
+            string patternUrlStart = "href=\"//upload.wikimedia.org";
+            int patternUrlStartOffset = 8;
+            string patternUrlEnd = ".ogg";
+            string source = "wikibooks.org";
+            List<VmWordLocalization> wordList;
+            using (var db = new WordContext())
+            {
+                var checkedWordsWithoutAudio = db.WordsWithoutAudio.Where(p => p.Lang == targetLang && p.Source == source).ToList();
+                wordList = _wordLocalizationMapper.MapToVmWordLocalization(db.WordLocalization.ToList());
+                wordList.RemoveAll(p => checkedWordsWithoutAudio.Any(z => z.Name == p.LangDictionary[targetLang]));
+                //if (checkedWordsWithoutAudio.Count() > 0){
+                //}
+            }
+
+            foreach (var word in wordList)
+            {
+                string langAndCountryCodes = "";
+                langAndCountryCodes = targetLang == "pl" ? "pl" : "";
+                langAndCountryCodes = targetLang == "ru" ? "ru" : "";
+                langAndCountryCodes = targetLang == "en" ? "en-us" : "";
+                if (langAndCountryCodes == "")
+                {
+                    throw new Exception("Codes should be setted");
+                }
+
+                page = String.Format("https://en.wikibooks.org/wiki/File:{0}-{1}.ogg",
+                                               langAndCountryCodes, word.LangDictionary[targetLang]);
+
+                if (CheckIfAudioFileExist(word.LangDictionary, targetLang, word.LangDictionary[targetLang],
+                                         word.LangDictionary[langForWordStoring], url, dictor))
+                {
+                    continue;
+                }
+
+                var htmlResponse = getWebHtmlResponse(page);
+
+                if (string.IsNullOrEmpty(htmlResponse))
+                {
+                    Console.WriteLine("page for {0} not found", word.LangDictionary[targetLang]);
+                    using (var db = new WordContext())
+                    {
+                        db.WordsWithoutAudio.Add(new WordWithoutAudio
+                        {
+                            Name = word.LangDictionary[targetLang],
+                            Lang = targetLang,
+                            Source = source
+                        });
+                        db.SaveChanges();
+                    }
+                    continue;
+                }
+
+                url = "https://" + htmlResponse.Substring(htmlResponse.IndexOf(patternUrlStart) + patternUrlStartOffset,
+                    htmlResponse.IndexOf(patternUrlEnd, htmlResponse.IndexOf(patternUrlStart))
+                        - htmlResponse.IndexOf(patternUrlStart) - patternUrlStartOffset + patternUrlEnd.Length);
+
+                Console.WriteLine();
+                GetAndSave(word.LangDictionary, targetLang, word.LangDictionary[targetLang],
+                    word.LangDictionary[langForWordStoring], url, dictor);
             }
         }
 
@@ -306,8 +560,75 @@ namespace EnglishTraining
             string wordNameInlangToStoreInFolder,
             string url, string dictor)
         {
+            if (wordNameInlangToStoreInFolder == null)
+            {
+                return;
+            }
+
             var folderPath = Path.Combine(Directory.GetCurrentDirectory(),
                                           audioPath, wordNameInlangToStoreInFolder, targetLang, dictor);
+            // Hack
+            //var filePath = Path.Combine(folderPath, wordNameInLang + ".mp3");
+            var filePath = Path.Combine(folderPath, wordNameInLang + ".ogg");
+
+            if (File.Exists(filePath))
+            {
+                return;
+            }
+
+            WebRequest request = WebRequest.Create(url);
+            WebResponse response = request.GetResponseAsync().Result;
+            var responseStream = response.GetResponseStream();
+
+            Directory.CreateDirectory(folderPath);
+            try
+            {
+                using (FileStream fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    responseStream.CopyTo(fileStream);
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+            Console.WriteLine("{0} downloaded", wordNameInLang);
+            Console.WriteLine("path {0}", filePath);
+        }
+
+        static bool CheckIfAudioFileExist(
+            Dictionary<string, string> langDictionary,
+            string targetLang, string wordNameInLang,
+            string wordNameInlangToStoreInFolder,
+            string url, string dictor)
+        {
+            bool result = false;
+
+            if (wordNameInlangToStoreInFolder == null)
+            {
+                // Hack
+                return true;
+            }
+
+            var folderPath = Path.Combine(Directory.GetCurrentDirectory(),
+                                          audioPath, wordNameInlangToStoreInFolder, targetLang, dictor);
+            // Hack
+            //var filePath = Path.Combine(folderPath, wordNameInLang + ".mp3");
+            var filePath = Path.Combine(folderPath, wordNameInLang + ".ogg");
+
+            return File.Exists(filePath) || result;
+        }
+
+        static void GetAndSaveDefault(
+            string targetLang,
+            string wordNameInLang,
+            string url)
+        {
+            var defaultFolder = "default";
+            var folderPath = Path.Combine(Directory.GetCurrentDirectory(),
+                                          audioPath,
+                                          defaultFolder, targetLang);
+
             var filePath = Path.Combine(folderPath, wordNameInLang + ".mp3");
 
             if (File.Exists(filePath))
@@ -320,9 +641,16 @@ namespace EnglishTraining
             var responseStream = response.GetResponseStream();
 
             Directory.CreateDirectory(folderPath);
-            using (FileStream fileStream = new FileStream(filePath, FileMode.Create))
+            try
             {
-                responseStream.CopyTo(fileStream);
+                using (FileStream fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    responseStream.CopyTo(fileStream);
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
             }
         }
 
@@ -384,6 +712,83 @@ namespace EnglishTraining
                 words = (VmParserWord)serializer.Deserialize(file, typeof(VmParserWord));
             }
             return words;
+        }
+
+        static bool checkIfAudioExist(string wordName, string lang)
+        {
+            var result = false;
+            var url = String.Format("https://forvo.com/search/{0}/{1}", wordName, lang);
+            string responseFromServer = "";
+            try
+            {
+                // Create a request for the URL.       
+                WebRequest request = WebRequest.Create(url);
+                // If required by the server, set the credentials.
+                request.Credentials = CredentialCache.DefaultCredentials;
+                // Get the response.
+                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+                // Display the status.
+                Console.WriteLine(response.StatusDescription);
+                // Get the stream containing content returned by the server.
+                Stream dataStream = response.GetResponseStream();
+                // Open the stream using a StreamReader for easy access.
+                StreamReader reader = new StreamReader(dataStream);
+                // Read the content.
+                responseFromServer = reader.ReadToEnd();
+                // Display the content.
+                Console.WriteLine(responseFromServer);
+                // Cleanup the streams and the response.
+                reader.Close();
+                dataStream.Close();
+                response.Close();
+            }
+
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+            if (responseFromServer.Contains("Wow, you actually found a word not on Forvo!"))
+            {
+                result = false;
+            }
+            else
+            {
+                result = true;
+            }
+            return result;
+        }
+
+        static string getWebHtmlResponse(string url)
+        {
+            string responseFromServer = "";
+            try
+            {
+                // Create a request for the URL.       
+                WebRequest request = WebRequest.Create(url);
+                // If required by the server, set the credentials.
+                request.Credentials = CredentialCache.DefaultCredentials;
+                // Get the response.
+                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+                // Display the status.
+                Console.WriteLine(response.StatusDescription);
+                // Get the stream containing content returned by the server.
+                Stream dataStream = response.GetResponseStream();
+                // Open the stream using a StreamReader for easy access.
+                StreamReader reader = new StreamReader(dataStream);
+                // Read the content.
+                responseFromServer = reader.ReadToEnd();
+                // Display the content.
+                //Console.WriteLine(responseFromServer);
+                // Cleanup the streams and the response.
+                reader.Close();
+                dataStream.Close();
+                response.Close();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+            return responseFromServer;
         }
     }
 }

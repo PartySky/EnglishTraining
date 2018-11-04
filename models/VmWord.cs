@@ -10,8 +10,7 @@ namespace EnglishTraining
         public string Name_en { get; set; }
         // TODO: find out is it needed there
         public string Name_ru { get; set; }
-        public VmWordLocalization Localization { get; set; }
-
+        public WordLocalization Localization { get; set; }
         public IList<LearnDay> LearnDay { get; set; }
         public IList<FourDaysLearnPhase> FourDaysLearnPhase { get; set; }
         public IList<RepeatIterationNum> RepeatIterationNum { get; set; }

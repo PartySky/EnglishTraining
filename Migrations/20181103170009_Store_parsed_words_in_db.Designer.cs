@@ -11,9 +11,10 @@ using System;
 namespace EnglishTraining.Migrations
 {
     [DbContext(typeof(WordContext))]
-    partial class WordContextModelSnapshot : ModelSnapshot
+    [Migration("20181103170009_Store_parsed_words_in_db")]
+    partial class Store_parsed_words_in_db
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -122,6 +123,7 @@ namespace EnglishTraining.Migrations
 
                     b.ToTable("ParsedWords");
                 });
+
             modelBuilder.Entity("EnglishTraining.RepeatIterationNum", b =>
                 {
                     b.Property<int>("Id")
