@@ -294,3 +294,5 @@ jsons/parsed-wod-list.json
 txt/text-for-word-finding.txt
 txt/excluded-words.txt
 txt/new-words.txt
+wwwroot/*
+wwwroot/css/styles.css

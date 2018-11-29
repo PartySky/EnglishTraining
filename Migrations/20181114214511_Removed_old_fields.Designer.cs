@@ -11,9 +11,10 @@ using System;
 namespace EnglishTraining.Migrations
 {
     [DbContext(typeof(WordContext))]
-    partial class WordContextModelSnapshot : ModelSnapshot
+    [Migration("20181114214511_Removed_old_fields")]
+    partial class Removed_old_fields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -121,20 +122,6 @@ namespace EnglishTraining.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("ParsedWords");
-                });
-
-            modelBuilder.Entity("EnglishTraining.PrioritizedWords", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<string>("Lang");
-
-                    b.Property<string>("Name");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("PrioritizedWords");
                 });
 
             modelBuilder.Entity("EnglishTraining.RepeatIterationNum", b =>

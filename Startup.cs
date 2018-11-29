@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 
 namespace EnglishTraining
 {
@@ -19,6 +21,12 @@ namespace EnglishTraining
 
             /* DI */
             new StartupDi().ConfigureServices(services);
+            services.AddCors(o => o.AddPolicy("MyPolicy", builder =>
+            {
+                builder.AllowAnyOrigin()
+                    .AllowAnyMethod()
+                    .AllowAnyHeader();
+            }));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -31,6 +39,13 @@ namespace EnglishTraining
 
             app.UseDefaultFiles();
             app.UseStaticFiles();
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                FileProvider = new PhysicalFileProvider(
+                Path.Combine(Directory.GetCurrentDirectory(), "MyStaticFiles", "audio")),
+                RequestPath = "/audio"
+            });
+            app.UseCors("MyPolicy");
 
             app.UseMvc(routes =>
             {

@@ -1,0 +1,29 @@
+<div class="show-word">
+    <span>{{wordToShow}}</span>
+    <span *ngIf="error"
+          class="error">{{error}}</span>
+</div>
+<div class="keys-manual"></div>
+<div class="stat">
+    Spent time:
+    <span>{{spentTimeToShow}}</span>
+</div>
+<div class="stat">
+    Words loaded:
+    <span>{{wordsLoaded}}</span>
+</div>
+<div class="stat">
+    Words done:
+    <span>{{completedWordsCount}}</span>
+</div>
+<div class="stat">
+    Daily repeat count:
+    <span>{{progress}}</span>
+    <span> /</span>
+    <span>{{dailyGoalRepeatCount}}</span>
+</div>
+<div class="auto_mode"
+     (click)="autoMode = !autoMode">Auto mode: {{autoMode}}</div>
+
+
+<input [(ngModel)]="autoModeMinutes">

@@ -16,13 +16,6 @@ namespace EnglishTraining
         public IList<RepeatIterationNum> RepeatIterationNum { get; set; }
         public IList<NextRepeatDate> NextRepeatDate { get; set; }
         public IList<DailyReapeatCount> DailyReapeatCount { get; set; }
-
-        public bool FourDaysLearnPhaseOld { get; set; }
-        public int LearnDayOld { get; set; }
-        public int RepeatIterationNumOld { get; set; }
-        public DateTime NextRepeatDateOld { get; set; }
-        public int DailyReapeatCountForEngOld { get; set; }
-        public int DailyReapeatCountForRusOld { get; set; }
     }
 
 

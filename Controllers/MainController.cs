@@ -18,29 +18,77 @@ namespace EnglishTraining
         {
             _vmWordMapper = vmWordMapper;
         }
-        string audioPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "audio");
+        // string audioPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "audio");
+        string audioPath = Path.Combine(Directory.GetCurrentDirectory(), "MyStaticFiles", "audio");
 
         short minReapeatCountPerDayIteration = 1;
         short minReapeatCountPerDayFourDayPhase = 3;
         string langForWordStoring = "ru";
         List<string> langList = new List<string> { "pl", "en", "ru" };
+        string targetLang;
+
         public IActionResult Index()
         {
             return View();
         }
 
+        // [HttpGet("getTargetLang")]
+        // [ProducesResponseType(200, Type = typeof(string))]
+        // public async Task<string> GetTargetLang()
+        // {
+        //     return await Task<string>.Factory.StartNew(() =>
+        //     {
+
+        //         using (var db = new WordContext())
+        //         {
+        //             // return  GetTargetLangHelper(db);
+        //             // return Ok(GetTargetLangHelper(db));
+        //             return Ok("GetTargetLangHelper(db)");
+        //         }
+        //     });
+        // }
+
         [HttpGet("getTargetLang")]
-        public async Task<string> GetTargetLang()
+        public async Task<JsonResult> GetTargetLang()
         {
-            return await Task<string>.Factory.StartNew(() =>
+            return await Task<JsonResult>.Factory.StartNew(() =>
             {
 
                 using (var db = new WordContext())
                 {
-                    return GetTargetLangHelper(db);
+                    return Json(GetTargetLangHelper(db));
                 }
             });
         }
+
+        // [HttpGet("getTargetLang")]
+        // public IActionResult GetTargetLang()
+        // {
+        //     if (!ModelState.IsValid)
+        //     {
+        //         return BadRequest(ModelState);
+        //     }
+        //     // var employee = await _context.employee.SingleOrDefaultAsync(m => m.ID == id);
+        //     // if (employee == null)
+        //     // {
+        //     //     return NotFound();
+        //     // }
+        //     using (var db = new WordContext())
+        //     {
+        //         // return  GetTargetLangHelper(db);
+        //         // return Ok(GetTargetLangHelper(db));
+        //         return Ok("This is ok response string");
+        //         // return Ok("GetTargetLangHelper(db)");
+
+        //         // return await Task<IActionResult>.Factory.StartNew(() =>
+        //         // {
+        //         //     return Ok(GetTargetLangHelper(db));
+        //         // });
+        //     }
+
+        //     // return Ok("string test");
+        //     // return Ok("This is ok response");
+        // }
 
         [HttpGet("test")]
         public async Task<WordTest> Test()
@@ -64,17 +112,17 @@ namespace EnglishTraining
 
 
         [HttpGet]
-        public async Task<List<VmWord>> GetWords()
+        public async Task<JsonResult> GetWords()
         {
-            WordWithLangDictionary[] word_new;
+            List<WordWithLangDictionary> word_new;
             List<Word> words_Temp;
 
             List<VmCollocation> collocations;
             DateTime dateToday = DateTime.Now;
             int? dailyRepeatAmount = 0;
 
+            RemoveDublicates();
             UpdateSchedule();
-            string targetLang;
 
             using (var db = new WordContext())
             {
@@ -103,14 +151,11 @@ namespace EnglishTraining
                     wordWithLandDictionaryList.Add(_vmWordMapper.MapToSomething(word));
                 }
 
-                word_new = wordWithLandDictionaryList
-                        .Where(p => langList.All(lang => p.NextRepeatDate?
-                                                 .FirstOrDefault(z => z.Key == lang)?.Value <= dateToday))
-                        .OrderBy(p => p.RepeatIterationNum?.FirstOrDefault(z => z.Key == targetLang)?.Value)
-                        .ToArray();
+                var prioritizedWords = db.PrioritizedWords.Where(p => p.Lang == targetLang).ToList();
+
+                word_new = GetSortedWords(wordWithLandDictionaryList, prioritizedWords, dateToday);
 
                 collocations = db.Collocations.Where(p => p.NextRepeatDate <= dateToday).ToList();
-
             }
 
             FileChecker fileChecker = new FileChecker();
@@ -183,18 +228,20 @@ namespace EnglishTraining
                 }
             }
 
-            return await Task<List<VmWord>>.Factory.StartNew(() =>
+            return await Task<JsonResult>.Factory.StartNew(() =>
             {
-                return wordsOutputList;
+                return Json(wordsOutputList);
             });
         }
 
         [HttpGet("dictionary")]
-        public async Task<Word[]> GetDictionary()
+        // public async Task<Word[]> GetDictionary()
+        public async Task<JsonResult> GetDictionary()
         {
             Word[] words;
             DateTime dateToday = DateTime.Now;
 
+            RemoveDublicates();
             UpdateSchedule();
 
             using (var db = new DictionaryContext())
@@ -204,14 +251,14 @@ namespace EnglishTraining
                     .FirstOrDefault(z => z.Key == targetLang).Value <= dateToday).ToArray();
             }
 
-            return await Task<Word[]>.Factory.StartNew(() =>
+            return await Task<JsonResult>.Factory.StartNew(() =>
             {
-                return words;
+                return Json(words);
             });
         }
 
         [HttpPost("update")]
-        public string Update([FromBody] VmWordAndCollocationUpdating wordAndCollocationUpdating)
+        public JsonResult Update([FromBody] VmWordAndCollocationUpdating wordAndCollocationUpdating)
         {
             using (var db = new WordContext())
             {
@@ -272,15 +319,15 @@ namespace EnglishTraining
                     Console.WriteLine(e.Message);
                 }
             }
-            return "succes";
+            return Json("succes");
         }
 
         [HttpPost("updatedictionary")]
-        public string UpdateDictionary([FromBody] Word[] words)
+        public JsonResult UpdateDictionary([FromBody] Word[] words)
         {
             // Test
             // Uncomend code belowe 
-            return null;
+            return Json(null);
 
             //using (var db = new DictionaryContext())
             //{
@@ -325,98 +372,18 @@ namespace EnglishTraining
         #region Helpers
         public void UpdateSchedule()
         {
-            // Test
-            return;
-
-            DateTime dateToday = DateTime.Now;
             Word[] renewingIteration;
+            Word[] renewingFDphase;
             string targetLang;
             using (var db = new WordContext())
             {
                 targetLang = GetTargetLangHelper(db);
-                // TODO: move it to separated methods
-                // TODO: remove duplicates
-                // Auto-removing duplicates
-                var allWords = db.Words.ToArray();
-                //var duplicates = db.Words.Where(x => allWords
-                //.Count(n => ((n.Name_ru == x.Name_ru)
-                //          && (n.Name_en == x.Name_en))) > 1)
-                //.GroupBy(p => p.Name_ru)
-                //.Select(p => p.LastOrDefault());
+                renewingIteration = getWordListForUpdate(db, minReapeatCountPerDayIteration, targetLang, false);
+                renewingFDphase = getWordListForUpdate(db, minReapeatCountPerDayFourDayPhase, targetLang, true);
 
-                //List<WordWithLandDictionary> wordsTemp = new List<WordWithLandDictionary>();
+                renewingIteration = setNextRepeateDateInWordIterationPhaseList(db, renewingIteration, targetLang);
+                renewingFDphase = setNextRepeateDateInWordFDPhaseList(db, renewingFDphase, targetLang);
 
-                //foreach (VmWord word in allWords)
-                //{
-                //    wordsTemp.Add(new WordWithLandDictionary
-                //    {
-                //        Id = word.Id,
-                //        LangDictionary = new Dictionary<string, string>
-                //        {
-                //            {"pl", word.Localization.Name_pl},
-                //            {"en", word.Localization.Name_en},
-                //            {"ru", word.Localization.Name_ru},
-                //        },
-                //        LearnDay = word.LearnDay,
-                //        FourDaysLearnPhase = word.FourDaysLearnPhase,
-                //        RepeatIterationNum = word.RepeatIterationNum,
-                //        NextRepeatDate = word.NextRepeatDate,
-                //        DailyReapeatCount = word.DailyReapeatCount,
-                //        Dictors = null
-                //    });
-                //}
-
-                //var duplicates = wordsTemp.Where(p => wordsTemp
-                //.Count(n => langList.All(lang => n.LangDictionary[lang] = p. )));
-
-                // TODO: dell all duplicates in one time,
-                // now p.Skip(1) doesn't make it works
-
-                //foreach (VmWord word in duplicates)
-                //{
-                //    db.Words.Remove(word);
-                //    Console.WriteLine("Removing duplicate \"{0}\" id {1}", word.Name_en, word.Id);
-                //}
-
-                //// Manually-removing duplicates
-                //var duplicatesToResolve = db.Words.Where(x => allWords
-                //.Count(n => ((n.Name_ru != x.Name_ru) && (n.Name_en == x.Name_en))
-                //|| ((n.Name_ru == x.Name_ru) && (n.Name_en != x.Name_en))) > 1)
-                //.GroupBy(p => p.Name_ru)
-                //.Select(p => p.LastOrDefault());
-
-                //if (duplicatesToResolve.Count() > 0)
-                //{
-                //    throw new Exception("There are duplicates thet should be resolved");
-                //}
-
-                // Renewing Schedule
-                renewingIteration = db.Words.Where(p =>
-                    (p.NextRepeatDate.FirstOrDefault(date => date.Key == targetLang).Value <= dateToday) &&
-                    (p.DailyReapeatCount.Where(count => count.Key != targetLang)
-                                          .Sum(count => count.Value) >= minReapeatCountPerDayIteration) &&
-                    (p.FourDaysLearnPhase
-                               .FirstOrDefault(phase => phase.Key == targetLang).Value == false)).ToArray();
-
-                var iterationIncrement = 7;
-                foreach (Word word in renewingIteration)
-                {
-                    var iteration = iterationIncrement * getIterationLenght(word
-                                        .RepeatIterationNum.FirstOrDefault(p => p.Key == targetLang).Value);
-
-                    word.NextRepeatDate.FirstOrDefault(p => p.Key == targetLang).Value = dateToday.AddDays(iteration);
-
-                    foreach (DailyReapeatCount count in word.DailyReapeatCount)
-                    {
-                        count.Value = 0;
-                    }
-
-                    word.RepeatIterationNum.FirstOrDefault(p => p.Key == targetLang);
-
-                    db.Words.Update(word);
-                    //Console.WriteLine("Set new day for repeating word \"{0}\" iterations {1} id {2}",
-                    //word.Name_en, word.RepeatIterationNumOld, word.Id);
-                }
                 db.SaveChanges();
             }
         }
@@ -535,6 +502,175 @@ namespace EnglishTraining
             return db.Settings.FirstOrDefault()?.LearningLanguage;
         }
 
+        private Word[] getWordListForUpdate(
+            WordContext context,
+            short minRepeatCount,
+            string targetLang,
+            bool isFourDayPhase)
+        {
+            DateTime dateToday = DateTime.Now;
+
+            List<Word> result = new List<Word>();
+
+            foreach(string lang in langList)
+            {
+                result.AddRange( context.Words
+                        .Include(p => p.Localization)
+                        .Include(p => p.LearnDay)
+                        .Include(p => p.FourDaysLearnPhase)
+                        .Include(p => p.RepeatIterationNum)
+                        .Include(p => p.NextRepeatDate)
+                        .Include(p => p.DailyReapeatCount)
+                        .Where(p =>
+                        (p.NextRepeatDate.FirstOrDefault(date => date.Key == lang).Value <= dateToday) &&
+                        (p.DailyReapeatCount.Where(count => count.Key != lang)
+                                                .Sum(count => count.Value) >= minRepeatCount) &&
+                        (p.DailyReapeatCount.FirstOrDefault(count => count.Key == lang)
+                                                .Value >= minRepeatCount) &&
+                        (p.FourDaysLearnPhase
+                                .FirstOrDefault(phase => phase.Key == lang).Value == isFourDayPhase)).ToList());
+            }
+
+            return result.ToArray();
+        }
+
+        private static Word[] setNextRepeateDateInWordFDPhaseList(WordContext db, Word[] wordList, string targetLang)
+        {
+            DateTime dateToday = DateTime.Now;
+
+            foreach (Word word in wordList)
+            {
+                foreach (DailyReapeatCount dailyRepeatCount in word.DailyReapeatCount)
+                {
+                    dailyRepeatCount.Value = 0;
+                }
+                word.NextRepeatDate.FirstOrDefault(p => p.Key == targetLang).Value = dateToday.AddDays(1);
+                db.Words.Update(word);
+            }
+            return wordList;
+        }
+
+        private static Word[] setNextRepeateDateInWordIterationPhaseList(WordContext db, Word[] wordList, string targetLang)
+        {
+            DateTime dateToday = DateTime.Now;
+            var iterationIncrement = 7;
+
+            foreach (Word word in wordList)
+            {
+                var iteration = iterationIncrement * getIterationLenght(word
+                                    .RepeatIterationNum.FirstOrDefault(p => p.Key == targetLang).Value);
+
+                word.NextRepeatDate.FirstOrDefault(p => p.Key == targetLang).Value = dateToday.AddDays(iteration);
+
+                foreach (DailyReapeatCount count in word.DailyReapeatCount)
+                {
+                    count.Value = 0;
+                }
+
+                word.RepeatIterationNum.FirstOrDefault(p => p.Key == targetLang);
+                db.Words.Update(word);
+            }
+            return wordList;
+        }
+
+        private static void RemoveDublicates()
+        {
+            // TODO: remove duplicates
+            // Auto-removing duplicates
+            // var allWords = db.Words.ToArray();
+            // var duplicates = db.Words.Where(x => allWords
+            // .Count(n => ((n.Name_ru == x.Name_ru)
+            //          && (n.Name_en == x.Name_en))) > 1)
+            // .GroupBy(p => p.Name_ru)
+            // .Select(p => p.LastOrDefault());
+
+            // List<WordWithLandDictionary> wordsTemp = new List<WordWithLandDictionary>();
+
+            // foreach (VmWord word in allWords)
+            // foreach (Word word in allWords)
+            // {
+            //    wordsTemp.Add(new WordWithLandDictionary
+            //    {
+            //        Id = word.Id,
+            //        LangDictionary = new Dictionary<string, string>
+            //        {
+            //            {"pl", word.Localization.Name_pl},
+            //            {"en", word.Localization.Name_en},
+            //            {"ru", word.Localization.Name_ru},
+            //        },
+            //        LearnDay = word.LearnDay,
+            //        FourDaysLearnPhase = word.FourDaysLearnPhase,
+            //        RepeatIterationNum = word.RepeatIterationNum,
+            //        NextRepeatDate = word.NextRepeatDate,
+            //        DailyReapeatCount = word.DailyReapeatCount,
+            //        Dictors = null
+            //    });
+            // }
+
+            //var duplicates = wordsTemp.Where(p => wordsTemp
+            //.Count(n => langList.All(lang => n.LangDictionary[lang] = p. )));
+
+            // TODO: dell all duplicates in one time,
+            // now p.Skip(1) doesn't make it works
+
+            //foreach (VmWord word in duplicates)
+            //{
+            //    db.Words.Remove(word);
+            //    Console.WriteLine("Removing duplicate \"{0}\" id {1}", word.Name_en, word.Id);
+            //}
+
+            //// Manually-removing duplicates
+            //var duplicatesToResolve = db.Words.Where(x => allWords
+            //.Count(n => ((n.Name_ru != x.Name_ru) && (n.Name_en == x.Name_en))
+            //|| ((n.Name_ru == x.Name_ru) && (n.Name_en != x.Name_en))) > 1)
+            //.GroupBy(p => p.Name_ru)
+            //.Select(p => p.LastOrDefault());
+
+            //if (duplicatesToResolve.Count() > 0)
+            //{
+            //    throw new Exception("There are duplicates thet should be resolved");
+            //}
+        }
+
+        List<WordWithLangDictionary> GetSortedWords(List<WordWithLangDictionary> list,
+                                                    List<PrioritizedWords> prioritized,
+                                                    DateTime dateToday)
+        {
+            List<WordWithLangDictionary> result = new List<WordWithLangDictionary>();
+
+            try
+            {
+                var repeatIterationWords = list
+                    .Where(p => prioritized.Any(temp => temp.Name != p?.LangDictionary[targetLang]) &&
+                               p.FourDaysLearnPhase?.FirstOrDefault(phase => phase.Key == targetLang)?.Value == false)?
+                    .OrderBy(p => p?.RepeatIterationNum?.FirstOrDefault(z => z.Key == targetLang)?.Value)
+                    .ToList();
+
+                var prioritizedWords = list
+                    .Where(p => prioritized.Any(temp => temp.Name == p?.LangDictionary[targetLang]))
+
+                    .ToList();
+
+                var fourDayPhaseWords = list
+                    .Where(p => prioritized.Any(temp => temp.Name != p?.LangDictionary[targetLang]) &&
+                                p.FourDaysLearnPhase?.FirstOrDefault(phase => phase.Key == targetLang)?.Value == true)
+                    .OrderBy(p => p?.LearnDay?.FirstOrDefault(z => z.Key == targetLang)?.Value)
+                    .ToList();
+
+                result.AddRange(repeatIterationWords);
+                result.AddRange(prioritizedWords);
+                result.AddRange(fourDayPhaseWords);
+
+                result.RemoveAll(p => langList.All(lang => p.NextRepeatDate?
+                        .FirstOrDefault(z => z.Key == targetLang)?.Value > dateToday));
+
+            }
+            catch (Exception e)
+            {
+                throw new Exception(e.Message);
+            }
+            return result;
+        }
         #endregion
     }
 }

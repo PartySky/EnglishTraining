@@ -1,0 +1,155 @@
+body {
+    background-image: url("./assets/images/bkgrnd.png");
+    background-repeat-x: no-repeat;
+    background-repeat-y: no-repeat;
+    background-position-x: center;
+    background-position-y: center;
+}
+
+@media (min-width: 1100px) {
+    body {
+        background-size: cover;
+    }
+    .show-word {
+        font-size: 166px;
+        margin-top: 150px;
+        min-height: 200px;
+    }
+}
+
+@media (max-width: 1099px) {
+    .show-word {
+        font-size: 78px;
+        margin-top: 150px;
+        padding-top: 60px;
+        min-height: 100px;
+    }
+}
+
+.show-word {
+    text-align: center;
+    font-family: 'Roboto', sans-serif;
+    color: #ffffff59;
+}
+
+.error {
+    color: #ff000059 !important;
+}
+
+.keys-manual {
+    background-image: url("./assets/images/keys2.png");
+    background-repeat-x: no-repeat;
+    background-repeat-y: no-repeat;
+    background-position-x: center;
+    background-position-y: center;
+    min-height: 360px;
+}
+
+.stat {
+    font-size: 40px;
+    font-family: 'Roboto', sans-serif;
+    color: #ffffff94;
+    font-weight: 100;
+}
+
+.phone-button{
+    padding-bottom: 30px;
+    font-size: 50px;
+    color: #fff;
+    text-transform: uppercase;
+}
+
+/* /// */
+
+.show-word {
+    font-size: 12vw;
+    font-size: 8vw;
+    margin-top: 10vh;
+    margin-top: 4vh;
+    padding-top: 10vh;
+    padding-bottom: 0vw;
+    min-height: 14vh;
+}
+
+.keys-manual {
+    min-height: 49vh;
+    min-height: 111px;
+    background-size: cover;
+    max-width: 1000px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.stat {
+    font-size: 5vw;
+    font-size: 21px;
+    font-size: 4vw;
+    font-size: 6vh;
+}
+
+.key_manual_wrapper {
+    background-size: cover;
+    background-repeat-y: no-repeat;
+    background-position-x: center;
+    background-position-y: 90px;
+    background-position-y: 5vh;
+}
+
+.key_manual_wrapper {
+    box-sizing: content-box;
+}
+
+body {
+    background-size: cover;
+}
+
+
+body {
+    width: auto; /* Scale the div to the parent width */
+    height: 100vh;
+    background-size: 100%; /* Always size the image to the width of the div */
+}
+@media (min-width: 1001px) {
+    body {
+        background-position: bottom;
+    }
+    .auto_mode {
+        margin-top: 14px;        
+    }
+}
+/* For any viewports less than 1000px wide */
+@media (max-width: 1000px) {
+    body {
+        background-size: 100vh 100vw;
+        background-size: cover;
+        background-position: bottom;    
+    }
+    .auto_mode {
+        margin-top: 12px;        
+    }
+}
+
+body {
+    overflow: hidden;
+}
+
+.keys-manual {
+    min-height: 37vh;
+}
+
+.stat {
+    font-size: 5vh;
+}
+
+.auto_mode {
+    font-family: 'Roboto', sans-serif;
+    background: #ffffff3d;
+    width: fit-content;
+    border-radius: 50px;
+    color: #ffffff94;
+    cursor: pointer;
+    padding: 5px;
+    padding-right: 20px;
+    padding-left: 20px;
+    min-width: 120px;
+}

@@ -16,6 +16,7 @@ namespace EnglishTraining
         public DbSet<VmSettings> Settings { get; set; }
         public DbSet<WordWithoutAudio> WordsWithoutAudio { get; set; }
         public DbSet<ParsedWord> ParsedWords { get; set; }
+        public DbSet<PrioritizedWords> PrioritizedWords { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -32,5 +33,12 @@ namespace EnglishTraining
             //    entity.Property(e => e.Value);
             //});
         }
+    }
+
+    public class PrioritizedWords
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string Lang { get; set; }
     }
 }
