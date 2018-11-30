@@ -26,6 +26,9 @@
      (click)="autoMode = !autoMode">Auto mode: {{autoMode}}</div>
 
 
-<input [(ngModel)]="autoModeMinutes">
+<input class="autoMode_timer"
+       [(ngModel)]="autoModeMinutes">
+<div (click)="switchDictorSex()"
+     class="dictor_sex">Dictors: {{dictorSex}}</div>
 <div (click)="switchToWellknownMode()"
      class="wellknow_mode">Wellknown Mode: {{wellknownMode}}</div>

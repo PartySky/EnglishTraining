@@ -17,6 +17,7 @@ namespace EnglishTraining
         public DbSet<WordWithoutAudio> WordsWithoutAudio { get; set; }
         public DbSet<ParsedWord> ParsedWords { get; set; }
         public DbSet<PrioritizedWords> PrioritizedWords { get; set; }
+        public DbSet<Dictor> Dictors { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

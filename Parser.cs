@@ -13,12 +13,12 @@ namespace EnglishTraining
     {
         private readonly IWordLocalizationMapper _wordLocalizationMapper;
         private readonly IVmWordMapper _wordWithLandDictionaryMapperService;
-        readonly public static string audioPath = "wwwroot/audio";
+        readonly public static string audioPath = "MyStaticFiles/audio";
         readonly public string jsonConfigPath = Path.Combine(Directory.GetCurrentDirectory(), "jsons");
         readonly string langForWordStoring = "ru";
         // TODO: get it from db
-        // readonly string targetLang = "pl";
-        readonly string targetLang = "en";
+        readonly string targetLang = "pl";
+        // readonly string targetLang = "en";
         readonly List<string> langList = new List<string> { "pl", "en", "ru" };
         public Parser(
             IWordLocalizationMapper wordLocalizationMapper,
@@ -86,7 +86,7 @@ namespace EnglishTraining
                 Console.WriteLine(audioPath + "/" + parserWord.LangDictionary
                                   .FirstOrDefault(p => p.Key == targetLang).Value + ".mp3");
 
-                var maxDictorsCount = 5;
+                var maxDictorsCount = 6; // 5
 
                 var existDictors = 0;
                 if (Directory.Exists(audioPath + "/" + wordNameInlangToStoreInFolder + "/" + targetLang))
@@ -798,6 +798,72 @@ namespace EnglishTraining
                 Console.WriteLine(e.Message);
             }
             return responseFromServer;
+        }
+
+        public void DownloadDictors()
+        {
+            var path = Path.Combine(Directory.GetCurrentDirectory(),
+                audioPath);
+
+            var downloadedWords = Directory.GetDirectories(path);
+            List<string> downloadedDictors = new List<string>();
+            foreach(var word in downloadedWords)
+            {
+                var downloadedLangs = Directory.GetDirectories(word).ToList();
+                foreach(var lang in downloadedLangs)
+                {
+                    var downloadedDictorsTemp = Directory.GetDirectories(lang).ToList();
+
+                    downloadedDictorsTemp.ForEach(p => downloadedDictors.Add(Path.GetFileName(p)));
+                }
+            }
+            Console.WriteLine();
+
+			using(var db = new WordContext())
+			{
+                var parsedDictors = db.Dictors.ToList();
+                List<string> justParsed = new List<string>();
+                List<string> excludedDictors = new List<string>();
+				foreach(var dictorName in downloadedDictors)
+				{
+                    if (excludedDictors.Any(dictorName.Contains) ||
+                        justParsed.Any(dictorName.Contains))
+                    {
+                        continue;
+                    }
+                    if (parsedDictors.Any(p => p.Username == Path.GetFileName(dictorName)))
+                    {
+                        continue;
+                    }
+
+                    Console.WriteLine(Path.GetFileName(dictorName));
+                    var htmlResponse = getWebHtmlResponse(
+                        String.Format("https://forvo.com/user/{0}/", dictorName));
+
+                    string gender = "";
+
+                    if (htmlResponse.Contains("<strong>Male</strong>")){
+                        gender = "male";
+                    }
+
+                    if(htmlResponse.Contains("<strong>Female</strong>")){
+                        gender = "female";
+                    }
+
+                    if (!String.IsNullOrEmpty(gender))
+                    {
+                        db.Dictors.Add(new Dictor
+                        {
+                            Username = dictorName,
+                            Sex = gender
+                        });
+                        db.SaveChanges();
+                    }
+                    justParsed.Add(Path.GetFileName(dictorName));
+                    System.Threading.Thread.Sleep(10);
+                }
+            }
+
         }
     }
 }

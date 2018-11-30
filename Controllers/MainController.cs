@@ -25,6 +25,7 @@ namespace EnglishTraining
         short minReapeatCountPerDayFourDayPhase = 3;
         string langForWordStoring = "ru";
         List<string> langList = new List<string> { "pl", "en", "ru" };
+        string dictorSex = "all";
         string targetLang;
 
         public IActionResult Index()
@@ -111,7 +112,7 @@ namespace EnglishTraining
         }
 
         [HttpPost]
-        public async Task<JsonResult> GetWords([FromBody] WellknownMode wellknownMode)
+        public async Task<JsonResult> GetWords([FromBody] WordRequest wellknownMode)
         {
             List<WordWithLangDictionary> word_new;
             List<Word> words_Temp;
@@ -126,6 +127,7 @@ namespace EnglishTraining
             using (var db = new WordContext())
             {
                 targetLang = GetTargetLangHelper(db);
+
                 if (db.Settings.First().DailyRepeatAmount != null)
                 {
                     dailyRepeatAmount = db.Settings.First().DailyRepeatAmount;
@@ -368,6 +370,18 @@ namespace EnglishTraining
             return null;
         }
 
+        [HttpPost("updatedictorsex")]
+        public async Task<JsonResult> UpdateDictorSex([FromBody] string dictorSex)
+        {
+            return await Task<JsonResult>.Factory.StartNew(() => {
+                using(var db = new WordContext())
+                {
+                    db.Settings.First().DictorSex = dictorSex;
+                }
+                return Json("ok");
+            });
+        }
+
         #region Helpers
         public void UpdateSchedule()
         {
@@ -442,10 +456,20 @@ namespace EnglishTraining
 
                 List<string> dirs = new List<string>(Directory.EnumerateDirectories(langPath));
 
-                foreach (var dir in dirs)
+                List<Dictor> dictorsTemp;
+
+                using (var db = new WordContext())
+                {
+                    dictorSex = db.Settings.First().DictorSex;
+                    dictorsTemp = db.Dictors.ToList();
+                }
+
+                    foreach (var dir in dirs)
                 {
                     var mp3Path = Path.Combine(dir, wordNameInLocal + ".mp3");
                     var wavPath = Path.Combine(dir, wordNameInLocal + ".wav");
+
+
 
                     if (fileChecker.CheckIfExist(mp3Path))
                     {
@@ -457,7 +481,14 @@ namespace EnglishTraining
                             langname = lang,
                             AudioType = ".mp3"
                         };
-                        dictors.Add(dictor);
+                        if(dictorSex == "all")
+                        {
+                            dictors.Add(dictor);
+                        }
+                        else if (GetDictorSex(dictor.username, dictorsTemp) == dictorSex)
+                        {
+                            dictors.Add(dictor);
+                        }
                     }
                     else if (fileChecker.CheckIfExist(wavPath))
                     {
@@ -469,7 +500,15 @@ namespace EnglishTraining
                             langname = lang,
                             AudioType = ".wav"
                         };
-                        dictors.Add(dictor);
+                        if (dictorSex == "all")
+                        {
+                            dictors.Add(dictor);
+                        }
+                        else if (GetDictorSex(dictor.username, dictorsTemp) == dictorSex)
+                        {
+                            dictors.Add(dictor);
+                        }
+
                     }
                 }
                 Console.WriteLine("{0} dictor(s) found for word {1}.", dirs.Count, wordNameInLocal);
@@ -479,6 +518,11 @@ namespace EnglishTraining
                 Console.WriteLine(PathEx.Message);
             }
             return dictors;
+        }
+
+        static string GetDictorSex(string name, List<Dictor> dictorList)
+        {
+            return dictorList.FirstOrDefault(p => p.Username == name)?.Sex;
         }
 
         private static Boolean CheckIfContainsPattern(string pattern, string sentence)
@@ -682,8 +726,9 @@ namespace EnglishTraining
         }
         #endregion
 
-        public class WellknownMode 
+        public class WordRequest 
         {
+            public string dictorSex { get; set; }
             public bool wellknownMode { get; set; }
         }
     }

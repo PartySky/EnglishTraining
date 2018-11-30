@@ -9,6 +9,7 @@ import { Dictionary } from '../../interfaces/Index';
 import { HttpClient } from '@angular/common/http';
 import { LangService } from '../../services/Lang.service';
 import { ILangService } from '../../services/ILang.service';
+import { WordRequest } from '../../models/WordRequest';
 
 
 @Component({
@@ -81,6 +82,7 @@ export class LandingComponent {
     autoModeMinutes = 5;
     timer: any;
     wellknownMode = false;
+    dictorSex = 'all';
     showSpinner = false;
 
     constructor(
@@ -188,6 +190,10 @@ export class LandingComponent {
     }
 
     getWords() {
+        const wordRequest: WordRequest = {
+            dictorSex: this.dictorSex,
+            wellknownMode: this.wellknownMode
+        };
         let methodUrl: string;
         // TODO: move to services
         switch (this.mode) {
@@ -202,7 +208,7 @@ export class LandingComponent {
                 return null;
         }
         return this.http
-            .post<VmWord[]>(`${this._apiUrl}/${methodUrl}`, { wellknownMode: true });
+            .post<VmWord[]>(`${this._apiUrl}/${methodUrl}`, wordRequest);
     }
 
 
@@ -870,5 +876,20 @@ export class LandingComponent {
         this._collocations = [];
         this.progress = 0;
         this._currentWord = null;
+    }
+
+    switchDictorSex() {
+        switch (this.dictorSex) {
+            case 'all': this.dictorSex = 'male';
+                break;
+            case 'male': this.dictorSex = 'female';
+                break;
+            case 'female': this.dictorSex = 'all';
+                break;
+        }
+        this.http.post<string>(`${this._apiUrl}/updatedictorsex`, this.dictorSex)
+            .subscribe(p => {
+
+            });
     }
 }

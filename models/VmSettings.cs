@@ -11,5 +11,6 @@ namespace EnglishTraining.models
         public string LearningLanguage { get; set; }
         public int? DailyRepeatAmount { get; set; }
         public int? DailyTimeAmount { get; set; }
+        public string DictorSex { get; set; }
     }
 }

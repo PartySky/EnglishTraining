@@ -27,6 +27,10 @@ namespace EnglishTraining
                     parser.Download();
                     break;
 
+                case "ParsingDictors":
+                    parser.DownloadDictors();
+                    break;
+
                 case "PlainDownloadingFromMowicpopolsku":
                     parser.PlainDownloadingFromMowicpopolsku();
                     break;

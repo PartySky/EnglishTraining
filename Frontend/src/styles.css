@@ -141,6 +141,8 @@ body {
     font-size: 5vh;
 }
 
+.autoMode_timer,
+.dictor_sex,
 .wellknow_mode,
 .auto_mode {
     font-family: 'Roboto', sans-serif;
@@ -159,4 +161,17 @@ body {
     position: absolute;
     right: 10px;
     bottom: 0px;
+}
+
+.dictor_sex {
+    position: absolute;
+    right: 10px;
+    bottom: 30px;   
+}
+
+
+.autoMode_timer {
+    border: none;
+    box-shadow: none;
+    outline: none; 
 }
