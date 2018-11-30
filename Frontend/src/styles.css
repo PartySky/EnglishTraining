@@ -141,6 +141,7 @@ body {
     font-size: 5vh;
 }
 
+.wellknow_mode,
 .auto_mode {
     font-family: 'Roboto', sans-serif;
     background: #ffffff3d;
@@ -152,4 +153,10 @@ body {
     padding-right: 20px;
     padding-left: 20px;
     min-width: 120px;
+}
+
+.wellknow_mode {
+    position: absolute;
+    right: 10px;
+    bottom: 0px;
 }

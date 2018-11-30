@@ -110,9 +110,8 @@ namespace EnglishTraining
             });
         }
 
-
-        [HttpGet]
-        public async Task<JsonResult> GetWords()
+        [HttpPost]
+        public async Task<JsonResult> GetWords([FromBody] WellknownMode wellknownMode)
         {
             List<WordWithLangDictionary> word_new;
             List<Word> words_Temp;
@@ -153,7 +152,7 @@ namespace EnglishTraining
 
                 var prioritizedWords = db.PrioritizedWords.Where(p => p.Lang == targetLang).ToList();
 
-                word_new = GetSortedWords(wordWithLandDictionaryList, prioritizedWords, dateToday);
+                word_new = GetSortedWords(wordWithLandDictionaryList, prioritizedWords, dateToday, wellknownMode.wellknownMode);
 
                 collocations = db.Collocations.Where(p => p.NextRepeatDate <= dateToday).ToList();
             }
@@ -634,31 +633,41 @@ namespace EnglishTraining
 
         List<WordWithLangDictionary> GetSortedWords(List<WordWithLangDictionary> list,
                                                     List<PrioritizedWords> prioritized,
-                                                    DateTime dateToday)
+                                                    DateTime dateToday,
+                                                    bool wellknownMode)
         {
             List<WordWithLangDictionary> result = new List<WordWithLangDictionary>();
 
             try
             {
                 var repeatIterationWords = list
-                    .Where(p => prioritized.Any(temp => temp.Name != p?.LangDictionary[targetLang]) &&
-                               p.FourDaysLearnPhase?.FirstOrDefault(phase => phase.Key == targetLang)?.Value == false)?
+                    .Except(list.Where(p => prioritized.Any(pr => pr.Name == p.LangDictionary[targetLang])))
+                    .Where(p => p.FourDaysLearnPhase?.FirstOrDefault(phase => phase.Key == targetLang)?.Value == false)?
                     .OrderBy(p => p?.RepeatIterationNum?.FirstOrDefault(z => z.Key == targetLang)?.Value)
                     .ToList();
 
                 var prioritizedWords = list
-                    .Where(p => prioritized.Any(temp => temp.Name == p?.LangDictionary[targetLang]))
-
+                    .Where(p => prioritized.Any(pr => pr.Name == p?.LangDictionary[targetLang]))
                     .ToList();
 
                 var fourDayPhaseWords = list
-                    .Where(p => prioritized.Any(temp => temp.Name != p?.LangDictionary[targetLang]) &&
-                                p.FourDaysLearnPhase?.FirstOrDefault(phase => phase.Key == targetLang)?.Value == true)
-                    .OrderBy(p => p?.LearnDay?.FirstOrDefault(z => z.Key == targetLang)?.Value)
+                    .Except(list.Where(p => prioritized.Any(pr => pr?.Name == p?.LangDictionary[targetLang])))?
+                    .Where(p => p.FourDaysLearnPhase?.FirstOrDefault(phase => phase?.Key == targetLang)?.Value == true)?
+                    .OrderBy(p => p?.LearnDay?.FirstOrDefault(z => z.Key == targetLang)?.Value)?
                     .ToList();
 
+                if (wellknownMode)
+                {
+                    fourDayPhaseWords = fourDayPhaseWords
+                        .Where(p => p.LearnDay.FirstOrDefault(day => day?.Key == targetLang)?.Value > 2)
+                        .ToList();
+                }
+
                 result.AddRange(repeatIterationWords);
-                result.AddRange(prioritizedWords);
+                if (!wellknownMode) 
+                {
+                    result.AddRange(prioritizedWords);
+                }
                 result.AddRange(fourDayPhaseWords);
 
                 result.RemoveAll(p => langList.All(lang => p.NextRepeatDate?
@@ -672,5 +681,10 @@ namespace EnglishTraining
             return result;
         }
         #endregion
+
+        public class WellknownMode 
+        {
+            public bool wellknownMode { get; set; }
+        }
     }
 }

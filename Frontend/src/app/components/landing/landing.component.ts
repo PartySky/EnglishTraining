@@ -80,6 +80,8 @@ export class LandingComponent {
     autoModeTimer = 0;
     autoModeMinutes = 5;
     timer: any;
+    wellknownMode = false;
+    showSpinner = false;
 
     constructor(
         private http: HttpClient,
@@ -89,7 +91,10 @@ export class LandingComponent {
     ) {
         // this._langService = langService;
         this.mode = 'Words';
+        this.initializaeData();
+    }
 
+    initializaeData() {
         if (this.testMode) {
             this.runTest();
         } else {
@@ -99,6 +104,7 @@ export class LandingComponent {
                         console.log('Target Lang should be setted');
                     }
                     this.targetLang = lang;
+                    this.showSpinner = true;
                     this.getWords()
                         .subscribe((words) => {
                             if (!words) {
@@ -166,6 +172,7 @@ export class LandingComponent {
 
                             this.calculateProgress();
                             this.calculateComplitedWords();
+                            this.showSpinner = false;
                         });
                 });
             document.addEventListener('keydown', (e) => this.keyDown(e), false);
@@ -195,7 +202,7 @@ export class LandingComponent {
                 return null;
         }
         return this.http
-            .get<VmWord[]>(`${this._apiUrl}/${methodUrl}`);
+            .post<VmWord[]>(`${this._apiUrl}/${methodUrl}`, { wellknownMode: true });
     }
 
 
@@ -312,6 +319,8 @@ export class LandingComponent {
     }
 
     autoSave() {
+        if (this.showSpinner) { return; }
+
         const autoSaveTimer = Math.floor(
             ((new Date()).getTime() - this.autoSaveTimerPrevious.getTime()) / 1000
         );
@@ -333,7 +342,7 @@ export class LandingComponent {
     }
 
     keyDown(e: any) {
-        if (!this.keyReady) {
+        if (!this.keyReady || !this._words) {
             return;
         }
         this.keyReady = false;
@@ -847,5 +856,19 @@ export class LandingComponent {
 
     runTest() {
 
+    }
+
+    switchToWellknownMode() {
+        // this.wellknownMode = !this.wellknownMode;
+        this.wellknownMode = true;
+        this.resetData();
+        this.initializaeData();
+    }
+
+    resetData() {
+        this._words = [];
+        this._collocations = [];
+        this.progress = 0;
+        this._currentWord = null;
     }
 }
