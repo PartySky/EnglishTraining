@@ -480,6 +480,9 @@ export class LandingComponent {
             // TODO: use rather last used dictor there instead of random
             randNum = this.pseudoRandomRange(0, currentWord.dictors[lang].length - 1, this.cycle);
         }
+        if (!currentWord || !currentWord.dictors[lang] || !currentWord.dictors[lang][randNum]) {
+            debugger;
+        }
         audioTypeTemp = currentWord.dictors[lang][randNum].audioType;
         usernameTemp = currentWord.dictors[lang][randNum].username;
 
@@ -691,6 +694,7 @@ export class LandingComponent {
     }
 
     firstSaveIfAllWordsCompleted() {
+        return;
         if (!this.isSavedOnAllWordsCompleted &&
             this.completedWordsCount >= this.wordsLoaded) {
             this.updateWord(this._words, this._collocations)
@@ -888,7 +892,7 @@ export class LandingComponent {
             case 'female': this.dictorSex = 'all';
                 break;
         }
-        this.http.post<string>(`${this._apiUrl}/updatedictorsex`, { gender: this.dictorSex })
+        this.http.post<string>(`${this._apiUrl}/updatedictorsex`, { dictorSex: this.dictorSex })
             .subscribe(p => {
 
             });
@@ -897,8 +901,8 @@ export class LandingComponent {
     getDictorSex() {
         this.http.get<string>(`${this._apiUrl}/getdictorsex`)
             .subscribe(p => {
-                debugger;
-
+                if (!p) { return; }
+                this.dictorSex = p;
             });
     }
 }

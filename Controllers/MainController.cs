@@ -383,12 +383,12 @@ namespace EnglishTraining
         }
 
         [HttpPost("updatedictorsex")]
-        public async Task<JsonResult> UpdateDictorSex([FromBody] Gender)
+        public async Task<JsonResult> UpdateDictorSex([FromBody] Gender dictorSex)
         {
             return await Task<JsonResult>.Factory.StartNew(() => {
                 using(var db = new WordContext())
                 {
-                    db.Settings.First().DictorSex = dictorSex;
+                    db.Settings.First().DictorSex = dictorSex.dictorSex;
                     db.SaveChanges();
                 }
                 return Json("ok");
@@ -435,6 +435,14 @@ namespace EnglishTraining
                 FileChecker fileChecker = new FileChecker();
                 var langPath = Path.Combine(wordPath, lang);
 
+                List<Dictor> dictorsTemp;
+
+                using (var db = new WordContext())
+                {
+                    dictorSex = db.Settings.First().DictorSex;
+                    dictorsTemp = db.Dictors.ToList();
+                }
+
                 if (!Directory.Exists(langPath))
                 {
                     Console.WriteLine("Directory not found: {0}", langPath);
@@ -444,38 +452,49 @@ namespace EnglishTraining
 
                     if (fileChecker.CheckIfExist(wavePath))
                     {
-                        dictors.Add(new VmDictor
+                        var dictor = new VmDictor
                         {
                             username = "default",
                             sex = "",
                             country = "",
                             langname = lang,
                             AudioType = ".wav"
-                        });
+                        };
+                        if (dictorSex == "all")
+                        {
+                            dictors.Add(dictor);
+                        }
+                        else if (GetDictorSex(dictor.username, dictorsTemp) == dictorSex)
+                        {
+                            dictors.Add(dictor);
+                        }
                     }
                     else if (fileChecker.CheckIfExist(mp3Path))
                     {
-                        dictors.Add(new VmDictor
+                        var dictor = new VmDictor
                         {
                             username = "default",
                             sex = "",
                             country = "",
                             langname = lang,
                             AudioType = ".mp3"
-                        });
+                        };
+                        if (dictorSex == "all")
+                        {
+                            dictors.Add(dictor);
+                        }
+                        else if (GetDictorSex(dictor.username, dictorsTemp) == dictorSex)
+                        {
+                            dictors.Add(dictor);
+                        }
+
                     }
                     return dictors;
                 }
 
                 List<string> dirs = new List<string>(Directory.EnumerateDirectories(langPath));
 
-                List<Dictor> dictorsTemp;
-
-                using (var db = new WordContext())
-                {
-                    dictorSex = db.Settings.First().DictorSex;
-                    dictorsTemp = db.Dictors.ToList();
-                }
+               
 
                     foreach (var dir in dirs)
                 {
