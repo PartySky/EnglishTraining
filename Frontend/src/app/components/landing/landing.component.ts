@@ -100,6 +100,7 @@ export class LandingComponent {
         if (this.testMode) {
             this.runTest();
         } else {
+            this.getDictorSex();
             this.getTargetLang()
                 .subscribe(lang => {
                     if (!lang) {
@@ -887,8 +888,16 @@ export class LandingComponent {
             case 'female': this.dictorSex = 'all';
                 break;
         }
-        this.http.post<string>(`${this._apiUrl}/updatedictorsex`, this.dictorSex)
+        this.http.post<string>(`${this._apiUrl}/updatedictorsex`, { gender: this.dictorSex })
             .subscribe(p => {
+
+            });
+    }
+
+    getDictorSex() {
+        this.http.get<string>(`${this._apiUrl}/getdictorsex`)
+            .subscribe(p => {
+                debugger;
 
             });
     }

@@ -370,13 +370,26 @@ namespace EnglishTraining
             return null;
         }
 
+
+        [HttpGet("getdictorsex")]
+        public async Task<JsonResult> GetDictorSex()
+        {
+            return await Task<JsonResult>.Factory.StartNew(() => {
+                using (var db = new WordContext())
+                {
+                    return Json(db.Settings.First().DictorSex);
+                }
+            });
+        }
+
         [HttpPost("updatedictorsex")]
-        public async Task<JsonResult> UpdateDictorSex([FromBody] string dictorSex)
+        public async Task<JsonResult> UpdateDictorSex([FromBody] Gender)
         {
             return await Task<JsonResult>.Factory.StartNew(() => {
                 using(var db = new WordContext())
                 {
                     db.Settings.First().DictorSex = dictorSex;
+                    db.SaveChanges();
                 }
                 return Json("ok");
             });
@@ -730,6 +743,11 @@ namespace EnglishTraining
         {
             public string dictorSex { get; set; }
             public bool wellknownMode { get; set; }
+        }
+
+        public class Gender 
+        {
+            public string dictorSex { get; set; }
         }
     }
 }
