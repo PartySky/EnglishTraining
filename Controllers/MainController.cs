@@ -191,27 +191,25 @@ namespace EnglishTraining
 
                 Dictionary<string, IList<VmDictor>> dictors = new Dictionary<string, IList<VmDictor>>();
 
-                foreach (string lang in langList)
+                if(word.LangDictionary["en"] == "pharmacy" ||
+                    word.LangDictionary["en"] == "post office")
                 {
-                    dictors.Add(lang, GetDictors(path, lang, word.LangDictionary[lang]));
+                    Console.WriteLine();
                 }
 
-                short validDictorsInAllLocalsCount = 0;
-
-                // Checking if all variables not null
                 foreach (string lang in langList)
                 {
-                    if (!dictors[lang].Any())
-                    {
-                        Console.WriteLine("Word has no {0} dictors: {1}", lang, word.LangDictionary[lang]);
-                    }
-                    else
-                    {
-                        validDictorsInAllLocalsCount++;
-                    }
+                    List<VmDictor>  dictorsTemp = GetDictors(path, lang, word.LangDictionary[lang]);
+                    dictorsTemp = SetGender(dictorsTemp);
+                    dictors.Add(lang, dictorsTemp);
                 }
 
-                if (dictors[targetLang].Any() && validDictorsInAllLocalsCount >= langList.Count - 1)
+                short validDictorsInAllLocalsCount = ValidDictorsInAllLocalsCount(dictors, word);
+
+
+                // TODO: need to make >=
+                //if (dictors[targetLang].Any() && validDictorsInAllLocalsCount >= langList.Count - 1)
+                if (dictors[targetLang].Any() && validDictorsInAllLocalsCount > langList.Count - 1)
                 {
                     // TODO: check if audio exists
                     // TODO: update collocations
@@ -234,6 +232,27 @@ namespace EnglishTraining
                 return Json(wordsOutputList);
             });
         }
+
+        short ValidDictorsInAllLocalsCount(Dictionary<string, IList<VmDictor>> dictors, WordWithLangDictionary word)
+        {
+            short result = 0;
+            // Checking if all variables not null
+            foreach (string lang in langList)
+            {
+                if (!dictors[lang].Any())
+                {
+                    Console.WriteLine("Word has no {0} dictors: {1}", lang, word.LangDictionary[lang]);
+                    continue;
+                }
+                else
+                {
+                    result++;
+                }
+            }
+
+            return result;
+        }
+
 
         [HttpGet("dictionary")]
         // public async Task<Word[]> GetDictionary()
@@ -426,6 +445,33 @@ namespace EnglishTraining
             }
         }
 
+        public List<VmDictor> SetGender(List<VmDictor> dictors)
+        {
+            string settingsDictorSex = "all";
+            List<VmDictor> result = new List<VmDictor>();
+            List<Dictor> dictorsTemp = new List<Dictor>();
+
+            using (var db = new WordContext())
+            {
+                settingsDictorSex = db.Settings.First().DictorSex;
+                dictorsTemp = db.Dictors.ToList();
+            }
+
+            if (settingsDictorSex == "all") {
+                return dictors;
+            }
+
+            foreach(var dictor in dictors)
+            {
+                dictor.sex = dictorsTemp.FirstOrDefault(p => p.Username == dictor.username)?.Sex;
+                if (dictor.sex == settingsDictorSex){
+                    result.Add(dictor);
+                }
+            }
+
+            return result;
+        }
+
         public List<VmDictor> GetDictors(string wordPath, string lang, string wordNameInLocal)
         {
             var defaultAudioPath = Path.Combine(audioPath, "default");
@@ -435,17 +481,9 @@ namespace EnglishTraining
                 FileChecker fileChecker = new FileChecker();
                 var langPath = Path.Combine(wordPath, lang);
 
-                List<Dictor> dictorsTemp;
-
-                using (var db = new WordContext())
-                {
-                    dictorSex = db.Settings.First().DictorSex;
-                    dictorsTemp = db.Dictors.ToList();
-                }
-
                 if (!Directory.Exists(langPath))
                 {
-                    Console.WriteLine("Directory not found: {0}", langPath);
+                    //Console.WriteLine("Directory not found: {0}", langPath);
 
                     var wavePath = Path.Combine(audioPath, defaultAudioPath, lang, wordNameInLocal + ".wav");
                     var mp3Path = Path.Combine(audioPath, defaultAudioPath, lang, wordNameInLocal + ".mp3");
@@ -460,14 +498,16 @@ namespace EnglishTraining
                             langname = lang,
                             AudioType = ".wav"
                         };
-                        if (dictorSex == "all")
-                        {
-                            dictors.Add(dictor);
-                        }
-                        else if (GetDictorSex(dictor.username, dictorsTemp) == dictorSex)
-                        {
-                            dictors.Add(dictor);
-                        }
+                        dictors.Add(dictor);
+
+                        //if (dictorSex == "all")
+                        //{
+                        //    dictors.Add(dictor);
+                        //}
+                        //else if (GetDictorSex(dictor.username, dictorsTemp) == dictorSex)
+                        //{
+                        //    dictors.Add(dictor);
+                        //}
                     }
                     else if (fileChecker.CheckIfExist(mp3Path))
                     {
@@ -479,14 +519,16 @@ namespace EnglishTraining
                             langname = lang,
                             AudioType = ".mp3"
                         };
-                        if (dictorSex == "all")
-                        {
-                            dictors.Add(dictor);
-                        }
-                        else if (GetDictorSex(dictor.username, dictorsTemp) == dictorSex)
-                        {
-                            dictors.Add(dictor);
-                        }
+                        dictors.Add(dictor);
+
+                        //if (dictorSex == "all")
+                        //{
+                        //    dictors.Add(dictor);
+                        //}
+                        //else if (GetDictorSex(dictor.username, dictorsTemp) == dictorSex)
+                        //{
+                        //    dictors.Add(dictor);
+                        //}
 
                     }
                     return dictors;
@@ -513,14 +555,16 @@ namespace EnglishTraining
                             langname = lang,
                             AudioType = ".mp3"
                         };
-                        if(dictorSex == "all")
-                        {
-                            dictors.Add(dictor);
-                        }
-                        else if (GetDictorSex(dictor.username, dictorsTemp) == dictorSex)
-                        {
-                            dictors.Add(dictor);
-                        }
+                        dictors.Add(dictor);
+
+                        //if (dictorSex == "all")
+                        //{
+                        //    dictors.Add(dictor);
+                        //}
+                        //else if (GetDictorSex(dictor.username, dictorsTemp) == dictorSex)
+                        //{
+                        //    dictors.Add(dictor);
+                        //}
                     }
                     else if (fileChecker.CheckIfExist(wavPath))
                     {
@@ -532,18 +576,20 @@ namespace EnglishTraining
                             langname = lang,
                             AudioType = ".wav"
                         };
-                        if (dictorSex == "all")
-                        {
-                            dictors.Add(dictor);
-                        }
-                        else if (GetDictorSex(dictor.username, dictorsTemp) == dictorSex)
-                        {
-                            dictors.Add(dictor);
-                        }
+                        dictors.Add(dictor);
+                        //if (dictorSex == "all")
+                        //{
+                        //    dictors.Add(dictor);
+                        //}
+                        //else if (GetDictorSex(dictor.username, dictorsTemp) == dictorSex)
+                        //{
+                        //    dictors.Add(dictor);
+                        //}
 
                     }
                 }
-                Console.WriteLine("{0} dictor(s) found for word {1}.", dirs.Count, wordNameInLocal);
+                // TODO: add verbosity variable
+                //Console.WriteLine("{0} dictor(s) found for word {1}.", dirs.Count, wordNameInLocal);
             }
             catch (PathTooLongException PathEx)
             {
