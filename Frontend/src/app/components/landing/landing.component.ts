@@ -119,7 +119,7 @@ export class LandingComponent {
                     this.getWords()
                         .subscribe((words) => {
                             // Turn on for reduce words array length
-                            words = this.WordTrimedForTest(words);
+                            // words = this.WordTrimedForTest(words);
 
                             if (!words) {
                                 console.log('Can\'t get words');
@@ -134,9 +134,6 @@ export class LandingComponent {
                                 .map((word: VmWordExtended) => ({
                                     ...word
                                 }));
-
-                            // Test
-                            // this._words = this._words.slice(0, 2);
 
                             // Add collocations into object
                             // Collocations should be separated array
@@ -355,9 +352,9 @@ export class LandingComponent {
     }
 
     keyDown(e: any) {
-        // if (!this.keyReady || !this._words) {
-        //     return;
-        // }
+        if (!this.keyReady || !this._words) {
+            return;
+        }
         this.keyReady = false;
         this.cycle++;
         this.autoSave();
