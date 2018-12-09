@@ -112,7 +112,7 @@ namespace EnglishTraining
         }
 
         [HttpPost]
-        public async Task<JsonResult> GetWords([FromBody] WordRequest wellknownMode)
+        public async Task<JsonResult> GetWords([FromBody] WordRequest modeList)
         {
             List<WordWithLangDictionary> word_new;
             List<Word> words_Temp;
@@ -131,6 +131,7 @@ namespace EnglishTraining
                 if (db.Settings.First().DailyRepeatAmount != null)
                 {
                     dailyRepeatAmount = db.Settings.First().DailyRepeatAmount;
+                    dailyRepeatAmount = modeList.newOnlyMode ? (int)(dailyRepeatAmount / 2) : dailyRepeatAmount;
                 }
                 // ' ' is check for collocations, but now they should be included if
                 // it has audio
@@ -154,7 +155,7 @@ namespace EnglishTraining
 
                 var prioritizedWords = db.PrioritizedWords.Where(p => p.Lang == targetLang).ToList();
 
-                word_new = GetSortedWords(wordWithLandDictionaryList, prioritizedWords, dateToday, wellknownMode.wellknownMode);
+                word_new = GetSortedWords(wordWithLandDictionaryList, prioritizedWords, dateToday, modeList.wellknownMode, modeList.newOnlyMode);
 
                 collocations = db.Collocations.Where(p => p.NextRepeatDate <= dateToday).ToList();
             }
@@ -208,8 +209,8 @@ namespace EnglishTraining
 
 
                 // TODO: need to make >=
-                //if (dictors[targetLang].Any() && validDictorsInAllLocalsCount >= langList.Count - 1)
-                if (dictors[targetLang].Any() && validDictorsInAllLocalsCount > langList.Count - 1)
+                if (dictors[targetLang].Any() && validDictorsInAllLocalsCount >= langList.Count - 1)
+                //if (dictors[targetLang].Any() && validDictorsInAllLocalsCount > langList.Count - 1)
                 {
                     // TODO: check if audio exists
                     // TODO: update collocations
@@ -419,16 +420,16 @@ namespace EnglishTraining
         {
             Word[] renewingIteration;
             Word[] renewingFDphase;
-            string targetLang;
             using (var db = new WordContext())
             {
-                targetLang = GetTargetLangHelper(db);
-                renewingIteration = getWordListForUpdate(db, minReapeatCountPerDayIteration, targetLang, false);
-                renewingFDphase = getWordListForUpdate(db, minReapeatCountPerDayFourDayPhase, targetLang, true);
+                renewingIteration = getWordListForUpdate(db, minReapeatCountPerDayIteration, false);
+                renewingFDphase = getWordListForUpdate(db, minReapeatCountPerDayFourDayPhase, true);
 
-                renewingIteration = setNextRepeateDateInWordIterationPhaseList(db, renewingIteration, targetLang);
-                renewingFDphase = setNextRepeateDateInWordFDPhaseList(db, renewingFDphase, targetLang);
-
+                foreach(var lang in langList)
+                {
+                    renewingIteration = setNextRepeateDateInWordIterationPhaseList(db, renewingIteration, lang);
+                    renewingFDphase = setNextRepeateDateInWordFDPhaseList(db, renewingFDphase, lang);
+                }
                 db.SaveChanges();
             }
         }
@@ -626,7 +627,6 @@ namespace EnglishTraining
         private Word[] getWordListForUpdate(
             WordContext context,
             short minRepeatCount,
-            string targetLang,
             bool isFourDayPhase)
         {
             DateTime dateToday = DateTime.Now;
@@ -655,7 +655,7 @@ namespace EnglishTraining
             return result.ToArray();
         }
 
-        private static Word[] setNextRepeateDateInWordFDPhaseList(WordContext db, Word[] wordList, string targetLang)
+        private static Word[] setNextRepeateDateInWordFDPhaseList(WordContext db, Word[] wordList, string lang)
         {
             DateTime dateToday = DateTime.Now;
 
@@ -665,13 +665,13 @@ namespace EnglishTraining
                 {
                     dailyRepeatCount.Value = 0;
                 }
-                word.NextRepeatDate.FirstOrDefault(p => p.Key == targetLang).Value = dateToday.AddDays(1);
+                word.NextRepeatDate.FirstOrDefault(p => p.Key == lang).Value = dateToday.AddDays(1);
                 db.Words.Update(word);
             }
             return wordList;
         }
 
-        private static Word[] setNextRepeateDateInWordIterationPhaseList(WordContext db, Word[] wordList, string targetLang)
+        private static Word[] setNextRepeateDateInWordIterationPhaseList(WordContext db, Word[] wordList, string lang)
         {
             DateTime dateToday = DateTime.Now;
             var iterationIncrement = 7;
@@ -679,16 +679,16 @@ namespace EnglishTraining
             foreach (Word word in wordList)
             {
                 var iteration = iterationIncrement * getIterationLenght(word
-                                    .RepeatIterationNum.FirstOrDefault(p => p.Key == targetLang).Value);
+                                    .RepeatIterationNum.FirstOrDefault(p => p.Key == lang).Value);
 
-                word.NextRepeatDate.FirstOrDefault(p => p.Key == targetLang).Value = dateToday.AddDays(iteration);
+                word.NextRepeatDate.FirstOrDefault(p => p.Key == lang).Value = dateToday.AddDays(iteration);
 
                 foreach (DailyReapeatCount count in word.DailyReapeatCount)
                 {
                     count.Value = 0;
                 }
 
-                word.RepeatIterationNum.FirstOrDefault(p => p.Key == targetLang);
+                word.RepeatIterationNum.FirstOrDefault(p => p.Key == lang);
                 db.Words.Update(word);
             }
             return wordList;
@@ -756,7 +756,8 @@ namespace EnglishTraining
         List<WordWithLangDictionary> GetSortedWords(List<WordWithLangDictionary> list,
                                                     List<PrioritizedWords> prioritized,
                                                     DateTime dateToday,
-                                                    bool wellknownMode)
+                                                    bool wellknownMode,
+                                                    bool newOnlyMode)
         {
             List<WordWithLangDictionary> result = new List<WordWithLangDictionary>();
 
@@ -778,14 +779,27 @@ namespace EnglishTraining
                     .OrderBy(p => p?.LearnDay?.FirstOrDefault(z => z.Key == targetLang)?.Value)?
                     .ToList();
 
+                var phasePartTreshold = 1;
+
                 if (wellknownMode)
                 {
                     fourDayPhaseWords = fourDayPhaseWords
-                        .Where(p => p.LearnDay.FirstOrDefault(day => day?.Key == targetLang)?.Value > 2)
+                        .Where(p => p.LearnDay.FirstOrDefault(day => day?.Key == targetLang)?.Value > phasePartTreshold)
                         .ToList();
                 }
 
-                result.AddRange(repeatIterationWords);
+                if (newOnlyMode)
+                {
+                    fourDayPhaseWords = fourDayPhaseWords
+                        .Where(p => p.LearnDay.FirstOrDefault(day => day?.Key == targetLang)?.Value <= phasePartTreshold)
+                        .ToList();
+                }
+
+                if (!newOnlyMode)
+				{
+					result.AddRange(repeatIterationWords);
+                }
+
                 if (!wellknownMode) 
                 {
                     result.AddRange(prioritizedWords);
@@ -808,6 +822,7 @@ namespace EnglishTraining
         {
             public string dictorSex { get; set; }
             public bool wellknownMode { get; set; }
+			public bool newOnlyMode { get; set; }
         }
 
         public class Gender 

@@ -144,6 +144,7 @@ body {
 .autoMode_timer,
 .dictor_sex,
 .wellknow_mode,
+.new_only_mode,
 .auto_mode {
     font-family: 'Roboto', sans-serif;
     background: #ffffff3d;
@@ -160,13 +161,19 @@ body {
 .wellknow_mode {
     position: absolute;
     right: 10px;
+    bottom: 30px;
+}
+
+.new_only_mode {
+    position: absolute;
+    right: 10px;
     bottom: 0px;
 }
 
 .dictor_sex {
     position: absolute;
     right: 10px;
-    bottom: 30px;   
+    bottom: 60px;   
 }
 
 

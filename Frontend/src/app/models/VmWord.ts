@@ -3,7 +3,7 @@ import { VmDictor } from './VmDictor';
 import { Dictionary } from '../interfaces/Dictionary';
 
 export interface VmWord {
-    Id: number;
+    id: number;
     learnDay: Dictionary<number>;
     fourDaysLearnPhase: Dictionary<boolean>;
     repeatIterationNum: Dictionary<number>;

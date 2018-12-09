@@ -82,6 +82,7 @@ export class LandingComponent {
     autoModeMinutes = 5;
     timer: any;
     wellknownMode = false;
+    newOnlyMode = false;
     dictorSex = 'all';
     showSpinner = false;
 
@@ -94,6 +95,13 @@ export class LandingComponent {
         // this._langService = langService;
         this.mode = 'Words';
         this.initializaeData();
+    }
+
+    WordTrimedForTest(words: VmWord[]) {
+        const wordForTest = words.find(p => p.id === 734);
+        const result = words.slice(0, 5);
+        result.push(wordForTest);
+        return result;
     }
 
     initializaeData() {
@@ -110,13 +118,17 @@ export class LandingComponent {
                     this.showSpinner = true;
                     this.getWords()
                         .subscribe((words) => {
+                            // Turn on for reduce words array length
+                            words = this.WordTrimedForTest(words);
+
                             if (!words) {
                                 console.log('Can\'t get words');
                                 return;
                             }
-                            console.log(this.targetLang);
                             words.map(word => (
-                                word.nextRepeatDate[this.targetLang] = new Date(word.nextRepeatDate[this.targetLang] as any)
+                                this.langList.forEach(langTemp => {
+                                    word.nextRepeatDate[langTemp] = new Date(word.nextRepeatDate[langTemp] as any);
+                                })
                             ));
                             this._words = words
                                 .map((word: VmWordExtended) => ({
@@ -193,7 +205,8 @@ export class LandingComponent {
     getWords() {
         const wordRequest: WordRequest = {
             dictorSex: this.dictorSex,
-            wellknownMode: this.wellknownMode
+            wellknownMode: this.wellknownMode,
+            newOnlyMode: this.newOnlyMode
         };
         let methodUrl: string;
         // TODO: move to services
@@ -224,26 +237,19 @@ export class LandingComponent {
         const now = new Date();
         const dateToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
         this._words.forEach(word => {
-            const timeDiff = Math.abs(dateToday.getTime() - word.nextRepeatDate[this.targetLang].getTime());
-            const diffDays = Math.floor(timeDiff / (1000 * 3600 * 24));
-            if (diffDays < 1) {
-                // do nothing
-            } else if (diffDays >= 1) {
-                // начинается новый день повторения,
-                // нужно передвинуть счетчик графика
-                word = this.updateSchedule(word, dateToday, diffDays);
-                // и обнулить счетчик дневных повторений
-                if (this.getMaxRepeatCountFromAllLangs(word) < this.minReapeatCountPerDayFDPhase) {
-                    if (word.fourDaysLearnPhase[this.targetLang]
-                        && (word.learnDay[this.targetLang] > 0)) {
-                        word.learnDay[this.targetLang]--;
-                    }
-                } else {
-                    this.langList.forEach(lang => {
-                        word.dailyReapeatCount[lang] = 0;
-                    });
+            this.langList.forEach(lang => {
+                const timeDiff = Math.abs(dateToday.getTime() - word.nextRepeatDate[lang].getTime());
+                const diffDays = Math.floor(timeDiff / (1000 * 3600 * 24));
+                if (diffDays < 1) {
+                    // do nothing
+                } else if (diffDays >= 1) {
+                    // начинается новый день повторения,
+                    // нужно передвинуть счетчик графика
+                    word = this.updateSchedule(word, dateToday, diffDays, lang);
+                    // и обнулить счетчик дневных повторений
+                    word.dailyReapeatCount[lang] = 0;
                 }
-            }
+            });
         });
     }
 
@@ -255,26 +261,26 @@ export class LandingComponent {
         return maxValue;
     }
 
-    updateSchedule(word: VmWordExtended, dateToday: Date, diffDays: number) {
-        if (word.fourDaysLearnPhase[this.targetLang]) {
+    updateSchedule(word: VmWordExtended, dateToday: Date, diffDays: number, lang: string) {
+        if (word.fourDaysLearnPhase[lang]) {
             const LastRepeatingQuality = this
                 .getLastRepeatingQuality(diffDays);
             switch (LastRepeatingQuality) {
                 case 'good':
-                    word.learnDay[this.targetLang]++;
-                    if (word.learnDay[this.targetLang] >= 4) {
-                        word.fourDaysLearnPhase[this.targetLang] = false;
+                    word.learnDay[lang]++;
+                    if (word.learnDay[lang] >= 4) {
+                        word.fourDaysLearnPhase[lang] = false;
                     }
                     break;
                 case 'neutral':
                     break;
                 case 'bad':
-                    if (word.learnDay[this.targetLang] > 0) {
-                        word.learnDay[this.targetLang]--;
+                    if (word.learnDay[lang] > 0) {
+                        word.learnDay[lang]--;
                     }
                     break;
             }
-            word.nextRepeatDate[this.targetLang] = dateToday;
+            word.nextRepeatDate[lang] = dateToday;
         } else {
             if (diffDays < 1) {
                 // do nothing
@@ -282,7 +288,7 @@ export class LandingComponent {
             } else if (diffDays >= 1) {
                 // the whords are not repeated
                 // set repeat day to today
-                word.nextRepeatDate[this.targetLang] = dateToday;
+                word.nextRepeatDate[lang] = dateToday;
             }
         }
         return word;
@@ -349,9 +355,9 @@ export class LandingComponent {
     }
 
     keyDown(e: any) {
-        if (!this.keyReady || !this._words) {
-            return;
-        }
+        // if (!this.keyReady || !this._words) {
+        //     return;
+        // }
         this.keyReady = false;
         this.cycle++;
         this.autoSave();
@@ -396,10 +402,10 @@ export class LandingComponent {
         if ((keyCode === this.KEY_STOP && this._currentWord) ||
             (keyCode === this.KEY_STOP_AND_PLAY && this._currentWord) ||
             (keyCode === this.HIGH_RATE_LEARN && this._currentWord)) {
-            this.autoMode = false;
+            this.stopTimer();
             // if (keyCode == this.keyStop && this._currentWord) {
             let numberToSplice: number;
-            const invertedLang = this.invertLanguage(this._currentLocal);
+            const invertedLang = this.invertLanguage(this._currentLocal, this._currentWord);
 
             let thirdPartOfWordsLenght: number;
             if (this.doneWordsPercent < this.sprintFinishPercent) {
@@ -481,7 +487,13 @@ export class LandingComponent {
             randNum = this.pseudoRandomRange(0, currentWord.dictors[lang].length - 1, this.cycle);
         }
         if (!currentWord || !currentWord.dictors[lang] || !currentWord.dictors[lang][randNum]) {
-            debugger;
+            // debugger;
+            // hotfix
+            // TODO: check if it warks correct
+
+            lang = this.langList.filter(p => p !== this.targetLang && p !== lang)[0];
+            randNum = 0;
+
         }
         audioTypeTemp = currentWord.dictors[lang][randNum].audioType;
         usernameTemp = currentWord.dictors[lang][randNum].username;
@@ -496,6 +508,8 @@ export class LandingComponent {
         }
         return fileToPlay;
     }
+
+
 
     play() {
         if (this.mode !== 'Words') {
@@ -649,9 +663,13 @@ export class LandingComponent {
         }
     }
 
-    invertLanguage(lang: string) {
-        // get random
-        return this.langList.filter(p => p !== lang)[0];
+    invertLanguage(lang: string, word: VmWordExtended) {
+        // TODO: get random
+        let invertedRandLang = this.langList.filter(p => p !== lang)[0];
+        if (!word.dictors[invertedRandLang] || !word.dictors[invertedRandLang].length) {
+            invertedRandLang = this.langList.filter(p => p !== lang && p !== invertedRandLang)[0];
+        }
+        return invertedRandLang;
     }
 
     calculateSpentTime() {
@@ -694,7 +712,6 @@ export class LandingComponent {
     }
 
     firstSaveIfAllWordsCompleted() {
-        return;
         if (!this.isSavedOnAllWordsCompleted &&
             this.completedWordsCount >= this.wordsLoaded) {
             this.updateWord(this._words, this._collocations)
@@ -865,19 +882,40 @@ export class LandingComponent {
         }, this.autoModeMinutes * 1000);
     }
 
+    stopTimer() {
+        clearTimeout(this.timer);
+    }
+
     runTest() {
 
     }
 
     switchToWellknownMode() {
+        this.resetModes();
         // this.wellknownMode = !this.wellknownMode;
         this.wellknownMode = true;
         this.resetData();
         this.initializaeData();
     }
 
+    switchToNewOnlyMode() {
+        this.resetModes();
+        this.newOnlyMode = true;
+        this.resetData();
+        this.initializaeData();
+    }
+
+    resetModes() {
+        this.wellknownMode = false;
+        this.newOnlyMode = false;
+    }
+
     resetData() {
         this._words = [];
+        this.wordsLoaded = 0;
+        this.completedWordsCount = 0;
+        this.dailyGoalRepeatCount = null;
+        this.progress = 0;
         this._collocations = [];
         this.progress = 0;
         this._currentWord = null;
