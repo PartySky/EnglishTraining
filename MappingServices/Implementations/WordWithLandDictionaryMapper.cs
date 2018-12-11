@@ -27,8 +27,6 @@ namespace EnglishTraining
 
         public VmWord MapToVmWord(WordWithLangDictionary word, Dictionary<string, IList<VmDictor>> dictors)
         {
-            var x = word.LearnDay.ToDictionary(p => p.Key);
-
             return new VmWord
             {
                 Id = word.Id,

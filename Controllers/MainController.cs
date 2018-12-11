@@ -145,6 +145,20 @@ namespace EnglishTraining
                                 .Include(p => p.DailyReapeatCount)
                                 .ToList();
 
+                CheckIfWordFieldsExist(words_Temp, db);
+                RemoveDublicatedFields(words_Temp, db);
+
+                // Reload words after it have been updated
+                words_Temp = db.Words
+                                  .Include(p => p.Localization)
+                                  .Include(p => p.LearnDay)
+                                  .Include(p => p.FourDaysLearnPhase)
+                                  .Include(p => p.RepeatIterationNum)
+                                  .Include(p => p.NextRepeatDate)
+                                  .Include(p => p.DailyReapeatCount)
+                                  .ToList();
+
+
                 List<WordWithLangDictionary> wordWithLandDictionaryList = new List<WordWithLangDictionary>();
 
 
@@ -208,22 +222,33 @@ namespace EnglishTraining
                 short validDictorsInAllLocalsCount = ValidDictorsInAllLocalsCount(dictors, word);
 
 
-                // TODO: need to make >=
                 if (dictors[targetLang].Any() && validDictorsInAllLocalsCount >= langList.Count - 1)
-                //if (dictors[targetLang].Any() && validDictorsInAllLocalsCount > langList.Count - 1)
                 {
                     // TODO: check if audio exists
                     // TODO: update collocations
                     availableCollocations = collocationsWithAudio
                        .Where(p => CheckIfContainsPattern(word.LangDictionary[targetLang], p.AudioUrl)).ToList();
-
-                    wordsOutputList.Add(_vmWordMapper.MapToVmWord(word, dictors));
+                    try
+                    {
+                        wordsOutputList.Add(_vmWordMapper.MapToVmWord(word, dictors));
+                    }
+                    catch(Exception e)
+                    {
+                        throw new Exception(e.Message);
+                    }
 
                     if (dailyRepeatAmount != 0)
                     {
-                        repeatCount = (short)(word.FourDaysLearnPhase.FirstOrDefault(p => p.Key == targetLang).Value
-                            ? repeatCount + 2 * minReapeatCountPerDayFourDayPhase
-                            : repeatCount + 2 * minReapeatCountPerDayIteration);
+                        try
+                        {
+                            repeatCount = (short)(word.FourDaysLearnPhase.FirstOrDefault(p => p.Key == targetLang).Value
+                                ? repeatCount + 2 * minReapeatCountPerDayFourDayPhase
+                                : repeatCount + 2 * minReapeatCountPerDayIteration);
+                        }
+                        catch (Exception e)
+                        {
+                            throw new Exception(e.Message);
+                        }
                     }
                 }
             }
@@ -232,6 +257,126 @@ namespace EnglishTraining
             {
                 return Json(wordsOutputList);
             });
+        }
+
+        public void CheckIfWordFieldsExist(List<Word> wordList, WordContext db)
+        {
+            foreach (var word in wordList)
+            {
+                if (word.Localization == null)
+                {
+                    db.WordLocalization.Add(new WordLocalization { 
+                        Name_en = word.Name_en,
+                        Name_pl = "",
+                        Name_ru = word.Name_ru
+                    });
+                }
+                foreach (var lang in langList)
+                {
+                    if (word.LearnDay == null || word.LearnDay.FirstOrDefault(p => p.Key == lang) == null)
+                    {
+                        db.LearnDay.Add(new LearnDay
+                        {
+                            Key = lang,
+                            Value = 0,
+                            Word = word
+                        });
+                    }
+
+                    if (word.FourDaysLearnPhase == null || word.FourDaysLearnPhase.FirstOrDefault(p => p.Key == lang) == null)
+                    {
+                        db.FourDaysLearnPhase.Add(new FourDaysLearnPhase
+                        {
+                            Key = lang,
+                            Value = true,
+                            Word = word
+                        });
+                    }
+
+                    if (word.RepeatIterationNum == null || word.RepeatIterationNum.FirstOrDefault(p => p.Key == lang) == null)
+                    {
+                        db.RepeatIterationNum.Add(new RepeatIterationNum
+                        {
+                            Key = lang,
+                            Value = 0,
+                            Word = word
+                        });
+                    }
+
+                    if (word.NextRepeatDate == null || word.NextRepeatDate.FirstOrDefault(p => p.Key == lang) == null)
+                    {
+                        db.NextRepeatDate.Add(new NextRepeatDate
+                        {
+                            Key = lang,
+                            Value = DateTime.Today,
+                            Word = word
+                        });
+                    }
+
+                    if (word.DailyReapeatCount == null || word.DailyReapeatCount.FirstOrDefault(p => p.Key == lang) == null)
+                    {
+                        db.DailyReapeatCount.Add(new DailyReapeatCount
+                        {
+                            Key = lang,
+                            Value = 0,
+                            Word = word
+                        });
+                    }
+                }
+            }
+            db.SaveChanges();
+        }
+
+        public void RemoveDublicatedFields(List<Word> wordList, WordContext db)
+        {
+            foreach (var word in wordList)
+            {
+                //if (word.Localization. == null)
+                //{
+                //    db.WordLocalization.Add(new WordLocalization
+                //    {
+                //        Name_en = word.Name_en,
+                //        Name_pl = "",
+                //        Name_ru = word.Name_ru
+                //    });
+                //}
+
+                foreach (var lang in langList)
+                {
+                    var learnDayExtraList = word.LearnDay.Where(p => p.Key == lang)
+                                            .OrderBy(p => p.Id)
+                                            .ToList();
+                    learnDayExtraList.RemoveAt(0);
+                    db.LearnDay.RemoveRange(learnDayExtraList);
+
+
+                    var FourDaysLearnPhaseExtraList = word.FourDaysLearnPhase.Where(p => p.Key == lang)
+                                           .OrderBy(p => p.Id)
+                                           .ToList();
+                    FourDaysLearnPhaseExtraList.RemoveAt(0);
+                    db.FourDaysLearnPhase.RemoveRange(FourDaysLearnPhaseExtraList);
+                    
+
+                    var RepeatIterationNumExtraList = word.RepeatIterationNum.Where(p => p.Key == lang)
+                                           .OrderBy(p => p.Id)
+                                           .ToList();
+                    RepeatIterationNumExtraList.RemoveAt(0);
+                    db.RepeatIterationNum.RemoveRange(RepeatIterationNumExtraList);
+
+                    var NextRepeatDateExtraList = word.NextRepeatDate.Where(p => p.Key == lang)
+                                           .OrderBy(p => p.Id)
+                                           .ToList();
+                    NextRepeatDateExtraList.RemoveAt(0);
+                    db.NextRepeatDate.RemoveRange(NextRepeatDateExtraList);
+
+                    var DailyReapeatCountExtraList = word.DailyReapeatCount.Where(p => p.Key == lang)
+                                           .OrderBy(p => p.Id)
+                                           .ToList();
+                    DailyReapeatCountExtraList.RemoveAt(0);
+                    db.DailyReapeatCount.RemoveRange(DailyReapeatCountExtraList);
+                }
+            }
+            db.SaveChanges();
         }
 
         short ValidDictorsInAllLocalsCount(Dictionary<string, IList<VmDictor>> dictors, WordWithLangDictionary word)
@@ -764,19 +909,19 @@ namespace EnglishTraining
             try
             {
                 var repeatIterationWords = list
-                    .Except(list.Where(p => prioritized.Any(pr => pr.Name == p.LangDictionary[targetLang])))
+                    .Except(list.Where(p => prioritized.Any(pr => pr.Name == p.LangDictionary[targetLang])))?
                     .Where(p => p.FourDaysLearnPhase?.FirstOrDefault(phase => phase.Key == targetLang)?.Value == false)?
-                    .OrderBy(p => p?.RepeatIterationNum?.FirstOrDefault(z => z.Key == targetLang)?.Value)
+                    .OrderByDescending(p => p?.RepeatIterationNum?.FirstOrDefault(z => z.Key == targetLang)?.Value)
                     .ToList();
 
                 var prioritizedWords = list
-                    .Where(p => prioritized.Any(pr => pr.Name == p?.LangDictionary[targetLang]))
+                    .Where(p => prioritized.Any(pr => pr.Name == p?.LangDictionary[targetLang]))?
                     .ToList();
 
                 var fourDayPhaseWords = list
                     .Except(list.Where(p => prioritized.Any(pr => pr?.Name == p?.LangDictionary[targetLang])))?
                     .Where(p => p.FourDaysLearnPhase?.FirstOrDefault(phase => phase?.Key == targetLang)?.Value == true)?
-                    .OrderBy(p => p?.LearnDay?.FirstOrDefault(z => z.Key == targetLang)?.Value)?
+                    .OrderByDescending(p => p?.LearnDay?.FirstOrDefault(z => z.Key == targetLang)?.Value)?
                     .ToList();
 
                 var phasePartTreshold = 1;

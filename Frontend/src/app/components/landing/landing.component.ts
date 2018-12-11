@@ -352,13 +352,13 @@ export class LandingComponent {
     }
 
     keyDown(e: any) {
-        if (!this.keyReady || !this._words) {
+        const keyCode = e.keyCode;
+        if (!this._words || (keyCode === this.KEY_NEXT_WORD && !this.keyReady)) {
             return;
         }
         this.keyReady = false;
         this.cycle++;
         this.autoSave();
-        const keyCode = e.keyCode;
         const today = new Date;
 
         if (keyCode === this.KEY_NEXT_WORD || keyCode === this.KEY_NEXT_WORD_AUTOMODE) {
