@@ -147,6 +147,7 @@ namespace EnglishTraining
 
                 CheckIfWordFieldsExist(words_Temp, db);
                 RemoveDublicatedFields(words_Temp, db);
+                ImportNewLocalization(words_Temp, db);
 
                 // Reload words after it have been updated
                 words_Temp = db.Words
@@ -265,11 +266,17 @@ namespace EnglishTraining
             {
                 if (word.Localization == null)
                 {
-                    db.WordLocalization.Add(new WordLocalization { 
+                    var localizationTemp = new WordLocalization
+                    {
                         Name_en = word.Name_en,
                         Name_pl = "",
                         Name_ru = word.Name_ru
-                    });
+                    };
+
+                    word.Localization = localizationTemp;
+
+                    db.WordLocalization.Add(localizationTemp);
+                    db.Words.Update(word);
                 }
                 foreach (var lang in langList)
                 {
@@ -322,6 +329,24 @@ namespace EnglishTraining
                             Word = word
                         });
                     }
+                }
+            }
+            db.SaveChanges();
+        }
+
+        public void ImportNewLocalization (List<Word> wordList, WordContext db)
+        {
+            var NewLocalization = db.LocalizationImport.ToList();
+            foreach(var local in NewLocalization)
+            {
+                // TODO: refacotr it
+                var wordToUpdate = wordList.FirstOrDefault(p => p.Localization.Name_en == local.Name_en);
+                if (wordToUpdate != null)
+                {
+                    wordToUpdate.Localization.Name_pl = local.Name_pl;
+                    wordToUpdate.Localization.Name_ru = local.Name_ru;
+                    db.WordLocalization.Update(wordToUpdate.Localization);
+                    db.LocalizationImport.Remove(local);
                 }
             }
             db.SaveChanges();
@@ -387,7 +412,7 @@ namespace EnglishTraining
             {
                 if (!dictors[lang].Any())
                 {
-                    Console.WriteLine("Word has no {0} dictors: {1}", lang, word.LangDictionary[lang]);
+                    //Console.WriteLine("Word has no {0} dictors: {1}", lang, word.LangDictionary[lang]);
                     continue;
                 }
                 else

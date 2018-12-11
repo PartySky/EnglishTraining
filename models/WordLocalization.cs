@@ -10,9 +10,15 @@ namespace EnglishTraining
         public string Name_pl { get; set; }
         public string Name_en { get; set; }
         public string Name_ru { get; set; }
-        //public string Name_es { get; set; }
-
 
         public Word word { get; set; }
+    }
+
+    public class LocalizationImport
+    {
+        public int Id { get; set; }
+        public string Name_pl { get; set; }
+        public string Name_en { get; set; }
+        public string Name_ru { get; set; }
     }
 }

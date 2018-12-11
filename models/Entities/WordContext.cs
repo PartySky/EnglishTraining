@@ -7,6 +7,7 @@ namespace EnglishTraining
     {
         public DbSet<Word> Words { get; set; }
         public DbSet<WordLocalization> WordLocalization { get; set; }
+        public DbSet<LocalizationImport> LocalizationImport { get; set; }
         public DbSet<LearnDay> LearnDay { get; set; }
         public DbSet<FourDaysLearnPhase> FourDaysLearnPhase { get; set; }
         public DbSet<RepeatIterationNum> RepeatIterationNum { get; set; }
