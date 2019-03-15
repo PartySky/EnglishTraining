@@ -550,12 +550,20 @@ export class TrackListComponent {
         const completedfourDaysPhaseWordNum = this._words
             .filter(p => p.fourDaysLearnPhase[this.targetLang] == true
                 && p.dailyReapeatCount[this.targetLang] >= this.minReapeatCountPerDayFDPhase
-                && this.getSumOfRepeatCountsOfNotTargetLang(p.dailyReapeatCount) >= this.minReapeatCountPerDayFDPhase * (this.langList.length - 1)).length;
+                // don't sure, but we shouldn't multiply this walue by not target lang amount,
+                // we just should to count the sum of min repeat count for any not target lang
+                && this.getSumOfRepeatCountsOfNotTargetLang(p.dailyReapeatCount) >= this.minReapeatCountPerDayFDPhase
+                // && this.getSumOfRepeatCountsOfNotTargetLang(p.dailyReapeatCount) >= this.minReapeatCountPerDayFDPhase * (this.langList.length - 1)
+            ).length;
 
         const completedIterationPhaseWordNum = this._words
             .filter(p => p.fourDaysLearnPhase[this.targetLang] == false
                 && p.dailyReapeatCount[this.targetLang] >= this.minReapeatCountPerDayIteration
-                && this.getSumOfRepeatCountsOfNotTargetLang(p.dailyReapeatCount) >= this.minReapeatCountPerDayIteration * (this.langList.length - 1)).length;
+                // don't sure, but we shouldn't multiply this walue by not target lang amount,
+                // we just should to count the sum of min repeat count for any not target lang
+                && this.getSumOfRepeatCountsOfNotTargetLang(p.dailyReapeatCount) >= this.minReapeatCountPerDayIteration
+                // && this.getSumOfRepeatCountsOfNotTargetLang(p.dailyReapeatCount) >= this.minReapeatCountPerDayIteration * (this.langList.length - 1)
+            ).length;
 
         this.completedWordsCount = countForCurrentWord
             + completedfourDaysPhaseWordNum + completedIterationPhaseWordNum;
